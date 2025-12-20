@@ -49,8 +49,8 @@ const Navigation = () => {
               <Database size={18} /> Laboratory
             </button> <button className="flex items-center gap-2 text-blue-900 font-bold border-b-2 border-blue-600 pb-1" onClick={()=> navigate('/allPatient')}>
               <Database size={18} /> All Patient
-            </button> <button className="flex items-center gap-2 text-blue-900 font-bold border-b-2 border-blue-600 pb-1">
-              <Database size={18} /> Accounts
+            </button> <button className="flex items-center gap-2 text-blue-900 font-bold border-b-2 border-blue-600 pb-1" onClick={()=>navigate('/account')}>
+              <Database size={18}  /> Accounts
             </button> <button className="flex items-center gap-2 text-blue-900 font-bold border-b-2 border-blue-600 pb-1">
               <Database size={18} /> Search
             </button>

@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Search, Printer, Truck, Filter, Calendar, User, Edit, FileText, CreditCard, MoreHorizontal, Upload } from "lucide-react";
+import {
+  Printer,
+  Filter,
+  Truck,
+  Search,
+} from "lucide-react";
 import Navigation from "./Navigation";
 import { getAllPatients } from "../api/patientApi";
 
@@ -14,22 +19,22 @@ const AllPatient = () => {
 
   const [patients, setPatients] = useState([]);
   console.log(patients, "all patients");
-const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchPatients = async () => {
-    try {
-      const res = await getAllPatients();
-      setPatients(res.data.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const res = await getAllPatients();
+        setPatients(res.data.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchPatients();
-}, []);
+    fetchPatients();
+  }, []);
 
   const headers = [
     "Date",
@@ -47,18 +52,11 @@ useEffect(() => {
     "NetAmt",
     "PaidAmt",
     "Curr. Balance",
-    "User",
-    "Delivery Boy",
-    "Assign Delivery Boy",
     "Discount Reason",
     "Edit Info",
     "Receipt Edit",
     "Settle ment",
-    "Cash Receipt",
-    "Concent Form",
     "Discount After Bill",
-    "Change Panel",
-    "Change Pay Mode",
     "Full Paid",
     "Upload Doc",
   ];
@@ -76,12 +74,6 @@ useEffect(() => {
               <p className="text-sm text-red-600 font-semibold uppercase tracking-wide">
                 Total Patients Found: 25
               </p>
-            </div>
-            <div className="flex gap-2">
-              <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm hover:bg-slate-50 transition-all">
-                <Printer size={18} />
-                <span className="text-sm font-medium">Print Page</span>
-              </button>
             </div>
           </div>
 
@@ -210,17 +202,6 @@ useEffect(() => {
                 </div>
 
                 <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-bold text-slate-600">
-                      Delivery Boy:
-                    </label>
-                    <select className="border border-slate-300 rounded p-1 text-sm min-w-[150px]">
-                      <option>--Select--</option>
-                    </select>
-                  </div>
-                  <button className="bg-lime-500 hover:bg-lime-600 text-white font-bold py-1.5 px-4 rounded text-sm shadow-sm flex items-center gap-2">
-                    <Truck size={14} /> Assign
-                  </button>
                   <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-6 rounded text-sm shadow-sm flex items-center gap-2">
                     <Search size={14} /> Search Records
                   </button>
@@ -250,92 +231,83 @@ useEffect(() => {
                   </tr>
                 </thead>
                 <tbody className="text-[13px]">
-  {loading ? (
-    <tr>
-      <td colSpan={headers.length} className="p-6 text-center">
-        Loading patients...
-      </td>
-    </tr>
-  ) : patients.length === 0 ? (
-    <tr>
-      <td colSpan={headers.length} className="p-6 text-center text-gray-500">
-        No patients found
-      </td>
-    </tr>
-  ) : (
-    patients.map((p, index) => (
-      <tr
-        key={p._id}
-        className="bg-[#00ff99] border-b hover:brightness-95"
-      >
-        <td className="p-3">
-          {new Date(p.createdAt).toLocaleDateString()}
-        </td>
-        <td className="p-3 font-mono">{p.labNo || "-"}</td>
-        <td className="p-3">{p._id.slice(-6)}</td>
-        <td className="p-3">{p.orderId || "-"}</td>
-        <td className="p-3 text-center">{p.regNo || "-"}</td>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={headers.length} className="p-6 text-center">
+                        Loading patients...
+                      </td>
+                    </tr>
+                  ) : patients.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={headers.length}
+                        className="p-6 text-center text-gray-500"
+                      >
+                        No patients found
+                      </td>
+                    </tr>
+                  ) : (
+                    patients.map((p, index) => (
+                      <tr
+                        key={p._id}
+                        className="bg-[#00ff99] border-b hover:brightness-95"
+                      >
+                        <td className="p-3">
+                          {new Date(p.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-3 font-mono">{p.labNo || "-"}</td>
+                        <td className="p-3">{p._id.slice(-6)}</td>
+                        <td className="p-3">{p.orderId || "-"}</td>
+                        <td className="p-3 text-center">{p.regNo || "-"}</td>
 
-        <td className="p-3 font-bold sticky left-0 bg-inherit z-10">
-          {p.firstName} {p.age ? `${p.age} Y` : ""}
-        </td>
+                        <td className="p-3 font-bold sticky left-0 bg-inherit z-10">
+                          {p.firstName} {p.age ? `${p.age} Y` : ""}
+                        </td>
 
-        <td className="p-3">{p.referredBy || "-"}</td>
-        <td className="p-3">{p.mobile}</td>
-        <td className="p-3 italic text-[11px]">
-          {p.panel || "-"}
-        </td>
-        <td className="p-3">-</td>
+                        <td className="p-3">{p.referredBy || "-"}</td>
+                        <td className="p-3">{p.mobile}</td>
+                        <td className="p-3 italic text-[11px]">
+                          {p.panel || "-"}
+                        </td>
 
-        <td className="p-3 font-bold">
-          {p.billing?.grossTotal}
-        </td>
-        <td className="p-3">
-          {p.billing?.discountAmount || 0}
-        </td>
-        <td className="p-3 font-bold">
-          {p.billing?.netAmount}
-        </td>
-        <td className="p-3">
-          {p.billing?.netAmount}
-        </td>
-        <td className="p-3 text-red-700 font-bold">0</td>
+                        <td className="p-3 font-bold">
+                          {p.billing?.grossTotal}
+                        </td>
+                        <td className="p-3">
+                          {p.billing?.discountAmount || 0}
+                        </td>
+                        <td className="p-3 font-bold">
+                          {p.billing?.netAmount}
+                        </td>
+                        <td className="p-3">{p.billing?.netAmount}</td>
+                        <td className="p-3 text-red-700 font-bold">0</td>
 
-        <td className="p-3">-</td>
-        <td className="p-3">-</td>
+                        <td className="p-3">-</td>
+                       
 
-        <td className="p-3 text-center">
-          <input type="checkbox" />
-        </td>
+                        <td className="p-3 italic">-</td>
 
-        <td className="p-3 italic">-</td>
+                        <td className="p-3 text-center">
+                          <button>Edit</button>
+                        </td>
 
-        <td className="p-3 text-center">
-          <button>Edit</button>
-        </td>
+                        <td className="p-3 text-center">
+                          <button>Receipt</button>
+                        </td>
 
-        <td className="p-3 text-center">
-          <button>Receipt</button>
-        </td>
+                        <td className="p-3 text-center">
+                          <button className="bg-blue-800 text-white px-2 py-0.5 rounded">
+                            Settle
+                          </button>
+                        </td>
 
-        <td className="p-3 text-center">
-          <button className="bg-blue-800 text-white px-2 py-0.5 rounded">
-            Settle
-          </button>
-        </td>
-
-        <td className="p-3 text-center">Cash</td>
-        <td className="p-3 text-center">View</td>
-        <td className="p-3 text-center">0</td>
-        <td className="p-3 text-center">-</td>
-        <td className="p-3 text-center">-</td>
-        <td className="p-3 text-center font-bold">YES</td>
-        <td className="p-3 text-center">Upload</td>
-      </tr>
-    ))
-  )}
-</tbody>
-
+                        <td className="p-3 text-center">0</td>
+                        <td className="p-3 text-center font-bold">YES</td>
+                        <td className="p-3 text-center">Upload</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
               </table>
             </div>
           </div>

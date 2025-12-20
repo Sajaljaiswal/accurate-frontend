@@ -51,7 +51,9 @@ const TEST_OPTIONS = [
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);
   const [discountValue, setDiscountValue] = useState(0);
-  const [discountType, setDiscountType] = useState("amount"); // "amount" or "percent"
+  const [discountType, setDiscountType] = useState("amount");
+  const [discountReason, setDiscountReason] = useState("");
+  const [cashReceived, setCashReceived] = useState(0);
 
   // 1. Add test to table
   const handleAddTest = (testName) => {
@@ -115,13 +117,24 @@ const Register = () => {
   // Calculations
   const calculations = useMemo(() => {
     const grossTotal = selectedTests.reduce((sum, item) => sum + item.price, 0);
+
     const discountAmt =
       discountType === "percent"
         ? (grossTotal * discountValue) / 100
         : Number(discountValue);
+
     const netAmount = Math.max(0, grossTotal - discountAmt);
-    return { grossTotal, discountAmt, netAmount, count: selectedTests.length };
-  }, [selectedTests, discountValue, discountType]);
+
+    const dueAmount = cashReceived < netAmount ? netAmount - cashReceived : 0;
+
+    return {
+      grossTotal,
+      discountAmt,
+      netAmount,
+      dueAmount,
+      count: selectedTests.length,
+    };
+  }, [selectedTests, discountValue, discountType, cashReceived]);
 
   // Generate Serial Numbers (Note: In production, do this on Backend)
   const generateSerialNumbers = () => {
@@ -148,6 +161,14 @@ const Register = () => {
         billing: {
           discountType,
           discountValue,
+          grossTotal: calculations.grossTotal,
+          discountType,
+          discountValue,
+          discountAmount: calculations.discountAmt,
+          discountReason,
+          netAmount: calculations.netAmount,
+          cashReceived,
+          dueAmount: calculations.dueAmount,
         },
       };
 
@@ -585,6 +606,36 @@ const Register = () => {
                         className="border rounded px-3 py-1 text-sm w-full outline-none"
                         placeholder="Enter value"
                       />
+                      <select
+                        value={discountReason}
+                        onChange={(e) => setDiscountReason(e.target.value)}
+                        className="border rounded px-2 py-1 text-sm bg-white outline-none"
+                      >
+                        <option value="staff">Staff reference</option>
+                        <option value="sample">Sample</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
+                    <h4 className="font-bold text-xs text-gray-500 uppercase">
+                      Discount Settings
+                    </h4>
+                    <div className="flex gap-2">
+                      <div className="col-span-3 bg-white p-4 rounded-lg border mt-4">
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                        Cash Collected (₹)
+                      </label>
+                      <input
+                        type="number"
+                        value={cashReceived}
+                        onChange={(e) =>
+                          setCashReceived(Number(e.target.value))
+                        }
+                        className="w-full border rounded px-3 py-2 text-sm outline-none"
+                        placeholder="Enter cash amount"
+                      />
+                    </div>
+                    
                     </div>
                   </div>
 
@@ -606,6 +657,12 @@ const Register = () => {
                         ₹{calculations.discountAmt.toFixed(2)}
                       </p>
                     </div>
+                     <div className="text-center bg-red-100 text-red-700 p-2 rounded">
+                      <p className="text-xs font-bold uppercase">Due Amount</p>
+                      <p className="text-xl font-extrabold">
+                        ₹{calculations.dueAmount.toFixed(2)}
+                      </p>
+                    </div>
                     <div className="text-center bg-teal-600 text-white p-2 rounded shadow-md">
                       <p className="text-xs font-bold uppercase opacity-80">
                         Net Payable
@@ -614,6 +671,7 @@ const Register = () => {
                         ₹{calculations.netAmount.toFixed(2)}
                       </p>
                     </div>
+                    
                   </div>
                 </div>
               </div>
