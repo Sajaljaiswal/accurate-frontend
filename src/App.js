@@ -9,6 +9,8 @@ import AllPatient from "./pages/AllPatient";
 import Account from "./pages/Account";
 import NewDoctor from "./pages/Doctors/NewDoctor";
 import NewPanel from "./pages/Panel/NewPanel";
+import AllDoctor from "./pages/Doctors/AllDoctor";
+import AllPanel from "./pages/Panel/AllPanel";
 
 export default function App() {
   return (
@@ -31,6 +33,9 @@ export default function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/newDoctor" element={<NewDoctor />} />
           <Route path="/newPanel" element={<NewPanel />} />
+          <Route path="/allDoctor" element={<AllDoctor />} />
+          <Route path="/allPanel" element={<AllPanel />} />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>
