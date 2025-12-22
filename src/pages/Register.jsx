@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo , useEffect} from "react";
+import { getAllPanels } from "../api/panelApi";
 import Navigation from "./Navigation";
 import { Save, UserPlus, Trash2, RotateCcw, Printer } from "lucide-react";
 import { useAuth } from "../auth/AuthContext"; // Import your Auth Context
@@ -21,25 +22,48 @@ const InputField = ({ label, type = "text", placeholder, value, onChange }) => (
   </div>
 );
 
-const SelectField = ({ label, options, value, onChange }) => (
-  <div>
-    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-      {label}
-    </label>
-    <select
-      value={value}
-      onChange={onChange}
-      className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white"
-    >
-      <option value="">-- Select --</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
-        </option>
-      ))}
-    </select>
-  </div>
-);
+const SelectField = ({
+  label,
+  options = [],
+  value,
+  onChange,
+  placeholder = "-- Select --",
+}) => {
+  return (
+    <div>
+      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+        {label}
+      </label>
+
+      <select
+        value={value}
+        onChange={onChange}
+        className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white"
+      >
+        <option value="">{placeholder}</option>
+
+        {options.map((opt, index) => {
+          // ✅ If API object
+          if (typeof opt === "object") {
+            return (
+              <option key={opt._id || index} value={opt._id}>
+                {opt.name || opt.label}
+              </option>
+            );
+          }
+
+          // ✅ If default string
+          return (
+            <option key={index} value={opt}>
+              {opt}
+            </option>
+          );
+        })}
+      </select>
+    </div>
+  );
+};
+
 
 // Mock Data for Tests
 const TEST_OPTIONS = [
@@ -66,6 +90,19 @@ const Register = () => {
     }
   };
 
+  useEffect(() => {
+  const fetchPanels = async () => {
+    try {
+      const res = await getAllPanels();
+      setPanels(res.data.data);
+    } catch (err) {
+      console.error("Failed to fetch panels", err);
+    }
+  };
+
+  fetchPanels();
+}, []);
+const [panels, setPanels] = useState([]);
   // 2. Remove test from table
   const removeTest = (id) => {
     setSelectedTests(selectedTests.filter((t) => t.id !== id));
@@ -369,7 +406,10 @@ const Register = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-blue-50/50 p-4 rounded-lg">
                 <SelectField
                   label="Panel"
-                  options={["Panel A", "Panel B", "Panel C"]}
+                   options={panels.map((panel) => ({
+    label: panel.name,
+    value: panel._id,
+  }))}
                   value={form.panel}
                   onChange={(e) => handleChange("panel", e.target.value)}
                 />

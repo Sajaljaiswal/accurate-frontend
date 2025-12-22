@@ -17,42 +17,61 @@ import {
 
 const NewPanel = () => {
   const [form, setForm] = useState({
-  name: "",
-  organizationType: "Private Limited",
-  address: {
-    fullAddress: "",
-    pincode: "",
-  },
-  contact: {
-    mobile: "",
-    email: "",
-    website: "",
-  },
-  billing: {
-    gstNumber: "",
-    panNumber: "",
-    creditLimit: 0,
-    paymentCycle: "Prepaid",
-  },
-  portalUsername: "",
-  isActive: true,
-});
-
-const handleChange = (path, value) => {
-  setForm((prev) => {
-    const updated = { ...prev };
-    const keys = path.split(".");
-    let obj = updated;
-
-    keys.slice(0, -1).forEach((k) => {
-      obj[k] = { ...obj[k] };
-      obj = obj[k];
-    });
-
-    obj[keys[keys.length - 1]] = value;
-    return updated;
+    name: "",
+    organizationType: "Private Limited",
+    address: {
+      fullAddress: "",
+      pincode: "",
+    },
+    contact: {
+      mobile: "",
+      email: "",
+      website: "",
+    },
+    billing: {
+      gstNumber: "",
+      panNumber: "",
+      creditLimit: 0,
+      paymentCycle: "Prepaid",
+    },
+    portalUsername: "",
+    isActive: true,
   });
-};
+
+  const handleChange = (path, value) => {
+    setForm((prev) => {
+      const updated = { ...prev };
+      const keys = path.split(".");
+      let obj = updated;
+
+      keys.slice(0, -1).forEach((k) => {
+        obj[k] = { ...obj[k] };
+        obj = obj[k];
+      });
+
+      obj[keys[keys.length - 1]] = value;
+      return updated;
+    });
+  };
+
+  const handleSave = async () => {
+    if (!form.name || !form.contact.mobile) {
+      alert("Hospital name and mobile are required");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/panels/register",
+        form
+      );
+
+      alert("Hospital registered successfully ✅");
+      window.location.reload();
+    } catch (err) {
+      alert(err.response?.data?.message || "Save failed");
+    }
+  };
 
   return (
     <div>
@@ -105,6 +124,8 @@ const handleChange = (path, value) => {
                       <input
                         type="text"
                         placeholder="e.g. City General Hospital"
+                        value={form.name}
+                        onChange={(e) => handleChange("name", e.target.value)}
                         className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
@@ -113,7 +134,13 @@ const handleChange = (path, value) => {
                     <label className="block text-xs font-semibold text-slate-500 mb-1">
                       Organization Type
                     </label>
-                    <select className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
+                    <select
+                      className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none"
+                      value={form.organizationType}
+                      onChange={(e) =>
+                        handleChange("organizationType", e.target.value)
+                      }
+                    >
                       <option>Private Limited</option>
                       <option>Government / Trust</option>
                       <option>Individual Clinic</option>
@@ -135,6 +162,10 @@ const handleChange = (path, value) => {
                       <input
                         type="text"
                         placeholder="Street, Landmark, City"
+                        value={form.address.fullAddress}
+                        onChange={(e) =>
+                          handleChange("address.fullAddress", e.target.value)
+                        }
                         className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm outline-none"
                       />
                     </div>
@@ -146,6 +177,10 @@ const handleChange = (path, value) => {
                     <input
                       type="text"
                       maxLength="6"
+                      value={form.address.pincode}
+                      onChange={(e) =>
+                        handleChange("address.pincode", e.target.value)
+                      }
                       className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none"
                     />
                   </div>
@@ -173,6 +208,10 @@ const handleChange = (path, value) => {
                       />
                       <input
                         type="tel"
+                        value={form.contact.mobile}
+                        onChange={(e) =>
+                          handleChange("contact.mobile", e.target.value)
+                        }
                         className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm outline-none"
                       />
                     </div>
@@ -188,6 +227,10 @@ const handleChange = (path, value) => {
                       />
                       <input
                         type="email"
+                        value={form.contact.email}
+                        onChange={(e) =>
+                          handleChange("contact.email", e.target.value)
+                        }
                         className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm outline-none"
                       />
                     </div>
@@ -227,6 +270,10 @@ const handleChange = (path, value) => {
                     </label>
                     <input
                       type="text"
+                      value={form.billing.gstNumber}
+                      onChange={(e) =>
+                        handleChange("billing.gstNumber", e.target.value)
+                      }
                       className="w-full border border-slate-300 rounded-lg p-2.5 text-sm uppercase"
                     />
                   </div>
@@ -236,6 +283,10 @@ const handleChange = (path, value) => {
                     </label>
                     <input
                       type="text"
+                      value={form.billing.panNumber}
+                      onChange={(e) =>
+                        handleChange("billing.panNumber", e.target.value)
+                      }
                       className="w-full border border-slate-300 rounded-lg p-2.5 text-sm uppercase"
                     />
                   </div>
@@ -246,6 +297,13 @@ const handleChange = (path, value) => {
                     <input
                       type="number"
                       placeholder="₹ 0.00"
+                      value={form.billing.creditLimit}
+                      onChange={(e) =>
+                        handleChange(
+                          "billing.creditLimit",
+                          Number(e.target.value)
+                        )
+                      }
                       className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
                     />
                   </div>
@@ -253,7 +311,13 @@ const handleChange = (path, value) => {
                     <label className="block text-xs font-semibold text-slate-500 mb-1">
                       Payment Cycle
                     </label>
-                    <select className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-white">
+                    <select
+                      className="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-white"
+                      value={form.billing.paymentCycle}
+                      onChange={(e) =>
+                        handleChange("billing.paymentCycle", e.target.value)
+                      }
+                    >
                       <option>Prepaid</option>
                       <option>Weekly</option>
                       <option>Monthly</option>
@@ -279,6 +343,10 @@ const handleChange = (path, value) => {
                       </label>
                       <input
                         type="text"
+                        value={form.portalUsername}
+                        onChange={(e) =>
+                          handleChange("portalUsername", e.target.value)
+                        }
                         className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -289,8 +357,11 @@ const handleChange = (path, value) => {
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
+                          checked={form.isActive}
+                          onChange={(e) =>
+                            handleChange("isActive", e.target.checked)
+                          }
                           className="sr-only peer"
-                          defaultChecked
                         />
                         <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                       </label>
@@ -320,7 +391,10 @@ const handleChange = (path, value) => {
                 >
                   Cancel
                 </button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg shadow-md flex items-center gap-2 transition-transform active:scale-95">
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg shadow-md flex items-center gap-2 transition-transform active:scale-95"
+                  onClick={handleSave}
+                >
                   <Save size={20} /> Register Hospital
                 </button>
               </div>
