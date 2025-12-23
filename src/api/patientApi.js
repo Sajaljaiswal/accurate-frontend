@@ -8,4 +8,8 @@ const api = axios.create({
 export const registerPatient = (payload) =>
   api.post("/patients/register", payload);
 
+export const getTodayPatientsCount = () => {
+  return api.get("/patients/today/count");
+};
+
 export const getAllPatients = () => api.get("/patients");

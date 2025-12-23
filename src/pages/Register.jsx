@@ -1,4 +1,4 @@
-import React, { useState, useMemo , useEffect} from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { getAllPanels } from "../api/panelApi";
 import Navigation from "./Navigation";
 import { Save, UserPlus, Trash2, RotateCcw, Printer } from "lucide-react";
@@ -64,7 +64,6 @@ const SelectField = ({
   );
 };
 
-
 // Mock Data for Tests
 const TEST_OPTIONS = [
   { id: 1, name: "IRON PROFILE MINI", price: 1200 },
@@ -91,18 +90,18 @@ const Register = () => {
   };
 
   useEffect(() => {
-  const fetchPanels = async () => {
-    try {
-      const res = await getAllPanels();
-      setPanels(res.data.data);
-    } catch (err) {
-      console.error("Failed to fetch panels", err);
-    }
-  };
+    const fetchPanels = async () => {
+      try {
+        const res = await getAllPanels();
+        setPanels(res.data.data);
+      } catch (err) {
+        console.error("Failed to fetch panels", err);
+      }
+    };
 
-  fetchPanels();
-}, []);
-const [panels, setPanels] = useState([]);
+    fetchPanels();
+  }, []);
+  const [panels, setPanels] = useState([]);
   // 2. Remove test from table
   const removeTest = (id) => {
     setSelectedTests(selectedTests.filter((t) => t.id !== id));
@@ -189,20 +188,16 @@ const [panels, setPanels] = useState([]);
   //     return true;
   //   };
 
-  // Save to Database
   const handleSave = async () => {
     try {
       const payload = {
         ...form,
         tests: selectedTests,
         billing: {
-          discountType,
-          discountValue,
           grossTotal: calculations.grossTotal,
           discountType,
           discountValue,
           discountAmount: calculations.discountAmt,
-          discountReason,
           netAmount: calculations.netAmount,
           cashReceived,
           dueAmount: calculations.dueAmount,
@@ -211,9 +206,12 @@ const [panels, setPanels] = useState([]);
 
       const res = await registerPatient(payload);
 
-      alert("Patient registered successfully ✅");
+      alert(
+        `Patient Registered Successfully ✅
+Lab No: ${res.data.data.labNumber}
+Reg No: ${res.data.data.registrationNumber}`
+      );
 
-      // Optional reset
       window.location.reload();
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");
@@ -406,10 +404,10 @@ const [panels, setPanels] = useState([]);
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-blue-50/50 p-4 rounded-lg">
                 <SelectField
                   label="Panel"
-                   options={panels.map((panel) => ({
-    label: panel.name,
-    value: panel._id,
-  }))}
+                  options={panels.map((panel) => ({
+                    label: panel.name,
+                    value: panel._id,
+                  }))}
                   value={form.panel}
                   onChange={(e) => handleChange("panel", e.target.value)}
                 />
@@ -662,20 +660,19 @@ const [panels, setPanels] = useState([]);
                     </h4>
                     <div className="flex gap-2">
                       <div className="col-span-3 bg-white p-4 rounded-lg border mt-4">
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                        Cash Collected (₹)
-                      </label>
-                      <input
-                        type="number"
-                        value={cashReceived}
-                        onChange={(e) =>
-                          setCashReceived(Number(e.target.value))
-                        }
-                        className="w-full border rounded px-3 py-2 text-sm outline-none"
-                        placeholder="Enter cash amount"
-                      />
-                    </div>
-                    
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                          Cash Collected (₹)
+                        </label>
+                        <input
+                          type="number"
+                          value={cashReceived}
+                          onChange={(e) =>
+                            setCashReceived(Number(e.target.value))
+                          }
+                          className="w-full border rounded px-3 py-2 text-sm outline-none"
+                          placeholder="Enter cash amount"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -697,7 +694,7 @@ const [panels, setPanels] = useState([]);
                         ₹{calculations.discountAmt.toFixed(2)}
                       </p>
                     </div>
-                     <div className="text-center bg-red-100 text-red-700 p-2 rounded">
+                    <div className="text-center bg-red-100 text-red-700 p-2 rounded">
                       <p className="text-xs font-bold uppercase">Due Amount</p>
                       <p className="text-xl font-extrabold">
                         ₹{calculations.dueAmount.toFixed(2)}
@@ -711,7 +708,6 @@ const [panels, setPanels] = useState([]);
                         ₹{calculations.netAmount.toFixed(2)}
                       </p>
                     </div>
-                    
                   </div>
                 </div>
               </div>

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Navigation from "./Navigation";
 import { useAuth } from "../auth/AuthContext"; // Import the custom hook
+import { getTodayPatientsCount } from "../api/patientApi";
 
 export default function Admin() {
   const { user } = useAuth(); // Destructure user directly
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [todayCount, setTodayCount] = useState(0);
+
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -18,6 +21,19 @@ export default function Admin() {
       hour12: true,
     }).format(date).replace(/, /g, ' ').replace(/ /g, '-').replace(/-(\d{2}:)/, ' $1').toUpperCase();
   };
+
+  useEffect(() => {
+  const fetchTodayPatients = async () => {
+    try {
+      const res = await getTodayPatientsCount();
+      setTodayCount(res.data.count);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchTodayPatients();
+}, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-700">
@@ -48,7 +64,7 @@ export default function Admin() {
               </div>
                <div className="flex justify-between">
                 <span className="text-gray-500">Total Register Today</span>
-                <span className="text-gray-500">0</span>
+                <span className="text-gray-500">{todayCount}</span>
 
               </div>
             </div>

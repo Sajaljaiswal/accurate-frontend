@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Printer,
-  Filter,
-  Truck,
-  Search,
-} from "lucide-react";
+import { Printer, Filter, Truck, Search } from "lucide-react";
 import Navigation from "./Navigation";
 import { getAllPatients } from "../api/patientApi";
 
@@ -18,14 +13,34 @@ const AllPatient = () => {
   };
 
   const [patients, setPatients] = useState([]);
-  console.log(patients, "all patients");
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    labNo: "",
+    mobile: "",
+    patientName: "",
+    orderId: "",
+    fromDate: "",
+    toDate: "",
+  });
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
 
   useEffect(() => {
     const fetchPatients = async () => {
+      setLoading(true);
       try {
-        const res = await getAllPatients();
+        const res = await getAllPatients({
+          page,
+          limit,
+          search: filters.patientName,
+          fromDate: filters.fromDate,
+          toDate: filters.toDate,
+        });
+
         setPatients(res.data.data);
+        setTotalPages(res.data.pagination.totalPages);
       } catch (err) {
         console.error(err);
       } finally {
@@ -34,7 +49,20 @@ const AllPatient = () => {
     };
 
     fetchPatients();
-  }, []);
+  }, [page, filters]);
+
+  const getRowColor = (paymentStatus) => {
+    switch (paymentStatus) {
+      case "PAID":
+        return "bg-[#00ff99]"; // green
+      case "PARTIAL":
+        return "bg-[#ffb6c1]"; // light pink
+      case "UNPAID":
+        return "bg-[#ff3366] text-white"; // red
+      default:
+        return "bg-white";
+    }
+  };
 
   const headers = [
     "Date",
@@ -50,16 +78,49 @@ const AllPatient = () => {
     "Gross Amt",
     "Disc.",
     "NetAmt",
-    "PaidAmt",
-    "Curr. Balance",
+    "UnpaidAmt",
     "Discount Reason",
     "Edit Info",
     "Receipt Edit",
     "Settle ment",
-    "Discount After Bill",
-    "Full Paid",
-    "Upload Doc",
   ];
+
+  const filteredPatients = patients.filter((p) => {
+    const createdDate = new Date(p.createdAt);
+
+    const matchesLab =
+      !filters.labNo ||
+      p.labNumber?.toLowerCase().includes(filters.labNo.toLowerCase());
+
+    const matchesMobile = !filters.mobile || p.mobile?.includes(filters.mobile);
+
+    const matchesName =
+      !filters.patientName ||
+      `${p.firstName}`
+        .toLowerCase()
+        .includes(filters.patientName.toLowerCase());
+
+    const matchesOrder =
+      !filters.orderId ||
+      p.orderId?.toLowerCase().includes(filters.orderId.toLowerCase()) ||
+      p._id?.slice(-6).includes(filters.orderId);
+
+    const matchesFromDate =
+      !filters.fromDate || createdDate >= new Date(filters.fromDate);
+
+    const matchesToDate =
+      !filters.toDate || createdDate <= new Date(filters.toDate + "T23:59:59");
+
+    return (
+      matchesLab &&
+      matchesMobile &&
+      matchesName &&
+      matchesOrder &&
+      matchesFromDate &&
+      matchesToDate
+    );
+  });
+
   return (
     <div>
       <div className="min-h-screen bg-gray-100 font-sans text-gray-700">
@@ -72,7 +133,7 @@ const AllPatient = () => {
                 Receipt Re-Print
               </h1>
               <p className="text-sm text-red-600 font-semibold uppercase tracking-wide">
-                Total Patients Found: 25
+                Total Patients Found: {filteredPatients.length}
               </p>
             </div>
           </div>
@@ -100,6 +161,10 @@ const AllPatient = () => {
                         type="text"
                         className="w-2/3 border border-slate-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                         placeholder="Enter ID..."
+                        value={filters.labNo}
+                        onChange={(e) =>
+                          setFilters({ ...filters, labNo: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -110,6 +175,10 @@ const AllPatient = () => {
                     <input
                       type="text"
                       className="border border-slate-300 rounded p-2 text-sm"
+                      value={filters.mobile}
+                      onChange={(e) =>
+                        setFilters({ ...filters, mobile: e.target.value })
+                      }
                     />
                   </div>
                 </div>
@@ -123,14 +192,20 @@ const AllPatient = () => {
                     <div className="flex gap-2 items-center">
                       <input
                         type="date"
-                        defaultValue="2025-12-19"
                         className="w-1/2 border border-slate-300 rounded p-2 text-sm"
+                        value={filters.fromDate}
+                        onChange={(e) =>
+                          setFilters({ ...filters, fromDate: e.target.value })
+                        }
                       />
                       <span className="text-slate-400">-</span>
                       <input
                         type="date"
-                        defaultValue="2025-12-19"
                         className="w-1/2 border border-slate-300 rounded p-2 text-sm"
+                        value={filters.toDate}
+                        onChange={(e) =>
+                          setFilters({ ...filters, toDate: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -154,22 +229,25 @@ const AllPatient = () => {
                       type="text"
                       className="border border-slate-300 rounded p-2 text-sm"
                       placeholder="Enter name..."
+                      value={filters.patientName}
+                      onChange={(e) =>
+                        setFilters({ ...filters, patientName: e.target.value })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-slate-500 uppercase">
-                      Order ID / MRN
+                      Order ID
                     </label>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         className="w-1/2 border border-slate-300 rounded p-2 text-sm"
                         placeholder="Order ID"
-                      />
-                      <input
-                        type="text"
-                        className="w-1/2 border border-slate-300 rounded p-2 text-sm"
-                        placeholder="MRN"
+                        value={filters.orderId}
+                        onChange={(e) =>
+                          setFilters({ ...filters, orderId: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -247,70 +325,141 @@ const AllPatient = () => {
                       </td>
                     </tr>
                   ) : (
-                    patients.map((p, index) => (
-                      <tr
-                        key={p._id}
-                        className="bg-[#00ff99] border-b hover:brightness-95"
-                      >
-                        <td className="p-3">
-                          {new Date(p.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="p-3 font-mono">{p.labNo || "-"}</td>
-                        <td className="p-3">{p._id.slice(-6)}</td>
-                        <td className="p-3">{p.orderId || "-"}</td>
-                        <td className="p-3 text-center">{p.regNo || "-"}</td>
+                    filteredPatients.map((p) => {
+                      const paymentStatus = p.billing?.paymentStatus;
 
-                        <td className="p-3 font-bold sticky left-0 bg-inherit z-10">
-                          {p.firstName} {p.age ? `${p.age} Y` : ""}
-                        </td>
+                      return (
+                        <tr
+                          key={p._id}
+                          className={`${getRowColor(
+                            paymentStatus
+                          )} border-b hover:brightness-95`}
+                        >
+                          {/* Date */}
+                          <td className="p-3">
+                            {new Date(p.createdAt).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
+                          </td>
 
-                        <td className="p-3">{p.referredBy || "-"}</td>
-                        <td className="p-3">{p.mobile}</td>
-                        <td className="p-3 italic text-[11px]">
-                          {p.panel || "-"}
-                        </td>
+                          {/* Lab No */}
+                          <td className="p-3 font-mono">{p.labNumber}</td>
 
-                        <td className="p-3 font-bold">
-                          {p.billing?.grossTotal}
-                        </td>
-                        <td className="p-3">
-                          {p.billing?.discountAmount || 0}
-                        </td>
-                        <td className="p-3 font-bold">
-                          {p.billing?.netAmount}
-                        </td>
-                        <td className="p-3">{p.billing?.netAmount}</td>
-                        <td className="p-3 text-red-700 font-bold">0</td>
+                          {/* MRN (use Mongo _id short) */}
+                          <td className="p-3">{p._id.slice(-6)}</td>
 
-                        <td className="p-3">-</td>
-                       
+                          {/* Order ID */}
+                          <td className="p-3">{p.orderId}</td>
 
-                        <td className="p-3 italic">-</td>
+                          {/* Registration No */}
+                          <td className="p-3 text-center">
+                            {p.registrationNumber}
+                          </td>
 
-                        <td className="p-3 text-center">
-                          <button>Edit</button>
-                        </td>
+                          {/* Patient Name */}
+                          <td className="p-3 font-bold sticky left-0 bg-inherit z-10">
+                            {p.title} {p.firstName} {p.age ? `${p.age} Y` : ""}
+                          </td>
 
-                        <td className="p-3 text-center">
-                          <button>Receipt</button>
-                        </td>
+                          {/* Doctor */}
+                          <td className="p-3">{p.referredBy || "-"}</td>
 
-                        <td className="p-3 text-center">
-                          <button className="bg-blue-800 text-white px-2 py-0.5 rounded">
-                            Settle
-                          </button>
-                        </td>
+                          {/* Mobile */}
+                          <td className="p-3">{p.mobile}</td>
 
-                        <td className="p-3 text-center">0</td>
-                        <td className="p-3 text-center font-bold">YES</td>
-                        <td className="p-3 text-center">Upload</td>
-                      </tr>
-                    ))
+                          {/* Panel */}
+                          <td className="p-3 italic text-[11px]">
+                            {p.panel?.name || "-"}
+                          </td>
+
+                          {/* Gross */}
+                          <td className="p-3 font-bold">
+                            ₹{p.billing?.grossTotal || 0}
+                          </td>
+
+                          {/* Discount */}
+                          <td className="p-3">
+                            ₹{p.billing?.discountAmount || 0}
+                          </td>
+
+                          {/* Net */}
+                          <td className="p-3 font-bold">
+                            ₹{p.billing?.netAmount || 0}
+                          </td>
+
+                          {/* Paid */}
+                          <td className="p-3">
+                            ₹{p.billing?.cashReceived || 0}
+                          </td>
+
+                          {/* Current Balance */}
+                          <td className="p-3 text-red-700 font-bold">
+                            ₹{p.billing?.dueAmount || 0}
+                          </td>
+
+                          {/* Discount Reason */}
+                          <td className="p-3">
+                            {p.billing?.discountReason || "-"}
+                          </td>
+
+                          {/* Edit */}
+                          <td className="p-3 text-center">
+                            <button className="text-blue-700 font-bold">
+                              Edit
+                            </button>
+                          </td>
+
+                          {/* Receipt */}
+                          <td className="p-3 text-center">
+                            <button className="text-green-700 font-bold">
+                              Receipt
+                            </button>
+                          </td>
+
+                          {/* Settlement */}
+                          <td className="p-3 text-center">
+                            {paymentStatus !== "PAID" ? (
+                              <button className="bg-blue-800 text-white px-2 py-0.5 rounded">
+                                Settle
+                              </button>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
             </div>
           </div>
+        </div>
+        <div className="flex justify-between items-center p-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <span className="font-bold">
+            Page {page} of {totalPages}
+          </span>
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
 
         <footer className="bg-blue-900 text-white text-xs py-3 text-center">
