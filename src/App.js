@@ -11,6 +11,11 @@ import NewDoctor from "./pages/Doctors/NewDoctor";
 import NewPanel from "./pages/Panel/NewPanel";
 import AllDoctor from "./pages/Doctors/AllDoctor";
 import AllPanel from "./pages/Panel/AllPanel";
+import Lab from "./pages/Lab/AllTest";
+import AddTest from "./pages/Lab/AddTest";
+import AllTest from "./pages/Lab/AllTest";
+import ProfilePage from "./pages/ProfilePage";
+import RoleManagement from "./pages/RoleManagement";
 
 export default function App() {
   return (
@@ -35,7 +40,11 @@ export default function App() {
           <Route path="/newPanel" element={<NewPanel />} />
           <Route path="/allDoctor" element={<AllDoctor />} />
           <Route path="/allPanel" element={<AllPanel />} />
-
+          <Route path="/lab" element={<Lab />} />
+          <Route path="/addTest" element={<AddTest />} />
+          <Route path="/allTest" element={<AllTest />} />
+          <Route path="/profile" element={<ProfilePage/>} />
+          <Route path="/roleManagement" element={<RoleManagement />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

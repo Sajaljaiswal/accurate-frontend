@@ -6,6 +6,7 @@ import { useAuth } from "../auth/AuthContext"; // Import your Auth Context
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { registerPatient } from "../api/patientApi";
+import { getAllDoctors } from "../api/doctorApi";
 // Reusable Input Component
 const InputField = ({ label, type = "text", placeholder, value, onChange }) => (
   <div>
@@ -93,6 +94,7 @@ const Register = () => {
     const fetchPanels = async () => {
       try {
         const res = await getAllPanels();
+        console.log("Panels fetched:", res.data.data);
         setPanels(res.data.data);
       } catch (err) {
         console.error("Failed to fetch panels", err);
@@ -102,13 +104,25 @@ const Register = () => {
     fetchPanels();
   }, []);
   const [panels, setPanels] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await getAllDoctors();
+        console.log("Doctors fetched:", res.data.data);
+        setDoctors(res.data.data);
+      } catch (err) {
+        console.error("Failed to fetch doctors", err);
+      }
+    };
+    fetchDoctors();
+  }, []);
+
   // 2. Remove test from table
   const removeTest = (id) => {
     setSelectedTests(selectedTests.filter((t) => t.id !== id));
   };
-
-  const { user } = useAuth(); // Get current logged-in user
-  // const [form, setform] = useState({
 
   const [form, setForm] = useState({
     panel: "",
@@ -414,7 +428,10 @@ Reg No: ${res.data.data.registrationNumber}`
 
                 <SelectField
                   label="Reffered By"
-                  options={["Doctor A", "Doctor B", "Doctor C"]}
+                  options={doctors.map((doc) => ({
+                    label: doc.fullName,
+                    value: doc._id,
+                  }))}
                   value={form.referredBy}
                   onChange={(e) => handleChange("referredBy", e.target.value)}
                 />
