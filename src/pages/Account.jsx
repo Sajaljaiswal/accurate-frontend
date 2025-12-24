@@ -44,6 +44,20 @@ const Account = () => {
         >
           <Printer size={18} /> All Doctors
         </button>
+        <button
+          type="button"
+          onClick={()=>{navigate("/doctorTestList")}}
+          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-700 transition active:scale-95"
+        >
+          <Printer size={18} />  Doctor Test  List
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/doctorTestAssign")}
+          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-700 transition active:scale-95"
+        >
+          <Printer size={18} />Doctor Test Assign
+        </button>
       </div>
 
       <footer className="bg-blue-900 text-white text-xs py-3 text-center">

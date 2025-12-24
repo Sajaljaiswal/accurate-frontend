@@ -11,5 +11,10 @@ export const registerPatient = (payload) =>
 export const getTodayPatientsCount = () => {
   return api.get("/patients/today/count");
 };
+export const updatePatient = (id, payload) =>
+  api.put(`/patients/${id}`, payload);
+
+export const settleBilling = (id, payload) =>
+  api.patch(`/patients/${id}/settle`, payload);
 
 export const getAllPatients = () => api.get("/patients");

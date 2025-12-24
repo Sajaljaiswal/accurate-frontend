@@ -159,19 +159,7 @@ const NewDoctor = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">
-                      Clinic Name
-                    </label>
-                    <input
-                      type="text"
-                      value={form.clinicName}
-                      onChange={(e) =>
-                        handleChange("clinicName", e.target.value)
-                      }
-                      className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                    />
-                  </div>
+               
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">

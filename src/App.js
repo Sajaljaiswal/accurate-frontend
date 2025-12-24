@@ -5,7 +5,7 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import { AuthProvider } from "./auth/AuthContext";
 import Admin from "./pages/Admin";
 import Register from "./pages/Register";
-import AllPatient from "./pages/AllPatient";
+import AllPatient from "./pages/Patient/AllPatient";
 import Account from "./pages/Account";
 import NewDoctor from "./pages/Doctors/NewDoctor";
 import NewPanel from "./pages/Panel/NewPanel";
@@ -16,6 +16,8 @@ import AddTest from "./pages/Lab/AddTest";
 import AllTest from "./pages/Lab/AllTest";
 import ProfilePage from "./pages/ProfilePage";
 import RoleManagement from "./pages/RoleManagement";
+import DoctorTestList from "./pages/Doctors/DoctorTestList";
+import DoctorTestAssign from "./pages/Doctors/DoctorTestAssign";
 
 export default function App() {
   return (
@@ -45,6 +47,9 @@ export default function App() {
           <Route path="/allTest" element={<AllTest />} />
           <Route path="/profile" element={<ProfilePage/>} />
           <Route path="/roleManagement" element={<RoleManagement />} />
+          <Route path="/doctorTestList" element={<DoctorTestList />} />
+          <Route path="/doctorTestAssign" element={<DoctorTestAssign />} />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>

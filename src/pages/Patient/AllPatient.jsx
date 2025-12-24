@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Printer, Filter, Truck, Search } from "lucide-react";
-import Navigation from "./Navigation";
-import { getAllPatients } from "../api/patientApi";
+import Navigation from "../Navigation";
+import { getAllPatients } from "../../api/patientApi";
+import EditPatientModal from "./EditPatientModal";
+import SettleBillingModal from "./SettleBillingModal";
 
 const AllPatient = () => {
   const statusColors = {
@@ -11,6 +13,13 @@ const AllPatient = () => {
     credit: "bg-[#f0fff0] text-green-800", // Light Green/Cream
     settlement: "bg-[#00ff00] text-green-950", // Bright Green
   };
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [isSettleOpen, setIsSettleOpen] = useState(false);
+  const [billingPatient, setBillingPatient] = useState(null);
+  const [hoveredPatient, setHoveredPatient] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +35,26 @@ const AllPatient = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
+
+  const handleEditClick = (patient) => {
+    setSelectedPatient(patient);
+    setIsEditOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsEditOpen(false);
+    setSelectedPatient(null);
+  };
+
+  const handleSettleClick = (patient) => {
+    setBillingPatient(patient);
+    setIsSettleOpen(true);
+  };
+
+  const closeSettleModal = () => {
+    setBillingPatient(null);
+    setIsSettleOpen(false);
+  };
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -333,7 +362,15 @@ const AllPatient = () => {
                           key={p._id}
                           className={`${getRowColor(
                             paymentStatus
-                          )} border-b hover:brightness-95`}
+                          )} border-b hover:brightness-95 relative`}
+                          onMouseEnter={(e) => {
+                            setHoveredPatient(p);
+                            setTooltipPos({
+                              x: e.clientX + 15,
+                              y: e.clientY + 15,
+                            });
+                          }}
+                          onMouseLeave={() => setHoveredPatient(null)}
                         >
                           {/* Date */}
                           <td className="p-3">
@@ -409,7 +446,10 @@ const AllPatient = () => {
 
                           {/* Edit */}
                           <td className="p-3 text-center">
-                            <button className="text-blue-700 font-bold">
+                            <button
+                              className="bg-blue-800 text-white px-2 py-0.5 rounded "
+                              onClick={() => handleEditClick(p)}
+                            >
                               Edit
                             </button>
                           </td>
@@ -424,7 +464,10 @@ const AllPatient = () => {
                           {/* Settlement */}
                           <td className="p-3 text-center">
                             {paymentStatus !== "PAID" ? (
-                              <button className="bg-blue-800 text-white px-2 py-0.5 rounded">
+                              <button
+                                className="bg-blue-800 text-white px-2 py-0.5 rounded"
+                                onClick={() => handleSettleClick(p)}
+                              >
                                 Settle
                               </button>
                             ) : (
@@ -466,6 +509,46 @@ const AllPatient = () => {
           © 2026 Accurate Diagnostic Center. All rights reserved.
         </footer>
       </div>
+      {isEditOpen && (
+        <EditPatientModal
+          patient={selectedPatient}
+          onClose={closeModal}
+          onSuccess={() => {
+            // reload patients after edit
+            setPage(1);
+          }}
+        />
+      )}
+      {isSettleOpen && (
+        <SettleBillingModal
+          patient={billingPatient}
+          onClose={closeSettleModal}
+          onSuccess={() => {
+            setPage(1); // refresh list
+          }}
+        />
+      )}
+      {hoveredPatient && hoveredPatient.tests?.length > 0 && (
+        <div
+          className="fixed z-50 bg-gray-900 text-white text-xs rounded-lg shadow-lg p-3 max-w-xs"
+          style={{
+            top: tooltipPos.y,
+            left: tooltipPos.x,
+          }}
+        >
+
+          <ul className="space-y-1">
+            {hoveredPatient.tests.map((t, idx) => (
+              <li key={idx} className="flex justify-between gap-4">
+                <span>{t.name}</span>
+                {t.price !== undefined && (
+                  <span className="text-gray-300">₹{t.price}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
