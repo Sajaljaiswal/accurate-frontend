@@ -1,207 +1,218 @@
-  import React, { useState, useEffect } from "react"; // Added missing hooks
-  import { Printer } from "lucide-react";
-  import Navigation from "../Navigation";
-  import { useNavigate } from "react-router-dom";
-  import { addTest } from "../../api/testApi";
+import React, { useState, useEffect } from "react";
+import Navigation from "../Navigation";
+import Sidebar from "../Sidebar";
+import { useNavigate } from "react-router-dom";
+import { addTest } from "../../api/testApi";
+import { getAllCategories } from "../../api/categoryApi"; // Ensure this import exists
+import { Plus } from "lucide-react";
 
+const AddTest = () => {
+  const navigate = useNavigate();
+  
+  // 1. Add state to hold categories fetched from DB
+  const [dbCategories, setDbCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const AddTest = () => {
-    const navigate = useNavigate();
-    
-    const [form, setForm] = useState({
-      name: "",
-      category: "",
-      sampleType: "NA",
-      defaultPrice: "",
-      status: "ACTIVE", // Added status to initial state
-    });
+  const [form, setForm] = useState({
+    name: "",
+    shortName: "",
+    category: "", // Leave empty initially
+    unit: "g/dl",
+    inputType: "Numeric",
+    isOptional: false,
+    status: "ACTIVE",
+    defaultPrice: "",
+  });
 
-    // Added missing handleChange function
-    const handleChange = (e) => {
-      const { name, value } = e.target;
-      setForm((prev) => ({ ...prev, [name]: value }));
+  // 2. Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await getAllCategories();
+        const categoriesData = response.data.data;
+        setDbCategories(categoriesData);
+        
+        // Optionally set the first category as default if list is not empty
+        if (categoriesData.length > 0) {
+          setForm(prev => ({ ...prev, category: categoriesData[0]._id }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchCategories();
+  }, []);
 
-    const handleSubmit = async () => {
-      console.log("Submitting Form State:", form);
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async () => {
     try {
-      if (!form.name || !form.category || !form.sampleType || !form.defaultPrice) {
-        alert("Please fill all required fields");
+      if (!form.name || !form.category || !form.defaultPrice) {
+        alert("Please fill required fields (Name, Category, Price)");
         return;
       }
 
       const payload = {
-        name: form.name.trim(),
-        category: form.category,
-        sampleType: form.sampleType,
+        ...form,
         defaultPrice: Number(form.defaultPrice),
         isActive: form.status === "ACTIVE",
       };
 
       await addTest(payload);
-
       alert("Test added successfully ✅");
-
-      setForm({
-        name: "",
-        category: "",
-        sampleType: "",
-        defaultPrice: "",
-        status: "ACTIVE",
-      });
+      navigate("/testCategories");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Failed to save test");
     }
   };
 
-
-    useEffect(() => {
-      if (["USG", "XRAY", "MRI"].includes(form.category)) {
-        setForm((prev) => ({ ...prev, sampleType: "IMAGING" }));
-      }
-    }, [form.category]);
-
-    return (
-      <div className="flex flex-col min-h-screen">
+  return (
+    <div className="flex min-h-screen bg-gray-50 font-sans text-slate-900">
+      <Sidebar />
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto">
         <Navigation />
-
-        <main className="flex-grow bg-slate-50 p-6 flex justify-center">
-          <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-slate-200 h-fit">
-            {/* Header */}
-            <div className="bg-blue-900 py-4 rounded-t-xl">
-              <h1 className="text-white text-center text-lg font-bold uppercase tracking-wider">
-                Add Diagnostic Test
-              </h1>
+        
+        <main className="p-8 flex justify-center">
+          <div className="w-full max-w-5xl bg-white rounded-xl shadow-sm border border-slate-200">
+            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">
+                  {form.name || "New Test"}
+                </h1>
+                <p className="text-sm text-slate-500 font-medium">Test details</p>
+              </div>
             </div>
 
-            {/* Form Content */}
-            <div className="p-8 space-y-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6">
-                
-                {/* LEFT SECTION */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-blue-900 uppercase border-b pb-2">
-                    Test Information
-                  </h3>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">
-                      Test Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      name="name"
-                      value={form.name}
-                      onChange={handleChange}
-                      placeholder="CBC, USG Abdomen"
-                      className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">
-                      Category
-                    </label>
-                    <select
-                      name="category"
-                      value={form.category}
-                      onChange={handleChange}
-                      className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white"
-                    >
-                      <option value="">Select</option>
-                      <option value="BLOOD">Blood Test</option>
-                      <option value="USG">USG</option>
-                      <option value="XRAY">X-Ray</option>
-                      <option value="MRI">MRI</option>
-                      <option value="OTHER">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">
-                      Sample Type
-                    </label>
-                    <select
-                      name="sampleType"
-                      value={form.sampleType}
-                      onChange={handleChange}
-                      className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white"
-                    >
-                    <option value="NA">Not Applicable (NA)</option>
-                      <option value="BLOOD">Blood</option>
-                      <option value="URINE">Urine</option>
-                      <option value="STOOL">Stool</option>
-                      <option value="SALIVA">Saliva</option>
-                      <option value="IMAGING">Imaging</option>
-                      <option value="NA">Not Applicable</option>
-                    </select>
-                  </div>
+            <div className="p-4 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-600">Name</label>
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-all"
+                    placeholder="Hemoglobin"
+                  />
                 </div>
-
-                {/* RIGHT SECTION */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-blue-900 uppercase border-b pb-2">
-                    Pricing & Status
-                  </h3>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">
-                      Test Price (₹)
-                    </label>
-                    <input
-                      type="number"
-                      name="defaultPrice"
-                      value={form.defaultPrice}
-                      onChange={handleChange}
-                      placeholder="500"
-                      className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                  </div>
-
-                  <div className="pt-4">
-                    <label className="text-xs font-bold text-slate-500 uppercase">
-                      Status
-                    </label>
-                    <div className="flex gap-6 mt-2">
-                      <label className="flex items-center gap-2 text-sm cursor-pointer">
-                        <input
-                          type="radio"
-                          name="status"
-                          value="ACTIVE"
-                          checked={form.status === "ACTIVE"}
-                          onChange={handleChange}
-                          className="w-4 h-4 text-blue-600"
-                        />
-                        Active
-                      </label>
-
-                      <label className="flex items-center gap-2 text-sm cursor-pointer">
-                        <input
-                          type="radio"
-                          name="status"
-                          value="INACTIVE"
-                          checked={form.status === "INACTIVE"}
-                          onChange={handleChange}
-                          className="w-4 h-4 text-blue-600"
-                        />
-                        Inactive
-                      </label>
-                    </div>
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-600">Short name</label>
+                  <input
+                    name="shortName"
+                    value={form.shortName}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-all"
+                    placeholder="Hb"
+                  />
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-6 border-t flex gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-600">Category</label>
+                  {/* 3. Updated Select field to use dynamic data */}
+                  <select
+                    name="category"
+                    value={form.category}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm bg-white focus:border-blue-500 outline-none"
+                  >
+                    <option value="" disabled>
+                      {loading ? "Loading categories..." : "-- Select Category --"}
+                    </option>
+                    {dbCategories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* ... Rest of the form (Unit, Input Type, Result, Price) remains the same ... */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium text-slate-600">Unit</label>
+                    <button className="text-blue-600 text-xs font-bold flex items-center gap-1">
+                      <Plus size={12} /> Add new
+                    </button>
+                  </div>
+                  <select
+                    name="unit"
+                    value={form.unit}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm bg-white focus:border-blue-500 outline-none"
+                  >
+                    <option value="g/dl">g/dl</option>
+                    <option value="mg/dl">mg/dl</option>
+                    <option value="%">%</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-600">Input type</label>
+                  <select
+                    name="inputType"
+                    value={form.inputType}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm bg-white focus:border-blue-500 outline-none"
+                  >
+                    <option value="Numeric">Numeric</option>
+                    <option value="Text">Text</option>
+                    <option value="RichText">Rich Text</option>
+                  </select>
+                </div>
+              </div>
+
+             
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  name="isOptional"
+                  id="isOptional"
+                  checked={form.isOptional}
+                  onChange={handleChange}
+                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label htmlFor="isOptional" className="text-sm text-slate-600 cursor-pointer">
+                  Optional
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-100">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-blue-900 uppercase">Test Price (₹)</label>
+                  <input
+                    type="number"
+                    name="defaultPrice"
+                    value={form.defaultPrice}
+                    onChange={handleChange}
+                    placeholder="500"
+                    className="w-full border border-slate-300 bg-slate-50 rounded-lg p-3 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4">
                 <button
                   onClick={handleSubmit}
-                  className="bg-blue-900 text-white px-8 py-2.5 rounded-lg font-bold text-sm hover:bg-blue-800 transition-colors"
+                  className="bg-blue-600 text-white px-10 py-3 rounded-lg font-bold text-sm hover:bg-blue-700 shadow-md transition-colors"
                 >
                   SAVE TEST
                 </button>
                 <button
                   onClick={() => navigate(-1)}
-                  className="bg-slate-200 text-slate-700 px-8 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-300 transition-colors"
+                  className="bg-slate-100 text-slate-600 px-10 py-3 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
                 >
                   CANCEL
                 </button>
@@ -209,12 +220,9 @@
             </div>
           </div>
         </main>
-
-        <footer className="bg-blue-900 text-white text-xs py-3 text-center">
-          © 2026 Accurate Diagnostic Center. All rights reserved.
-        </footer>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
-  export default AddTest;
+export default AddTest;

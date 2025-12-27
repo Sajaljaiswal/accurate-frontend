@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { getAllPanels } from "../../api/panelApi";
 import { Building, Phone, Mail, Globe, ShieldCheck } from "lucide-react";
+import Sidebar from "../Sidebar";
 
 const AllPanel = () => {
   const navigate = useNavigate();
@@ -26,13 +27,16 @@ const AllPanel = () => {
     fetchPanels();
   }, []);
   return (
-    <div>
-      <Navigation />
+    <div className=" flex min-h-screen bg-gray-50">
+      <Sidebar />
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto">
+        <Navigation />
+      <div>
 
       <div className="p-6 border-t flex justify-start gap-4">
         <button
           type="button"
-          onClick={()=> navigate("allPanel")}
+          onClick={() => navigate("allPanel")}
           className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-700 transition active:scale-95"
         >
           <Printer size={18} /> All Panel
@@ -47,10 +51,11 @@ const AllPanel = () => {
       </div>
 
       <div className="p-6 max-w-7xl mx-auto">
-       
-
- <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800"> Hospital / Clinic Panel List</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {" "}
+            Hospital / Clinic Panel List
+          </h1>
           <button
             onClick={() => navigate("/newPanel")}
             className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition active:scale-95"
@@ -130,10 +135,10 @@ const AllPanel = () => {
           </table>
         </div>
       </div>
+      </div>
+      </div>
 
-      <footer className="bg-blue-900 text-white text-xs py-3 text-center">
-        © 2026 Accurate Diagnostic Center. All rights reserved.
-      </footer>
+     
     </div>
   );
 };

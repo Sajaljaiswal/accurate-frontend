@@ -1,79 +1,192 @@
 import React, { useState } from "react";
 import { 
-  PlusIcon, CheckCircleIcon, LayoutDashboardIcon, BarChart3Icon, 
-  CalendarDaysIcon, WalletIcon, BellIcon, UsersIcon, 
-  FileTextIcon, SearchIcon, DownloadIcon, ChevronUpIcon, ChevronDownIcon, 
-  SettingsIcon
+  CheckCircleIcon, LayoutDashboardIcon, BarChart3Icon, 
+  CalendarDaysIcon, WalletIcon, UsersIcon, 
+  FileTextIcon, SettingsIcon, ChevronUpIcon, ChevronDownIcon,
+  FlaskConicalIcon // Example icon for Laboratory
 } from "lucide-react";
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
-  const [isBusinessOpen, setIsBusinessOpen] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isActive = (path) => location.pathname === path;
 
   return (
     <aside className="w-64 bg-white h-screen border-r border-gray-100 flex flex-col py-6 sticky top-0">
-      {/* New Bill Button */}
-      {/* <div className="px-6 mb-8">
-        <button className="w-full bg-[#3366FF] hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full flex items-center justify-center gap-2 shadow-lg shadow-blue-200 transition-all">
-          <PlusIcon size={18} strokeWidth={3} />
-          <span className="text-[15px]">New Registration</span>
-        </button>
-      </div> */}
-      {/* <span className="bg-black ">a</span> */}
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+        
+        {/* Simple Links */}
+        <SidebarItem 
+          icon={<CheckCircleIcon size={20} />} 
+          label="Getting Started" 
+          active={isActive("/")}
+          onClick={() => navigate('/')}
+        />
+        <SidebarItem 
+          icon={<LayoutDashboardIcon size={20} />} 
+          label="Dashboard" 
+          active={isActive("/admin")}
+          onClick={() => navigate('/admin')}
+        />
 
-      {/* Main Navigation */}
-      <nav className="flex-1 px-3 space-y-1">
-        <SidebarItem icon={<CheckCircleIcon size={20} />} label="Getting Started" />
-        <SidebarItem icon={<LayoutDashboardIcon size={20} />} label="Dashboard" />
+        {/* --- Dropdown: Cases --- */}
+        <SidebarDropdown 
+          label="Cases" 
+          icon={<BarChart3Icon size={20} />}
+          subItems={[
+           
+            { 
+              label: "Patients", 
+              path: "/allPatient", 
+              icon: <WalletIcon size={18} />, 
+              active: isActive("/allPatient") 
+            },
+          ]}
+          onNavigate={navigate}
+        />
 
-        {/* Business Dropdown */}
-        <div className="mt-4">
-          <button 
-            onClick={() => setIsBusinessOpen(!isBusinessOpen)}
-            className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg group transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <BarChart3Icon size={20} className="text-gray-500 group-hover:text-blue-600" />
-              <span className="font-bold text-[16px]">Business</span>
-            </div>
-            {isBusinessOpen ? <ChevronUpIcon size={16} /> : <ChevronDownIcon size={16} />}
-          </button>
+        {/* --- Dropdown: Inventory (Example of second dropdown) --- */}
+        <SidebarDropdown 
+          label="Laboratory" 
+          icon={<FlaskConicalIcon size={20} />}
+          subItems={[
+            { 
+              label: "Tests", 
+              path: "/TestCategories", 
+              icon: <FileTextIcon size={18} />, 
+              active: isActive("/TestCategories") 
+            },
+            { 
+              label: "Reports", 
+              path: "/lab", 
+              icon: <BarChart3Icon size={18} />, 
+              active: isActive("/lab") 
+            },
+          ]}
+          onNavigate={navigate}
+        />
 
-          {isBusinessOpen && (
-            <div className="ml-6 border-l-2 border-gray-100 mt-1">
-              <SidebarSubItem icon={<CalendarDaysIcon size={18} />} label="Daily business" />
-              <SidebarSubItem icon={<WalletIcon size={18} />} label="Expenses" active />
-              <SidebarSubItem icon={<WalletIcon size={18} />} label="Due reports" />
-              <SidebarSubItem icon={<BellIcon size={18} />} label="Activities" />
-              <SidebarSubItem icon={<UsersIcon size={18} />} label="Referral business" />
-              <SidebarSubItem icon={<FileTextIcon size={18} />} label="Case wise report" />
-              <SidebarSubItem icon={<SearchIcon size={18} />} label="Business analysis" />
-              <SidebarSubItem icon={<DownloadIcon size={18} />} label="Data export" />
-            </div>
-          )}
+<SidebarDropdown 
+          label="Reports" 
+          icon={<FlaskConicalIcon size={20} />}
+          subItems={[
+            { 
+              label: "Lab Reports ", 
+              path: "/patientReports", 
+              icon: <FileTextIcon size={18} />, 
+              active: isActive("/patientReports") 
+            },
+            { 
+              label: "USG Reports", 
+              path: "/", 
+              icon: <BarChart3Icon size={18} />, 
+              active: isActive("/") 
+            },
+          ]}
+          onNavigate={navigate}
+        />
+         <SidebarDropdown 
+          label="Business" 
+          icon={<FlaskConicalIcon size={20} />}
+          subItems={[
+            { 
+              label: "Panels", 
+              path: "/allPanel", 
+              icon: <FileTextIcon size={18} />, 
+              active: isActive("/allPanel") 
+            },
+            { 
+              label: "Doctors", 
+              path: "/allDoctor", 
+              icon: <BarChart3Icon size={18} />, 
+              active: isActive("/allDoctor") 
+            },
+             { 
+              label: "Assign", 
+              path: "/doctorTestAssign", 
+              icon: <BarChart3Icon size={18} />, 
+              active: isActive("/doctorTestAssign") 
+            },
+          ]}
+          onNavigate={navigate}
+        />
+
+        {/* Footer Links */}
+        <div className="pt-4 mt-4 border-t border-gray-50">
+          <SidebarItem icon={<UsersIcon size={20} />} label="Customers" active={isActive("/admin/customers")} onClick={() => navigate('/admin/customers')} />
+          <SidebarItem icon={<SettingsIcon size={20} />} label="Settings" active={isActive("/admin/settings")} onClick={() => navigate('/admin/settings')} />
         </div>
-
-        <SidebarItem icon={<BarChart3Icon size={20} />} label="Reports" />
-        <SidebarItem icon={<UsersIcon size={20} />} label="Customers" />
-        <SidebarItem icon={<FileTextIcon size={20} />} label="Invoices" />
-        <SidebarItem icon={<WalletIcon size={20} />} label="Payments" />
-        <SidebarItem icon={<SettingsIcon size={20} />} label="Settings" />
       </nav>
     </aside>
   );
 };
 
-const SidebarItem = ({ icon, label }) => (
-  <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all group">
-    <span className="text-gray-400 group-hover:text-blue-600">{icon}</span>
+// --- Reusable Sub-Components ---
+
+// 1. COMMON DROPDOWN COMPONENT
+const SidebarDropdown = ({ label, icon, subItems, onNavigate }) => {
+  // Check if any sub-item is active to keep the dropdown open automatically
+  const isAnySubActive = subItems.some(item => item.active);
+  const [isOpen, setIsOpen] = useState(isAnySubActive);
+
+  return (
+    <div className="mt-2">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg group transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-gray-500 group-hover:text-blue-600">{icon}</span>
+          <span className="font-bold text-[16px]">{label}</span>
+        </div>
+        {isOpen ? <ChevronUpIcon size={16} /> : <ChevronDownIcon size={16} />}
+      </button>
+
+      {isOpen && (
+        <div className="ml-6 border-l-2 border-gray-100 mt-1 space-y-1">
+          {subItems.map((item, index) => (
+            <SidebarSubItem 
+              key={index}
+              icon={item.icon}
+              label={item.label}
+              active={item.active}
+              onClick={() => onNavigate(item.path)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 2. MAIN ITEM COMPONENT
+const SidebarItem = ({ icon, label, onClick, active }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all group ${
+      active 
+      ? "bg-blue-50 text-blue-600 font-semibold" 
+      : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+    }`}
+  >
+    <span className={`${active ? "text-blue-600" : "text-gray-400 group-hover:text-blue-600"}`}>
+      {icon}
+    </span>
     <span className="text-[15px] font-medium">{label}</span>
   </button>
 );
 
-const SidebarSubItem = ({ icon, label, active = false }) => (
-  <button className={`w-full flex items-center gap-3 px-6 py-2.5 transition-all relative ${
-    active ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-  }`}>
-    {/* Active indicator bar */}
+// 3. SUB ITEM COMPONENT
+const SidebarSubItem = ({ icon, label, onClick, active = false }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-6 py-2.5 transition-all relative ${
+      active 
+      ? "bg-blue-50 text-blue-600 font-semibold" 
+      : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+    }`}
+  >
     {active && <div className="absolute left-[-2px] top-0 bottom-0 w-1 bg-blue-600 rounded-r-md" />}
     <span className={active ? "text-blue-600" : "text-gray-400"}>{icon}</span>
     <span className="text-[14px]">{label}</span>

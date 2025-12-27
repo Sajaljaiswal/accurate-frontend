@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navigation from "../Navigation";
 import axios from "axios";
+import Sidebar from "../Sidebar";
 
 const api = axios.create({ baseURL: "http://localhost:5000/api" });
 
@@ -43,8 +44,10 @@ const DoctorTestAssign = () => {
   };
 
   return (
-    <div>
-      <Navigation />
+   <div className=" flex min-h-screen bg-gray-50">
+      <Sidebar />
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto">
+        <Navigation />
 
       <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow mt-6">
         <h2 className="text-lg font-bold mb-4">Assign Test to Doctor</h2>
@@ -97,6 +100,7 @@ const DoctorTestAssign = () => {
         >
           Assign Test
         </button>
+      </div>
       </div>
     </div>
   );

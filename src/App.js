@@ -19,6 +19,8 @@ import RoleManagement from "./pages/RoleManagement";
 import DoctorTestList from "./pages/Doctors/DoctorTestList";
 import DoctorTestAssign from "./pages/Doctors/DoctorTestAssign";
 import PatientReports from "./pages/PatientReports/PatientReports";
+import TestCategories from "./pages/Lab/TestCategories";
+import LabReports from "./pages/Reports/LabReports";
 
 export default function App() {
   return (
@@ -51,6 +53,8 @@ export default function App() {
           <Route path="/doctorTestList" element={<DoctorTestList />} />
           <Route path="/doctorTestAssign" element={<DoctorTestAssign />} />
             <Route path="/patientReports" element={<PatientReports />} />
+            <Route path="/testCategories" element={<TestCategories />} />
+            <Route path="/labReports" element={<LabReports />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

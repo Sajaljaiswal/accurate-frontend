@@ -8,6 +8,7 @@ import autoTable from "jspdf-autotable";
 import { registerPatient } from "../api/patientApi";
 import { getAllDoctors } from "../api/doctorApi";
 import { getAllTests } from "../api/testApi";
+import Sidebar from "./Sidebar";
 
 // Reusable Input Component
 const InputField = ({ label, type = "text", placeholder, value, onChange }) => (
@@ -70,7 +71,6 @@ const SelectField = ({
 
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);
-  console.log("Selected Tests State:", selectedTests);
   const [discountValue, setDiscountValue] = useState(0);
   const [discountType, setDiscountType] = useState("amount");
   const [discountReason, setDiscountReason] = useState("");
@@ -431,7 +431,12 @@ const removeTest = (id) => {
   };
   return (
     <div>
-      <div className="min-h-screen bg-gray-100 font-sans text-gray-700">
+      <div className=" flex min-h-screen bg-gray-100 font-sans text-gray-700">
+
+        <Sidebar />
+
+        <div className="flex-1 flex flex-col h-screen overflow-y-auto">
+          {/* Top Navbar inside the content area */}
         <Navigation />
 
         <main className="p-6 max-w-7xl mx-auto">
@@ -778,9 +783,8 @@ const removeTest = (id) => {
           </div>
         </main>
 
-        <footer className="bg-blue-900 text-white text-xs py-3 text-center">
-          © 2026 Accurate Diagnostic Center. All rights reserved.
-        </footer>
+      
+        </div>
       </div>
     </div>
   );

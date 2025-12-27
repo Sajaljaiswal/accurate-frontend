@@ -4,6 +4,7 @@ import Navigation from "../Navigation";
 import { getAllPatients } from "../../api/patientApi";
 import EditPatientModal from "./EditPatientModal";
 import SettleBillingModal from "./SettleBillingModal";
+import Sidebar from "../Sidebar";
 
 const AllPatient = () => {
   const statusColors = {
@@ -153,362 +154,369 @@ const AllPatient = () => {
 
   return (
     <div>
-      <div className="min-h-screen bg-gray-100 font-sans text-gray-700">
+      <div className=" flex min-h-screen bg-gray-100 font-sans text-gray-700">
+        <Sidebar />
+        <div className="flex-1 flex flex-col h-screen overflow-y-auto">
         <Navigation />
-
-        <div className="min-h-screen bg-slate-100 font-sans p-4 md:p-6">
-          <div className="max-w-[1600px] mx-auto mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-800">
-                Receipt Re-Print
-              </h1>
-              <p className="text-sm text-red-600 font-semibold uppercase tracking-wide">
-                Total Patients Found: {filteredPatients.length}
-              </p>
-            </div>
-          </div>
-
-          {/* Search Criteria Card */}
-          <div className="max-w-[1600px] mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-            <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center gap-2">
-              <Filter size={18} className="text-blue-600" />
-              <h2 className="font-bold text-slate-700">Search Criteria</h2>
+        <div>
+          <div className="min-h-screen bg-slate-100 font-sans p-4 md:p-6">
+            <div className="max-w-[1600px] mx-auto mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">
+                  Receipt Re-Print
+                </h1>
+                <p className="text-sm text-red-600 font-semibold uppercase tracking-wide">
+                  Total Patients Found: {filteredPatients.length}
+                </p>
+              </div>
             </div>
 
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 gap-y-6">
-                {/* Column 1 */}
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">
-                      Identification
-                    </label>
-                    <div className="flex gap-2">
-                      <select className="w-1/3 bg-slate-50 border border-slate-300 rounded p-2 text-sm">
-                        <option>Lab No</option>
+            {/* Search Criteria Card */}
+            <div className="max-w-[1600px] mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+              <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center gap-2">
+                <Filter size={18} className="text-blue-600" />
+                <h2 className="font-bold text-slate-700">Search Criteria</h2>
+              </div>
+
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 gap-y-6">
+                  {/* Column 1 */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Identification
+                      </label>
+                      <div className="flex gap-2">
+                        <select className="w-1/3 bg-slate-50 border border-slate-300 rounded p-2 text-sm">
+                          <option>Lab No</option>
+                        </select>
+                        <input
+                          type="text"
+                          className="w-2/3 border border-slate-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                          placeholder="Enter ID..."
+                          value={filters.labNo}
+                          onChange={(e) =>
+                            setFilters({ ...filters, labNo: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Mobile No
+                      </label>
+                      <input
+                        type="text"
+                        className="border border-slate-300 rounded p-2 text-sm"
+                        value={filters.mobile}
+                        onChange={(e) =>
+                          setFilters({ ...filters, mobile: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Column 2 */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Date Range (From - To)
+                      </label>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="date"
+                          className="w-1/2 border border-slate-300 rounded p-2 text-sm"
+                          value={filters.fromDate}
+                          onChange={(e) =>
+                            setFilters({ ...filters, fromDate: e.target.value })
+                          }
+                        />
+                        <span className="text-slate-400">-</span>
+                        <input
+                          type="date"
+                          className="w-1/2 border border-slate-300 rounded p-2 text-sm"
+                          value={filters.toDate}
+                          onChange={(e) =>
+                            setFilters({ ...filters, toDate: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Phlebotomist
+                      </label>
+                      <select className="border border-slate-300 rounded p-2 text-sm bg-white">
+                        <option>--Select--</option>
                       </select>
+                    </div>
+                  </div>
+
+                  {/* Column 4 */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Patient Name
+                      </label>
                       <input
                         type="text"
-                        className="w-2/3 border border-slate-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                        placeholder="Enter ID..."
-                        value={filters.labNo}
+                        className="border border-slate-300 rounded p-2 text-sm"
+                        placeholder="Enter name..."
+                        value={filters.patientName}
                         onChange={(e) =>
-                          setFilters({ ...filters, labNo: e.target.value })
+                          setFilters({
+                            ...filters,
+                            patientName: e.target.value,
+                          })
                         }
                       />
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">
-                      Mobile No
-                    </label>
-                    <input
-                      type="text"
-                      className="border border-slate-300 rounded p-2 text-sm"
-                      value={filters.mobile}
-                      onChange={(e) =>
-                        setFilters({ ...filters, mobile: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                {/* Column 2 */}
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">
-                      Date Range (From - To)
-                    </label>
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="date"
-                        className="w-1/2 border border-slate-300 rounded p-2 text-sm"
-                        value={filters.fromDate}
-                        onChange={(e) =>
-                          setFilters({ ...filters, fromDate: e.target.value })
-                        }
-                      />
-                      <span className="text-slate-400">-</span>
-                      <input
-                        type="date"
-                        className="w-1/2 border border-slate-300 rounded p-2 text-sm"
-                        value={filters.toDate}
-                        onChange={(e) =>
-                          setFilters({ ...filters, toDate: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">
-                      Phlebotomist
-                    </label>
-                    <select className="border border-slate-300 rounded p-2 text-sm bg-white">
-                      <option>--Select--</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Column 4 */}
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">
-                      Patient Name
-                    </label>
-                    <input
-                      type="text"
-                      className="border border-slate-300 rounded p-2 text-sm"
-                      placeholder="Enter name..."
-                      value={filters.patientName}
-                      onChange={(e) =>
-                        setFilters({ ...filters, patientName: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase">
-                      Order ID
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        className="w-1/2 border border-slate-300 rounded p-2 text-sm"
-                        placeholder="Order ID"
-                        value={filters.orderId}
-                        onChange={(e) =>
-                          setFilters({ ...filters, orderId: e.target.value })
-                        }
-                      />
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Order ID
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          className="w-1/2 border border-slate-300 rounded p-2 text-sm"
+                          placeholder="Order ID"
+                          value={filters.orderId}
+                          onChange={(e) =>
+                            setFilters({ ...filters, orderId: e.target.value })
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Status Legends & Action Bar */}
-              <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-6">
-                <div className="flex flex-wrap gap-3">
-                  <span
-                    className={`${statusColors.fullPaid} text-[10px] font-bold px-2 py-1 rounded border border-emerald-200 uppercase`}
-                  >
-                    Full Paid
-                  </span>
-                  <span
-                    className={`${statusColors.partialPaid} text-[10px] font-bold px-2 py-1 rounded border border-pink-200 uppercase`}
-                  >
-                    Partial Paid
-                  </span>
-                  <span
-                    className={`${statusColors.fullyUnpaid} text-[10px] font-bold px-2 py-1 rounded border border-red-400 uppercase`}
-                  >
-                    Fully Unpaid
-                  </span>
-                  <span
-                    className={`${statusColors.credit} text-[10px] font-bold px-2 py-1 rounded border border-slate-200 uppercase`}
-                  >
-                    Credit
-                  </span>
-                </div>
+                {/* Status Legends & Action Bar */}
+                <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-6">
+                  <div className="flex flex-wrap gap-3">
+                    <span
+                      className={`${statusColors.fullPaid} text-[10px] font-bold px-2 py-1 rounded border border-emerald-200 uppercase`}
+                    >
+                      Full Paid
+                    </span>
+                    <span
+                      className={`${statusColors.partialPaid} text-[10px] font-bold px-2 py-1 rounded border border-pink-200 uppercase`}
+                    >
+                      Partial Paid
+                    </span>
+                    <span
+                      className={`${statusColors.fullyUnpaid} text-[10px] font-bold px-2 py-1 rounded border border-red-400 uppercase`}
+                    >
+                      Fully Unpaid
+                    </span>
+                    <span
+                      className={`${statusColors.credit} text-[10px] font-bold px-2 py-1 rounded border border-slate-200 uppercase`}
+                    >
+                      Credit
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-6 rounded text-sm shadow-sm flex items-center gap-2">
-                    <Search size={14} /> Search Records
-                  </button>
+                  <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                    <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-6 rounded text-sm shadow-sm flex items-center gap-2">
+                      <Search size={14} /> Search Records
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Patient Table Card */}
-          <div className="max-w-[1600px] mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-blue-900 text-white text-[10px] uppercase tracking-tighter">
-                    {headers.map((header, index) => (
-                      <th
-                        key={index}
-                        className={`p-3 border-r border-blue-800 whitespace-nowrap min-w-[120px] ${
-                          header === "Patient Name"
-                            ? "sticky left-0 bg-blue-900 z-30 shadow-[2px_0_5px_rgba(0,0,0,0.3)]"
-                            : ""
-                        }`}
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="text-[13px]">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={headers.length} className="p-6 text-center">
-                        Loading patients...
-                      </td>
-                    </tr>
-                  ) : patients.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={headers.length}
-                        className="p-6 text-center text-gray-500"
-                      >
-                        No patients found
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredPatients.map((p) => {
-                      const paymentStatus = p.billing?.paymentStatus;
-
-                      return (
-                        <tr
-                          key={p._id}
-                          className={`${getRowColor(
-                            paymentStatus
-                          )} border-b hover:brightness-95 relative`}
-                          onMouseEnter={(e) => {
-                            setHoveredPatient(p);
-                            setTooltipPos({
-                              x: e.clientX + 15,
-                              y: e.clientY + 15,
-                            });
-                          }}
-                          onMouseLeave={() => setHoveredPatient(null)}
+            {/* Patient Table Card */}
+            <div className="max-w-[1600px] mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-blue-900 text-white text-[10px] uppercase tracking-tighter">
+                      {headers.map((header, index) => (
+                        <th
+                          key={index}
+                          className={`p-3 border-r border-blue-800 whitespace-nowrap min-w-[120px] ${
+                            header === "Patient Name"
+                              ? "sticky left-0 bg-blue-900 z-30 shadow-[2px_0_5px_rgba(0,0,0,0.3)]"
+                              : ""
+                          }`}
                         >
-                          {/* Date */}
-                          <td className="p-3">
-                            {new Date(p.createdAt).toLocaleString("en-IN", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            })}
-                          </td>
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="text-[13px]">
+                    {loading ? (
+                      <tr>
+                        <td
+                          colSpan={headers.length}
+                          className="p-6 text-center"
+                        >
+                          Loading patients...
+                        </td>
+                      </tr>
+                    ) : patients.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={headers.length}
+                          className="p-6 text-center text-gray-500"
+                        >
+                          No patients found
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredPatients.map((p) => {
+                        const paymentStatus = p.billing?.paymentStatus;
 
-                          {/* Lab No */}
-                          <td className="p-3 font-mono">{p.labNumber}</td>
+                        return (
+                          <tr
+                            key={p._id}
+                            className={`${getRowColor(
+                              paymentStatus
+                            )} border-b hover:brightness-95 relative`}
+                            onMouseEnter={(e) => {
+                              setHoveredPatient(p);
+                              setTooltipPos({
+                                x: e.clientX + 15,
+                                y: e.clientY + 15,
+                              });
+                            }}
+                            onMouseLeave={() => setHoveredPatient(null)}
+                          >
+                            {/* Date */}
+                            <td className="p-3">
+                              {new Date(p.createdAt).toLocaleString("en-IN", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })}
+                            </td>
 
-                          {/* MRN (use Mongo _id short) */}
-                          <td className="p-3">{p._id.slice(-6)}</td>
+                            {/* Lab No */}
+                            <td className="p-3 font-mono">{p.labNumber}</td>
 
-                          {/* Order ID */}
-                          <td className="p-3">{p.orderId}</td>
+                            {/* MRN (use Mongo _id short) */}
+                            <td className="p-3">{p._id.slice(-6)}</td>
 
-                          {/* Registration No */}
-                          <td className="p-3 text-center">
-                            {p.registrationNumber}
-                          </td>
+                            {/* Order ID */}
+                            <td className="p-3">{p.orderId}</td>
 
-                          {/* Patient Name */}
-                          <td className="p-3 font-bold sticky left-0 bg-inherit z-10">
-                            {p.title} {p.firstName} {p.age ? `${p.age} Y` : ""}
-                          </td>
+                            {/* Registration No */}
+                            <td className="p-3 text-center">
+                              {p.registrationNumber}
+                            </td>
 
-                          {/* Doctor */}
-                          <td className="p-3">{p.referredBy || "-"}</td>
+                            {/* Patient Name */}
+                            <td className="p-3 font-bold sticky left-0 bg-inherit z-10">
+                              {p.title} {p.firstName}{" "}
+                              {p.age ? `${p.age} Y` : ""}
+                            </td>
 
-                          {/* Mobile */}
-                          <td className="p-3">{p.mobile}</td>
+                            {/* Doctor */}
+                            <td className="p-3">{p.referredBy || "-"}</td>
 
-                          {/* Panel */}
-                          <td className="p-3 italic text-[11px]">
-                            {p.panel?.name || "-"}
-                          </td>
+                            {/* Mobile */}
+                            <td className="p-3">{p.mobile}</td>
 
-                          {/* Gross */}
-                          <td className="p-3 font-bold">
-                            ₹{p.billing?.grossTotal || 0}
-                          </td>
+                            {/* Panel */}
+                            <td className="p-3 italic text-[11px]">
+                              {p.panel?.name || "-"}
+                            </td>
 
-                          {/* Discount */}
-                          <td className="p-3">
-                            ₹{p.billing?.discountAmount || 0}
-                          </td>
+                            {/* Gross */}
+                            <td className="p-3 font-bold">
+                              ₹{p.billing?.grossTotal || 0}
+                            </td>
 
-                          {/* Net */}
-                          <td className="p-3 font-bold">
-                            ₹{p.billing?.netAmount || 0}
-                          </td>
+                            {/* Discount */}
+                            <td className="p-3">
+                              ₹{p.billing?.discountAmount || 0}
+                            </td>
 
-                          {/* Paid */}
-                          <td className="p-3">
-                            ₹{p.billing?.cashReceived || 0}
-                          </td>
+                            {/* Net */}
+                            <td className="p-3 font-bold">
+                              ₹{p.billing?.netAmount || 0}
+                            </td>
 
-                          {/* Current Balance */}
-                          <td className="p-3 text-red-700 font-bold">
-                            ₹{p.billing?.dueAmount || 0}
-                          </td>
+                            {/* Paid */}
+                            <td className="p-3">
+                              ₹{p.billing?.cashReceived || 0}
+                            </td>
 
-                          {/* Discount Reason */}
-                          <td className="p-3">
-                            {p.billing?.discountReason || "-"}
-                          </td>
+                            {/* Current Balance */}
+                            <td className="p-3 text-red-700 font-bold">
+                              ₹{p.billing?.dueAmount || 0}
+                            </td>
 
-                          {/* Edit */}
-                          <td className="p-3 text-center">
-                            <button
-                              className="bg-blue-800 text-white px-2 py-0.5 rounded "
-                              onClick={() => handleEditClick(p)}
-                            >
-                              Edit
-                            </button>
-                          </td>
+                            {/* Discount Reason */}
+                            <td className="p-3">
+                              {p.billing?.discountReason || "-"}
+                            </td>
 
-                          {/* Receipt */}
-                          <td className="p-3 text-center">
-                            <button className="text-green-700 font-bold">
-                              Receipt
-                            </button>
-                          </td>
-
-                          {/* Settlement */}
-                          <td className="p-3 text-center">
-                            {paymentStatus !== "PAID" ? (
+                            {/* Edit */}
+                            <td className="p-3 text-center">
                               <button
-                                className="bg-blue-800 text-white px-2 py-0.5 rounded"
-                                onClick={() => handleSettleClick(p)}
+                                className="bg-blue-800 text-white px-2 py-0.5 rounded "
+                                onClick={() => handleEditClick(p)}
                               >
-                                Settle
+                                Edit
                               </button>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+                            </td>
+
+                            {/* Receipt */}
+                            <td className="p-3 text-center">
+                              <button className="text-green-700 font-bold">
+                                Receipt
+                              </button>
+                            </td>
+
+                            {/* Settlement */}
+                            <td className="p-3 text-center">
+                              {paymentStatus !== "PAID" ? (
+                                <button
+                                  className="bg-blue-800 text-white px-2 py-0.5 rounded"
+                                  onClick={() => handleSettleClick(p)}
+                                >
+                                  Settle
+                                </button>
+                              ) : (
+                                "-"
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
+          <div className="flex justify-between items-center p-4">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+
+            <span className="font-bold">
+              Page {page} of {totalPages}
+            </span>
+
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
-        <div className="flex justify-between items-center p-4">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Previous
-          </button>
-
-          <span className="font-bold">
-            Page {page} of {totalPages}
-          </span>
-
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Next
-          </button>
         </div>
-
-        <footer className="bg-blue-900 text-white text-xs py-3 text-center">
-          © 2026 Accurate Diagnostic Center. All rights reserved.
-        </footer>
       </div>
       {isEditOpen && (
         <EditPatientModal
@@ -537,7 +545,6 @@ const AllPatient = () => {
             left: tooltipPos.x,
           }}
         >
-
           <ul className="space-y-1">
             {hoveredPatient.tests.map((t, idx) => (
               <li key={idx} className="flex justify-between gap-4">
