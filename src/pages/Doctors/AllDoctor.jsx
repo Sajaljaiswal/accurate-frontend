@@ -9,6 +9,7 @@ const AllDoctor = () => {
   const navigate = useNavigate();
 
   const [doctors, setDoctors] = useState([]);
+  console.log(doctors)
   const [loading, setLoading] = useState(true);
   
   // Modal States

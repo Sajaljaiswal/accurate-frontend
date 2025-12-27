@@ -90,7 +90,7 @@ const AllTest = () => {
                     </td>
 
                     <td className="p-3 text-center font-bold">
-                      ₹{test.price}
+                      ₹{test.defaultPrice}
                     </td>
 
                     <td className="p-3 text-center">

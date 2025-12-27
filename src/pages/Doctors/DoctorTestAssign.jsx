@@ -75,7 +75,7 @@ const DoctorTestAssign = () => {
             <option value="">Select Test</option>
             {tests.map((t) => (
               <option key={t._id} value={t._id}>
-                {t.name} (₹{t.price})
+                {t.name} (₹{t.defaultPrice})
               </option>
             ))}
           </select>

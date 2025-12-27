@@ -81,7 +81,8 @@ const AllPatient = () => {
   }, [page, filters]);
 
   const getRowColor = (paymentStatus) => {
-    switch (paymentStatus) {
+    const ps = (paymentStatus || "").toString().toUpperCase();
+    switch (ps) {
       case "PAID":
         return "bg-[#00ff99]"; // green
       case "PARTIAL":

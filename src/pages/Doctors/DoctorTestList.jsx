@@ -5,10 +5,9 @@ const api = axios.create({ baseURL: "http://localhost:5000/api" });
 
 const DoctorTestList = ({ doctorId }) => {
   const [items, setItems] = useState([]);
-
+console.log(items, "?????????????????")
   const load = async () => {
     const res = await api.get(`/doctorTests/doctor/${doctorId}`);
-    console.log(res.data, ">>>>>>>>>>>>");
     setItems(res.data);
   };
 
@@ -25,8 +24,8 @@ const DoctorTestList = ({ doctorId }) => {
     <table className="w-full text-sm mt-4 border">
       <thead className="bg-gray-200">
         <tr>
-          <th>Test</th>
-          <th>Default Price</th>
+          {/* <th>Test</th> */}
+          {/* <th>Default Price</th> */}
           <th>Custom Price</th>
           <th>Status</th>
           <th>Action</th>
@@ -36,8 +35,8 @@ const DoctorTestList = ({ doctorId }) => {
       <tbody>
         {items.map((i) => (
           <tr key={i._id} className="border-b">
-            <td>{i.test.name}</td>
-            <td>₹{i.test.price}</td>
+            {/* <td>{i.test.name}</td> */}
+            {/* <td>₹{i.test.defaultPrice}</td> */}
             <td>
               {i.customPrice !== null ? `₹${i.customPrice}` : "-"}
             </td>

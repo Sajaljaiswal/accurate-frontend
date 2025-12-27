@@ -14,12 +14,15 @@ const SettleBillingModal = ({ patient, onClose, onSuccess }) => {
   const newPaidTotal = alreadyPaid + Number(paidNow);
   const newDue = Math.max(0, netAmount - newPaidTotal);
 
+  const paymentStatusDisplay =
+    newPaidTotal === 0 ? "UNPAID" : newPaidTotal >= netAmount ? "PAID" : "PARTIAL";
+
   const paymentStatus =
-    newPaidTotal === 0
-      ? "UNPAID"
-      : newPaidTotal >= netAmount
-      ? "PAID"
-      : "PARTIAL";
+    paymentStatusDisplay === "UNPAID"
+      ? "unpaid"
+      : paymentStatusDisplay === "PAID"
+      ? "paid"
+      : "partial";
 
   const handleSave = async () => {
     if (paidNow <= 0 || paidNow > dueAmount) {
@@ -89,7 +92,7 @@ const SettleBillingModal = ({ patient, onClose, onSuccess }) => {
 
           <div className="flex justify-between">
             <span>Status</span>
-            <span className="font-bold">{paymentStatus}</span>
+            <span className="font-bold">{paymentStatusDisplay}</span>
           </div>
         </div>
 

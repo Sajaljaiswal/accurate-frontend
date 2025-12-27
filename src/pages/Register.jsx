@@ -7,6 +7,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { registerPatient } from "../api/patientApi";
 import { getAllDoctors } from "../api/doctorApi";
+import { getAllTests } from "../api/testApi";
+
 // Reusable Input Component
 const InputField = ({ label, type = "text", placeholder, value, onChange }) => (
   <div>
@@ -65,36 +67,51 @@ const SelectField = ({
   );
 };
 
-// Mock Data for Tests
-const TEST_OPTIONS = [
-  { id: 1, name: "IRON PROFILE MINI", price: 1200 },
-  { id: 2, name: "ALCOHOL SCREEN, BLOOD", price: 850 },
-  { id: 3, name: "FULL BODY CHECKUP 51 TEST", price: 5000 },
-  { id: 4, name: "CBC (Complete Blood Count)", price: 350 },
-];
+
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);
+  console.log("Selected Tests State:", selectedTests);
   const [discountValue, setDiscountValue] = useState(0);
   const [discountType, setDiscountType] = useState("amount");
   const [discountReason, setDiscountReason] = useState("");
   const [cashReceived, setCashReceived] = useState(0);
+ const [panels, setPanels] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [tests, setTests] = useState([]);
+  const [loadingTests, setLoadingTests] = useState(true);
 
-  // 1. Add test to table
-  const handleAddTest = (testName) => {
-    if (!testName) return;
-    const testObj = TEST_OPTIONS.find((t) => t.name === testName);
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const res = await getAllTests();
+       setTests(res.data.data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingTests(false);
+      }
+    };
 
-    // Prevent duplicate adds
-    if (testObj && !selectedTests.some((t) => t.id === testObj.id)) {
+    fetchTests();
+  }, []);
+
+  const handleAddTest = (testId) => {
+    if (!testId) return;
+    
+    // Find the test in the API-fetched tests array
+    const testObj = tests.find((t) => t._id === testId);
+
+    // Prevent duplicate adds based on MongoDB _id
+    if (testObj && !selectedTests.some((t) => t._id === testObj._id)) {
       setSelectedTests([...selectedTests, testObj]);
     }
   };
+
 
   useEffect(() => {
     const fetchPanels = async () => {
       try {
         const res = await getAllPanels();
-        console.log("Panels fetched:", res.data.data);
         setPanels(res.data.data);
       } catch (err) {
         console.error("Failed to fetch panels", err);
@@ -103,25 +120,22 @@ const Register = () => {
 
     fetchPanels();
   }, []);
-  const [panels, setPanels] = useState([]);
-  const [doctors, setDoctors] = useState([]);
-
+ 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
         const res = await getAllDoctors();
-        console.log("Doctors fetched:", res.data.data);
         setDoctors(res.data.data);
       } catch (err) {
         console.error("Failed to fetch doctors", err);
+        
       }
     };
     fetchDoctors();
   }, []);
 
-  // 2. Remove test from table
-  const removeTest = (id) => {
-    setSelectedTests(selectedTests.filter((t) => t.id !== id));
+const removeTest = (id) => {
+    setSelectedTests(selectedTests.filter((t) => t._id !== id));
   };
 
   const [form, setForm] = useState({
@@ -164,28 +178,7 @@ const Register = () => {
     });
   };
 
-  // Calculations
-  const calculations = useMemo(() => {
-    const grossTotal = selectedTests.reduce((sum, item) => sum + item.price, 0);
-
-    const discountAmt =
-      discountType === "percent"
-        ? (grossTotal * discountValue) / 100
-        : Number(discountValue);
-
-    const netAmount = Math.max(0, grossTotal - discountAmt);
-
-    const dueAmount = cashReceived < netAmount ? netAmount - cashReceived : 0;
-
-    return {
-      grossTotal,
-      discountAmt,
-      netAmount,
-      dueAmount,
-      count: selectedTests.length,
-    };
-  }, [selectedTests, discountValue, discountType, cashReceived]);
-
+ 
   // Generate Serial Numbers (Note: In production, do this on Backend)
   const generateSerialNumbers = () => {
     const labNo = "LAB" + Date.now().toString().slice(-9); // 12 digits total
@@ -201,36 +194,74 @@ const Register = () => {
   //     }
   //     return true;
   //   };
+// 1. FIXED CALCULATIONS: Ensure Number conversion to avoid NaN
+  const calculations = useMemo(() => {
+    // Ensure we are summing a number
+    const grossTotal = selectedTests.reduce((sum, item) => sum + (Number(item.defaultPrice) || 0), 0);
 
+    const discountVal = Number(discountValue) || 0;
+    const cashRec = Number(cashReceived) || 0;
+
+    const discountAmt =
+      discountType === "percent"
+        ? (grossTotal * discountVal) / 100
+        : discountVal;
+
+    const netAmount = Math.max(0, grossTotal - discountAmt);
+    const dueAmount = cashRec < netAmount ? netAmount - cashRec : 0;
+
+    return {
+      grossTotal,
+      discountAmt,
+      netAmount,
+      dueAmount,
+      count: selectedTests.length,
+    };
+  }, [selectedTests, discountValue, discountType, cashReceived]);
+
+  // 2. FIXED SAVE LOGIC: Sending objects instead of just string IDs
   const handleSave = async () => {
+     console.log("yesssssssssss")
     try {
+      // Logic for Payment Status
+      let paymentStatus = "UNPAID";
+      if (calculations.dueAmount <= 0 && calculations.netAmount > 0) {
+        paymentStatus = "PAID";
+      } else if (cashReceived > 0 && calculations.dueAmount > 0) {
+        paymentStatus = "PARTIAL";
+      }
+
       const payload = {
         ...form,
-        tests: selectedTests,
+        // FIX: Sending the whole test object so Mongoose can "embed" it
+        tests: selectedTests.map(t => ({
+          testId: t._id,
+          name: t.name,
+          price: t.defaultPrice
+        })),
         billing: {
           grossTotal: calculations.grossTotal,
           discountType,
-          discountValue,
+          discountValue: Number(discountValue),
           discountAmount: calculations.discountAmt,
           netAmount: calculations.netAmount,
-          cashReceived,
+          cashReceived: Number(cashReceived),
           dueAmount: calculations.dueAmount,
+          paymentStatus: paymentStatus // Ensure this matches your backend enum (PAID, UNPAID, PARTIAL)
         },
       };
+      console.log("okokok")
 
       const res = await registerPatient(payload);
 
-      alert(
-        `Patient Registered Successfully ✅
-Lab No: ${res.data.data.labNumber}
-Reg No: ${res.data.data.registrationNumber}`
-      );
-
+      alert(`Patient Registered Successfully ✅\nLab No: ${res.data.data.labNumber}`);
       window.location.reload();
     } catch (err) {
-      alert(err.response?.data?.message || "Something went wrong");
+      console.error("Save Error:", err.response?.data);
+      alert(err.response?.data?.message || "Validation failed. Check console.");
     }
   };
+
 
   const handlePrint = () => {
     //   if (!validateForm()) return;
@@ -313,7 +344,7 @@ Reg No: ${res.data.data.registrationNumber}`
       t.name,
       "-", // Token No
       new Date().toLocaleDateString(), // Delivery Date
-      t.price.toFixed(2),
+      (t.defaultPrice || t.price || 0).toFixed(2),
     ]);
 
     autoTable(doc, {
@@ -573,13 +604,13 @@ Reg No: ${res.data.data.registrationNumber}`
                       </label>
                       <select
                         onChange={(e) => handleAddTest(e.target.value)}
-                        value=""
+                        defaultValue=""
                         className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-teal-500 outline-none bg-white"
                       >
                         <option value="">-- Search & Add Test --</option>
-                        {TEST_OPTIONS.map((t) => (
-                          <option key={t.id} value={t.name}>
-                            {t.name} (₹{t.price})
+                        {tests.map((t) => (
+                          <option key={t._id} value={t._id}>
+                            {t.name} (₹{t.defaultPrice || t.price || 0})
                           </option>
                         ))}
                       </select>
@@ -601,28 +632,18 @@ Reg No: ${res.data.data.registrationNumber}`
                           <th className="px-4 py-2 text-center w-20">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y">
+                     <tbody className="divide-y">
                         {selectedTests.length === 0 ? (
-                          <tr>
-                            <td
-                              colSpan="3"
-                              className="px-4 py-8 text-center text-gray-400 italic"
-                            >
-                              No tests selected
-                            </td>
-                          </tr>
+                          <tr><td colSpan="3" className="px-4 py-8 text-center text-gray-400 italic">No tests selected</td></tr>
                         ) : (
                           selectedTests.map((test) => (
-                            <tr key={test.id} className="hover:bg-gray-50">
-                              <td className="px-4 py-2 font-medium">
-                                {test.name}
-                              </td>
-                              <td className="px-4 py-2 text-right">
-                                ₹{test.price.toFixed(2)}
-                              </td>
+                            <tr key={test._id} className="hover:bg-gray-50">
+                              <td className="px-4 py-2 font-medium">{test.name}</td>
+                              <td className="px-4 py-2 text-right">₹{(test.defaultPrice || 0).toFixed(2)}</td>
                               <td className="px-4 py-2 text-center">
                                 <button
-                                  onClick={() => removeTest(test.id)}
+                                  type="button"
+                                  onClick={() => removeTest(test._id)}
                                   className="text-red-500 hover:bg-red-50 p-1 rounded"
                                 >
                                   <Trash2 size={16} />

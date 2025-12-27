@@ -47,19 +47,17 @@ const AllPanel = () => {
       </div>
 
       <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex"> 
-        <h1 className="text-2xl font-bold mb-4 text-gray-800">
-          Hospital / Clinic Panel List
-        </h1>
-         <button
-          type="button"
-          onClick={() => navigate("/newPanel")}
-          className="flex ml-16 items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-700 transition active:scale-95"
-        >
-          <Printer size={18} /> Add Panel
-        </button>
-        </div>
+       
 
+ <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-800"> Hospital / Clinic Panel List</h1>
+          <button
+            onClick={() => navigate("/newPanel")}
+            className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition active:scale-95"
+          >
+            <Printer size={18} /> Add New Panel
+          </button>
+        </div>
         <div className="bg-white rounded-lg shadow border overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-blue-900 text-white">

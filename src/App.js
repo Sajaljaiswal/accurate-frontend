@@ -18,6 +18,7 @@ import ProfilePage from "./pages/ProfilePage";
 import RoleManagement from "./pages/RoleManagement";
 import DoctorTestList from "./pages/Doctors/DoctorTestList";
 import DoctorTestAssign from "./pages/Doctors/DoctorTestAssign";
+import PatientReports from "./pages/PatientReports/PatientReports";
 
 export default function App() {
   return (
@@ -49,7 +50,7 @@ export default function App() {
           <Route path="/roleManagement" element={<RoleManagement />} />
           <Route path="/doctorTestList" element={<DoctorTestList />} />
           <Route path="/doctorTestAssign" element={<DoctorTestAssign />} />
-
+            <Route path="/patientReports" element={<PatientReports />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
