@@ -54,7 +54,7 @@ export default function App() {
           <Route path="/doctorTestAssign" element={<DoctorTestAssign />} />
             <Route path="/patientReports" element={<PatientReports />} />
             <Route path="/testCategories" element={<TestCategories />} />
-            <Route path="/labReports" element={<LabReports />} />
+            <Route path="/lab-report/:id" element={<LabReports />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

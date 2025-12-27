@@ -4,7 +4,7 @@ import Sidebar from "../Sidebar";
 import { useNavigate } from "react-router-dom";
 import { addTest } from "../../api/testApi";
 import { getAllCategories } from "../../api/categoryApi"; // Ensure this import exists
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 const AddTest = () => {
   const navigate = useNavigate();
@@ -22,9 +22,12 @@ const AddTest = () => {
     isOptional: false,
     status: "ACTIVE",
     defaultPrice: "",
+    referenceRanges: [
+      { gender: "BOTH", ageMin: 0, ageMax: 100, lowRange: "", highRange: "" }
+    ]
   });
 
-  // 2. Fetch categories on component mount
+  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -32,8 +35,7 @@ const AddTest = () => {
         const categoriesData = response.data.data;
         setDbCategories(categoriesData);
         
-        // Optionally set the first category as default if list is not empty
-        if (categoriesData.length > 0) {
+          if (categoriesData.length > 0) {
           setForm(prev => ({ ...prev, category: categoriesData[0]._id }));
         }
       } catch (err) {
@@ -53,6 +55,24 @@ const AddTest = () => {
     }));
   };
 
+  const handleRangeChange = (index, e) => {
+    const { name, value } = e.target;
+    const updatedRanges = [...form.referenceRanges];
+    updatedRanges[index][name] = value;
+    setForm({ ...form, referenceRanges: updatedRanges });
+  };
+
+  const addRangeRow = () => {
+    setForm({
+      ...form,
+      referenceRanges: [...form.referenceRanges, { gender: "BOTH", ageMin: 0, ageMax: 100, lowRange: "", highRange: "" }]
+    });
+  };
+
+  const removeRangeRow = (index) => {
+    const updatedRanges = form.referenceRanges.filter((_, i) => i !== index);
+    setForm({ ...form, referenceRanges: updatedRanges });
+  };
   const handleSubmit = async () => {
     try {
       if (!form.name || !form.category || !form.defaultPrice) {
@@ -200,6 +220,49 @@ const AddTest = () => {
                     placeholder="500"
                     className="w-full border border-slate-300 bg-slate-50 rounded-lg p-3 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                   />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-bold text-blue-800 uppercase tracking-widest">Reference Ranges (Gender/Age Wise)</h3>
+                  <button onClick={addRangeRow} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 font-bold">
+                    <Plus size={14} /> ADD RANGE
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto border rounded-xl">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 border-b">
+                      <tr className="text-slate-500 text-xs uppercase">
+                        <th className="p-3 text-left">Gender</th>
+                        <th className="p-3 text-left">Age Min</th>
+                        <th className="p-3 text-left">Age Max</th>
+                        <th className="p-3 text-left">Low</th>
+                        <th className="p-3 text-left">High</th>
+                        <th className="p-3 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {form.referenceRanges.map((range, index) => (
+                        <tr key={index}>
+                          <td className="p-2">
+                            <select name="gender" value={range.gender} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-full">
+                              <option value="All">BOTH</option>
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                            </select>
+                          </td>
+                          <td className="p-2"><input type="number" name="ageMin" value={range.ageMin} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-16" /></td>
+                          <td className="p-2"><input type="number" name="ageMax" value={range.ageMax} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-16" /></td>
+                          <td className="p-2"><input type="text" name="lowRange" value={range.lowRange} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-20" placeholder="0" /></td>
+                          <td className="p-2"><input type="text" name="highRange" value={range.highRange} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-20" placeholder="100" /></td>
+                          <td className="p-2 text-center">
+                            <button onClick={() => removeRangeRow(index)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-full"><Trash2 size={16}/></button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 

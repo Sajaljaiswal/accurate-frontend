@@ -140,7 +140,7 @@ const PatientReports = () => {
                               <button title="Print Receipt" className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                                 <Printer size={16} />
                               </button>
-                              <button title="Edit Patient" className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors" onClick={()=>{navigate("/labReports")}}>
+                              <button title="Edit Patient" className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors" onClick={() => navigate(`/lab-report/${p._id}`)}>
                                 <Edit size={16} />
                               </button>
                               
