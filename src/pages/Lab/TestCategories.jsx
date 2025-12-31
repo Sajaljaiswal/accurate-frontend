@@ -41,12 +41,11 @@ const TestCategories = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-screen overflow-y-auto">
-        <Navigation />
-        
-        <main className="p-6">
+   <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+      <Navigation />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 p-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto">
             
             {/* Header Section */}

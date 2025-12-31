@@ -39,119 +39,94 @@ const AllDoctor = () => {
   };
 
   return (
-    <div className=" flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-screen overflow-y-auto">
-        <Navigation />
-
-        <div>
-          {/* Top Buttons */}
-          <div className="p-6 border-t flex justify-start gap-4 bg-white shadow-sm">
+    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+      <Navigation />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 p-8 overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">
+              Doctors Management
+            </h1>
             <button
-              onClick={() => navigate("/allPanel")}
-              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
+              onClick={() => navigate("/newDoctor")}
+              className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition active:scale-95"
             >
-              <Printer size={18} /> All Panel
-            </button>
-            <button
-              onClick={() => navigate("/allDoctor")}
-              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
-            >
-              <Printer size={18} /> All Doctors
+              <Printer size={18} /> Add New Doctor
             </button>
           </div>
 
-          <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">
-                Doctors Management
-              </h1>
-              <button
-                onClick={() => navigate("/newDoctor")}
-                className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition active:scale-95"
-              >
-                <Printer size={18} /> Add New Doctor
-              </button>
-            </div>
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-blue-900 text-white">
+                <tr>
+                  <th className="p-4 text-left">Doctor Name</th>
+                  <th className="p-4">Specialization</th>
+                  <th className="p-4">Clinic</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-center">Assigned Tests</th>
+                </tr>
+              </thead>
 
-            <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-blue-900 text-white">
+              <tbody className="divide-y divide-gray-100">
+                {loading ? (
                   <tr>
-                    <th className="p-4 text-left">Doctor Name</th>
-                    <th className="p-4">Specialization</th>
-                    <th className="p-4">Clinic</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-center">Assigned Tests</th>
+                    <td colSpan="5" className="p-10 text-center text-gray-500">
+                      Loading...
+                    </td>
                   </tr>
-                </thead>
-
-                <tbody className="divide-y divide-gray-100">
-                  {loading ? (
-                    <tr>
-                      <td
-                        colSpan="5"
-                        className="p-10 text-center text-gray-500"
-                      >
-                        Loading...
-                      </td>
-                    </tr>
-                  ) : doctors.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan="5"
-                        className="p-10 text-center text-gray-500"
-                      >
-                        No doctors found
-                      </td>
-                    </tr>
-                  ) : (
-                    doctors.map((doctor) => (
-                      <tr
-                        key={doctor._id}
-                        className="hover:bg-blue-50 transition-colors"
-                      >
-                        <td className="p-4 font-semibold text-gray-700">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                              {doctor.fullName?.[0]}
-                            </div>
-                            {doctor.title} {doctor.fullName}
+                ) : doctors.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="p-10 text-center text-gray-500">
+                      No doctors found
+                    </td>
+                  </tr>
+                ) : (
+                  doctors.map((doctor) => (
+                    <tr
+                      key={doctor._id}
+                      className="hover:bg-blue-50 transition-colors"
+                    >
+                      <td className="p-4 font-semibold text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                            {doctor.fullName?.[0]}
                           </div>
-                        </td>
-                        <td className="p-4 text-center text-gray-600">
-                          {doctor.specialization || "-"}
-                        </td>
-                        <td className="p-4 text-center text-gray-600">
-                          {doctor.clinicName || "-"}
-                        </td>
-                        <td className="p-4 text-center">
-                          <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
-                              doctor.status === "TAGGED"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {doctor.status || "UNTAGGED"}
-                          </span>
-                        </td>
-                        <td className="p-4 text-center">
-                          <button
-                            onClick={() => openTestModal(doctor)}
-                            className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-lg font-bold text-xs hover:bg-blue-200 transition"
-                          >
-                            <Eye size={14} /> View Tests
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          {doctor.title} {doctor.fullName}
+                        </div>
+                      </td>
+                      <td className="p-4 text-center text-gray-600">
+                        {doctor.specialization || "-"}
+                      </td>
+                      <td className="p-4 text-center text-gray-600">
+                        {doctor.clinicName || "-"}
+                      </td>
+                      <td className="p-4 text-center">
+                        <span
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                            doctor.status === "TAGGED"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {doctor.status || "UNTAGGED"}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => openTestModal(doctor)}
+                          className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-lg font-bold text-xs hover:bg-blue-200 transition"
+                        >
+                          <Eye size={14} /> View Tests
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
+        </main>
       </div>
 
       {/* --- MODAL FOR ASSIGNED TESTS --- */}

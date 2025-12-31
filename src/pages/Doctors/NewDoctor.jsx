@@ -12,6 +12,7 @@ import {
   Calendar,
   Lock,
 } from "lucide-react";
+import Sidebar from "../Sidebar";
 
 const NewDoctor = () => {
   const [form, setForm] = useState({
@@ -35,32 +36,23 @@ const NewDoctor = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    await createDoctor(form);
-    alert("Doctor registered successfully");
-  } catch (err) {
-    console.error(err);
-    alert("Failed to save doctor");
-  }
-};
-
+    try {
+      await createDoctor(form);
+      alert("Doctor registered successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save doctor");
+    }
+  };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
       <Navigation />
-
-      <div className="flex flex-col min-h-screen bg-slate-50">
-        {/* Header */}
-        <header className="bg-blue-900 py-4 shadow-md">
-          <h1 className="text-xl font-bold text-white text-center uppercase tracking-wider">
-            Referring Doctor Registration
-          </h1>
-        </header>
-
-        {/* Main Content */}
-        <main className="flex-grow p-4 md:p-8 flex justify-center">
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 p-8 overflow-y-auto">
           <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
             {/* Form Tab Indicator */}
             <div className="bg-slate-50 border-b border-slate-200 px-6 py-3">
@@ -158,8 +150,6 @@ const NewDoctor = () => {
                       </div>
                     </div>
                   </div>
-
-               
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">
@@ -298,8 +288,10 @@ const NewDoctor = () => {
               </div>
               {/* Form Footer Action */}
               <div className="pt-6 border-t border-slate-100 flex justify-center">
-                <button className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-12 rounded-lg shadow-md flex items-center gap-2 transition-transform active:scale-95"
-                onClick={handleSubmit}>
+                <button
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-12 rounded-lg shadow-md flex items-center gap-2 transition-transform active:scale-95"
+                  onClick={handleSubmit}
+                >
                   <Save size={20} /> Save Doctor Registration
                 </button>
               </div>

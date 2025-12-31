@@ -16,12 +16,9 @@ const DoctorTestAssign = () => {
   });
 
   useEffect(() => {
-    Promise.all([
-      api.get("/doctor"),
-      api.get("/lab/tests"),
-    ]).then(([d, t]) => {
-     setDoctors(d.data.data || []); 
-        setTests(t.data.data || t.data || []);
+    Promise.all([api.get("/doctor"), api.get("/lab/tests")]).then(([d, t]) => {
+      setDoctors(d.data.data || []);
+      setTests(t.data.data || t.data || []);
     });
   }, []);
 
@@ -34,9 +31,7 @@ const DoctorTestAssign = () => {
     await api.post("/doctorTests", {
       doctor: form.doctor,
       test: form.test,
-      customPrice: form.customPrice
-        ? Number(form.customPrice)
-        : null,
+      customPrice: form.customPrice ? Number(form.customPrice) : null,
     });
 
     alert("Test assigned successfully");
@@ -44,63 +39,58 @@ const DoctorTestAssign = () => {
   };
 
   return (
-   <div className=" flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-screen overflow-y-auto">
-        <Navigation />
+    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+      <Navigation />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 p-8 overflow-y-auto">
+          <h2 className="text-lg font-bold mb-4">Assign Test to Doctor</h2>
 
-      <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow mt-6">
-        <h2 className="text-lg font-bold mb-4">Assign Test to Doctor</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <select
+              value={form.doctor}
+              onChange={(e) => setForm({ ...form, doctor: e.target.value })}
+              className="border p-2 rounded"
+            >
+              <option value="">Select Doctor</option>
+              {doctors.map((d) => (
+                <option key={d._id} value={d._id}>
+                  {d.title} {d.fullName}
+                </option>
+              ))}
+            </select>
 
-        <div className="grid grid-cols-3 gap-4">
-          <select
-            value={form.doctor}
-            onChange={(e) =>
-              setForm({ ...form, doctor: e.target.value })
-            }
-            className="border p-2 rounded"
+            <select
+              value={form.test}
+              onChange={(e) => setForm({ ...form, test: e.target.value })}
+              className="border p-2 rounded"
+            >
+              <option value="">Select Test</option>
+              {tests.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.name} (₹{t.defaultPrice})
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="number"
+              placeholder="Custom Price (optional)"
+              value={form.customPrice}
+              onChange={(e) =>
+                setForm({ ...form, customPrice: e.target.value })
+              }
+              className="border p-2 rounded"
+            />
+          </div>
+
+          <button
+            onClick={submit}
+            className="mt-4 bg-blue-700 text-white px-6 py-2 rounded"
           >
-            <option value="">Select Doctor</option>
-            {doctors.map((d) => (
-              <option key={d._id} value={d._id}>
-                {d.title} {d.fullName}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={form.test}
-            onChange={(e) =>
-              setForm({ ...form, test: e.target.value })
-            }
-            className="border p-2 rounded"
-          >
-            <option value="">Select Test</option>
-            {tests.map((t) => (
-              <option key={t._id} value={t._id}>
-                {t.name} (₹{t.defaultPrice})
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="number"
-            placeholder="Custom Price (optional)"
-            value={form.customPrice}
-            onChange={(e) =>
-              setForm({ ...form, customPrice: e.target.value })
-            }
-            className="border p-2 rounded"
-          />
-        </div>
-
-        <button
-          onClick={submit}
-          className="mt-4 bg-blue-700 text-white px-6 py-2 rounded"
-        >
-          Assign Test
-        </button>
-      </div>
+            Assign Test
+          </button>
+        </main>
       </div>
     </div>
   );

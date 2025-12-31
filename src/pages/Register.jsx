@@ -68,14 +68,13 @@ const SelectField = ({
   );
 };
 
-
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);
   const [discountValue, setDiscountValue] = useState(0);
   const [discountType, setDiscountType] = useState("amount");
   const [discountReason, setDiscountReason] = useState("");
   const [cashReceived, setCashReceived] = useState(0);
- const [panels, setPanels] = useState([]);
+  const [panels, setPanels] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [tests, setTests] = useState([]);
   const [loadingTests, setLoadingTests] = useState(true);
@@ -84,7 +83,7 @@ const Register = () => {
     const fetchTests = async () => {
       try {
         const res = await getAllTests();
-       setTests(res.data.data || []);
+        setTests(res.data.data || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -97,7 +96,7 @@ const Register = () => {
 
   const handleAddTest = (testId) => {
     if (!testId) return;
-    
+
     // Find the test in the API-fetched tests array
     const testObj = tests.find((t) => t._id === testId);
 
@@ -106,7 +105,6 @@ const Register = () => {
       setSelectedTests([...selectedTests, testObj]);
     }
   };
-
 
   useEffect(() => {
     const fetchPanels = async () => {
@@ -120,7 +118,7 @@ const Register = () => {
 
     fetchPanels();
   }, []);
- 
+
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -128,13 +126,12 @@ const Register = () => {
         setDoctors(res.data.data);
       } catch (err) {
         console.error("Failed to fetch doctors", err);
-        
       }
     };
     fetchDoctors();
   }, []);
 
-const removeTest = (id) => {
+  const removeTest = (id) => {
     setSelectedTests(selectedTests.filter((t) => t._id !== id));
   };
 
@@ -178,7 +175,6 @@ const removeTest = (id) => {
     });
   };
 
- 
   // Generate Serial Numbers (Note: In production, do this on Backend)
   const generateSerialNumbers = () => {
     const labNo = "LAB" + Date.now().toString().slice(-9); // 12 digits total
@@ -194,10 +190,13 @@ const removeTest = (id) => {
   //     }
   //     return true;
   //   };
-// 1. FIXED CALCULATIONS: Ensure Number conversion to avoid NaN
+  // 1. FIXED CALCULATIONS: Ensure Number conversion to avoid NaN
   const calculations = useMemo(() => {
     // Ensure we are summing a number
-    const grossTotal = selectedTests.reduce((sum, item) => sum + (Number(item.defaultPrice) || 0), 0);
+    const grossTotal = selectedTests.reduce(
+      (sum, item) => sum + (Number(item.defaultPrice) || 0),
+      0
+    );
 
     const discountVal = Number(discountValue) || 0;
     const cashRec = Number(cashReceived) || 0;
@@ -221,7 +220,7 @@ const removeTest = (id) => {
 
   // 2. FIXED SAVE LOGIC: Sending objects instead of just string IDs
   const handleSave = async () => {
-     console.log("yesssssssssss")
+    console.log("yesssssssssss");
     try {
       // Logic for Payment Status
       let paymentStatus = "UNPAID";
@@ -234,10 +233,10 @@ const removeTest = (id) => {
       const payload = {
         ...form,
         // FIX: Sending the whole test object so Mongoose can "embed" it
-        tests: selectedTests.map(t => ({
+        tests: selectedTests.map((t) => ({
           testId: t._id,
           name: t.name,
-          price: t.defaultPrice
+          price: t.defaultPrice,
         })),
         billing: {
           grossTotal: calculations.grossTotal,
@@ -247,21 +246,22 @@ const removeTest = (id) => {
           netAmount: calculations.netAmount,
           cashReceived: Number(cashReceived),
           dueAmount: calculations.dueAmount,
-          paymentStatus: paymentStatus // Ensure this matches your backend enum (PAID, UNPAID, PARTIAL)
+          paymentStatus: paymentStatus, // Ensure this matches your backend enum (PAID, UNPAID, PARTIAL)
         },
       };
-      console.log("okokok")
+      console.log("okokok");
 
       const res = await registerPatient(payload);
 
-      alert(`Patient Registered Successfully ✅\nLab No: ${res.data.data.labNumber}`);
+      alert(
+        `Patient Registered Successfully ✅\nLab No: ${res.data.data.labNumber}`
+      );
       window.location.reload();
     } catch (err) {
       console.error("Save Error:", err.response?.data);
       alert(err.response?.data?.message || "Validation failed. Check console.");
     }
   };
-
 
   const handlePrint = () => {
     //   if (!validateForm()) return;
@@ -430,16 +430,11 @@ const removeTest = (id) => {
     doc.save(`Bill_${labNo}.pdf`);
   };
   return (
-    <div>
-      <div className=" flex min-h-screen bg-gray-100 font-sans text-gray-700">
-
+    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+      <Navigation />
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-
-        <div className="flex-1 flex flex-col h-screen overflow-y-auto">
-          {/* Top Navbar inside the content area */}
-        <Navigation />
-
-        <main className="p-6 max-w-7xl mx-auto">
+        <main className="flex-1 p-8 overflow-y-auto">
           {/* --- Main Form Card --- */}
           <div className="bg-white rounded-lg shadow-xl border-t-4 border-teal-500 overflow-hidden">
             {/* Form Header */}
@@ -637,14 +632,25 @@ const removeTest = (id) => {
                           <th className="px-4 py-2 text-center w-20">Action</th>
                         </tr>
                       </thead>
-                     <tbody className="divide-y">
+                      <tbody className="divide-y">
                         {selectedTests.length === 0 ? (
-                          <tr><td colSpan="3" className="px-4 py-8 text-center text-gray-400 italic">No tests selected</td></tr>
+                          <tr>
+                            <td
+                              colSpan="3"
+                              className="px-4 py-8 text-center text-gray-400 italic"
+                            >
+                              No tests selected
+                            </td>
+                          </tr>
                         ) : (
                           selectedTests.map((test) => (
                             <tr key={test._id} className="hover:bg-gray-50">
-                              <td className="px-4 py-2 font-medium">{test.name}</td>
-                              <td className="px-4 py-2 text-right">₹{(test.defaultPrice || 0).toFixed(2)}</td>
+                              <td className="px-4 py-2 font-medium">
+                                {test.name}
+                              </td>
+                              <td className="px-4 py-2 text-right">
+                                ₹{(test.defaultPrice || 0).toFixed(2)}
+                              </td>
                               <td className="px-4 py-2 text-center">
                                 <button
                                   type="button"
@@ -782,9 +788,6 @@ const removeTest = (id) => {
             </form>
           </div>
         </main>
-
-      
-        </div>
       </div>
     </div>
   );

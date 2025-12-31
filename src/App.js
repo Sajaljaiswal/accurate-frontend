@@ -6,7 +6,6 @@ import { AuthProvider } from "./auth/AuthContext";
 import Admin from "./pages/Admin";
 import Register from "./pages/Register";
 import AllPatient from "./pages/Patient/AllPatient";
-import Account from "./pages/Account";
 import NewDoctor from "./pages/Doctors/NewDoctor";
 import NewPanel from "./pages/Panel/NewPanel";
 import AllDoctor from "./pages/Doctors/AllDoctor";
@@ -40,7 +39,6 @@ export default function App() {
           />
           <Route path="/register" element={<Register />} />
           <Route path="/allPatient" element={<AllPatient />} />
-          <Route path="/account" element={<Account />} />
           <Route path="/newDoctor" element={<NewDoctor />} />
           <Route path="/newPanel" element={<NewPanel />} />
           <Route path="/allDoctor" element={<AllDoctor />} />

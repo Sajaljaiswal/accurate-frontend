@@ -14,6 +14,7 @@ import {
   Globe,
   User,
 } from "lucide-react";
+import Sidebar from "../Sidebar";
 
 const NewPanel = () => {
   const [form, setForm] = useState({
@@ -74,25 +75,17 @@ const NewPanel = () => {
   };
 
   return (
-    <div>
+     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
       <Navigation />
-
-      <div className="flex flex-col min-h-screen bg-slate-50">
-        {/* Header */}
-        <header className="bg-blue-900 py-4 shadow-md">
-          <h1 className="text-xl font-bold text-white text-center uppercase tracking-wider">
-            Hospital & Clinic Registration
-          </h1>
-        </header>
-
-        {/* Main Content */}
-        <main className="flex-grow p-4 md:p-8 flex justify-center">
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 p-8 overflow-y-auto">
           <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
             {/* Form Tab Indicator */}
             <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex justify-between items-center">
               <div className="inline-block bg-white border-x border-t border-slate-200 px-4 py-2 rounded-t-lg -mb-[13px]">
                 <span className="text-blue-700 font-bold flex items-center gap-2">
-                  <Building size={18} /> Organization Details
+                  <Building size={18} /> Panel Details
                 </span>
               </div>
               <span className="text-[10px] font-bold text-slate-400 uppercase">
@@ -401,11 +394,6 @@ const NewPanel = () => {
             </form>
           </div>
         </main>
-
-        {/* Sticky Footer */}
-        <footer className="bg-blue-900 text-white text-[10px] md:text-xs py-3 text-center">
-          © 2026 Accurate Diagnostic Center. All rights reserved.
-        </footer>
       </div>
     </div>
   );

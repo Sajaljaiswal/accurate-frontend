@@ -153,12 +153,11 @@ const AllPatient = () => {
   });
 
   return (
-    <div>
-      <div className=" flex min-h-screen bg-gray-100 font-sans text-gray-700">
-        <Sidebar />
-        <div className="flex-1 flex flex-col h-screen overflow-y-auto">
-        <Navigation />
-        <div>
+    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+         <Navigation />
+         <div className="flex flex-1 overflow-hidden">
+           <Sidebar />
+           <main className="flex-1 overflow-y-auto">
           <div className="min-h-screen bg-slate-100 font-sans p-4 md:p-6">
             <div className="max-w-[1600px] mx-auto mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
@@ -515,9 +514,9 @@ const AllPatient = () => {
               Next
             </button>
           </div>
+        </main>
         </div>
-        </div>
-      </div>
+      
       {isEditOpen && (
         <EditPatientModal
           patient={selectedPatient}

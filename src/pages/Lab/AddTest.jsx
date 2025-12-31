@@ -8,7 +8,7 @@ import { Plus, Trash2 } from "lucide-react";
 
 const AddTest = () => {
   const navigate = useNavigate();
-  
+
   // 1. Add state to hold categories fetched from DB
   const [dbCategories, setDbCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,20 +23,19 @@ const AddTest = () => {
     status: "ACTIVE",
     defaultPrice: "",
     referenceRanges: [
-      { gender: "BOTH", ageMin: 0, ageMax: 100, lowRange: "", highRange: "" }
-    ]
+      { gender: "BOTH", ageMin: 0, ageMax: 100, lowRange: "", highRange: "" },
+    ],
   });
 
-  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await getAllCategories();
         const categoriesData = response.data.data;
         setDbCategories(categoriesData);
-        
-          if (categoriesData.length > 0) {
-          setForm(prev => ({ ...prev, category: categoriesData[0]._id }));
+
+        if (categoriesData.length > 0) {
+          setForm((prev) => ({ ...prev, category: categoriesData[0]._id }));
         }
       } catch (err) {
         console.error("Failed to fetch categories:", err);
@@ -65,7 +64,10 @@ const AddTest = () => {
   const addRangeRow = () => {
     setForm({
       ...form,
-      referenceRanges: [...form.referenceRanges, { gender: "BOTH", ageMin: 0, ageMax: 100, lowRange: "", highRange: "" }]
+      referenceRanges: [
+        ...form.referenceRanges,
+        { gender: "BOTH", ageMin: 0, ageMax: 100, lowRange: "", highRange: "" },
+      ],
     });
   };
 
@@ -96,26 +98,29 @@ const AddTest = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans text-slate-900">
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-screen overflow-y-auto">
-        <Navigation />
-        
-        <main className="p-8 flex justify-center">
+    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+      <Navigation />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 p-8 overflow-y-auto">
           <div className="w-full max-w-5xl bg-white rounded-xl shadow-sm border border-slate-200">
             <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">
                   {form.name || "New Test"}
                 </h1>
-                <p className="text-sm text-slate-500 font-medium">Test details</p>
+                <p className="text-sm text-slate-500 font-medium">
+                  Test details
+                </p>
               </div>
             </div>
 
             <div className="p-4 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-600">Name</label>
+                  <label className="text-sm font-medium text-slate-600">
+                    Name
+                  </label>
                   <input
                     name="name"
                     value={form.name}
@@ -125,7 +130,9 @@ const AddTest = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-600">Short name</label>
+                  <label className="text-sm font-medium text-slate-600">
+                    Short name
+                  </label>
                   <input
                     name="shortName"
                     value={form.shortName}
@@ -138,7 +145,9 @@ const AddTest = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-600">Category</label>
+                  <label className="text-sm font-medium text-slate-600">
+                    Category
+                  </label>
                   {/* 3. Updated Select field to use dynamic data */}
                   <select
                     name="category"
@@ -147,7 +156,9 @@ const AddTest = () => {
                     className="w-full border border-slate-200 rounded-lg p-3 text-sm bg-white focus:border-blue-500 outline-none"
                   >
                     <option value="" disabled>
-                      {loading ? "Loading categories..." : "-- Select Category --"}
+                      {loading
+                        ? "Loading categories..."
+                        : "-- Select Category --"}
                     </option>
                     {dbCategories.map((cat) => (
                       <option key={cat._id} value={cat._id}>
@@ -162,7 +173,9 @@ const AddTest = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium text-slate-600">Unit</label>
+                    <label className="text-sm font-medium text-slate-600">
+                      Unit
+                    </label>
                     <button className="text-blue-600 text-xs font-bold flex items-center gap-1">
                       <Plus size={12} /> Add new
                     </button>
@@ -179,7 +192,9 @@ const AddTest = () => {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-600">Input type</label>
+                  <label className="text-sm font-medium text-slate-600">
+                    Input type
+                  </label>
                   <select
                     name="inputType"
                     value={form.inputType}
@@ -193,8 +208,6 @@ const AddTest = () => {
                 </div>
               </div>
 
-             
-
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -204,14 +217,19 @@ const AddTest = () => {
                   onChange={handleChange}
                   className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
-                <label htmlFor="isOptional" className="text-sm text-slate-600 cursor-pointer">
+                <label
+                  htmlFor="isOptional"
+                  className="text-sm text-slate-600 cursor-pointer"
+                >
                   Optional
                 </label>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-100">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-blue-900 uppercase">Test Price (₹)</label>
+                  <label className="text-sm font-bold text-blue-900 uppercase">
+                    Test Price (₹)
+                  </label>
                   <input
                     type="number"
                     name="defaultPrice"
@@ -224,8 +242,13 @@ const AddTest = () => {
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-bold text-blue-800 uppercase tracking-widest">Reference Ranges (Gender/Age Wise)</h3>
-                  <button onClick={addRangeRow} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 font-bold">
+                  <h3 className="text-sm font-bold text-blue-800 uppercase tracking-widest">
+                    Reference Ranges (Gender/Age Wise)
+                  </h3>
+                  <button
+                    onClick={addRangeRow}
+                    className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 font-bold"
+                  >
                     <Plus size={14} /> ADD RANGE
                   </button>
                 </div>
@@ -246,18 +269,62 @@ const AddTest = () => {
                       {form.referenceRanges.map((range, index) => (
                         <tr key={index}>
                           <td className="p-2">
-                            <select name="gender" value={range.gender} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-full">
+                            <select
+                              name="gender"
+                              value={range.gender}
+                              onChange={(e) => handleRangeChange(index, e)}
+                              className="border rounded p-1.5 w-full"
+                            >
                               <option value="All">BOTH</option>
                               <option value="Male">Male</option>
                               <option value="Female">Female</option>
                             </select>
                           </td>
-                          <td className="p-2"><input type="number" name="ageMin" value={range.ageMin} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-16" /></td>
-                          <td className="p-2"><input type="number" name="ageMax" value={range.ageMax} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-16" /></td>
-                          <td className="p-2"><input type="text" name="lowRange" value={range.lowRange} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-20" placeholder="0" /></td>
-                          <td className="p-2"><input type="text" name="highRange" value={range.highRange} onChange={(e) => handleRangeChange(index, e)} className="border rounded p-1.5 w-20" placeholder="100" /></td>
+                          <td className="p-2">
+                            <input
+                              type="number"
+                              name="ageMin"
+                              value={range.ageMin}
+                              onChange={(e) => handleRangeChange(index, e)}
+                              className="border rounded p-1.5 w-16"
+                            />
+                          </td>
+                          <td className="p-2">
+                            <input
+                              type="number"
+                              name="ageMax"
+                              value={range.ageMax}
+                              onChange={(e) => handleRangeChange(index, e)}
+                              className="border rounded p-1.5 w-16"
+                            />
+                          </td>
+                          <td className="p-2">
+                            <input
+                              type="text"
+                              name="lowRange"
+                              value={range.lowRange}
+                              onChange={(e) => handleRangeChange(index, e)}
+                              className="border rounded p-1.5 w-20"
+                              placeholder="0"
+                            />
+                          </td>
+                          <td className="p-2">
+                            <input
+                              type="text"
+                              name="highRange"
+                              value={range.highRange}
+                              onChange={(e) => handleRangeChange(index, e)}
+                              className="border rounded p-1.5 w-20"
+                              placeholder="100"
+                            />
+                          </td>
                           <td className="p-2 text-center">
-                            <button onClick={() => removeRangeRow(index)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-full"><Trash2 size={16}/></button>
+                            <button
+                              onClick={() => removeRangeRow(index)}
+                              className="text-red-500 hover:bg-red-50 p-1.5 rounded-full"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </td>
                         </tr>
                       ))}

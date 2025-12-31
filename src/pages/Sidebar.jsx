@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { 
   CheckCircleIcon, LayoutDashboardIcon, BarChart3Icon, 
-  CalendarDaysIcon, WalletIcon, UsersIcon, 
+  WalletIcon, UsersIcon, 
   FileTextIcon, SettingsIcon, ChevronUpIcon, ChevronDownIcon,
   FlaskConicalIcon // Example icon for Laboratory
 } from "lucide-react";
@@ -13,16 +13,9 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <aside className="w-64 bg-white h-screen border-r border-gray-100 flex flex-col py-6 sticky top-0">
+    <aside className="w-64 bg-white h-screen border-r border-gray-100 flex flex-col pb-6 sticky top-0">
       <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
         
-        {/* Simple Links */}
-        <SidebarItem 
-          icon={<CheckCircleIcon size={20} />} 
-          label="Getting Started" 
-          active={isActive("/")}
-          onClick={() => navigate('/')}
-        />
         <SidebarItem 
           icon={<LayoutDashboardIcon size={20} />} 
           label="Dashboard" 
