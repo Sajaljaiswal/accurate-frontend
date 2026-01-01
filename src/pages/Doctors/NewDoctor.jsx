@@ -4,17 +4,13 @@ import Navigation from "../Navigation";
 import {
   Save,
   UserPlus,
-  MapPin,
-  Building2,
-  Phone,
-  Mail,
-  GraduationCap,
-  Calendar,
   Lock,
 } from "lucide-react";
 import Sidebar from "../Sidebar";
+import { useNavigate } from "react-router-dom";
 
 const NewDoctor = () => {
+   const navigate = useNavigate();
   const [form, setForm] = useState({
     title: "Dr.",
     fullName: "",
@@ -41,10 +37,13 @@ const NewDoctor = () => {
     try {
       await createDoctor(form);
       alert("Doctor registered successfully");
+      navigate("/allDoctor");
     } catch (err) {
       console.error(err);
       alert("Failed to save doctor");
     }
+
+
   };
 
   return (

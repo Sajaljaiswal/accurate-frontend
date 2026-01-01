@@ -90,7 +90,7 @@ const AddTest = () => {
 
       await addTest(payload);
       alert("Test added successfully ✅");
-      navigate("/testCategories");
+      navigate("/lab");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Failed to save test");

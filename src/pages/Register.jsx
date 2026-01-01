@@ -11,7 +11,14 @@ import { getAllTests } from "../api/testApi";
 import Sidebar from "./Sidebar";
 
 // Reusable Input Component
-const InputField = ({ label, type = "text", placeholder, value, onChange }) => (
+const InputField = ({
+  label,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  maxLength,
+}) => (
   <div>
     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
       {label}
@@ -21,6 +28,7 @@ const InputField = ({ label, type = "text", placeholder, value, onChange }) => (
       placeholder={placeholder}
       value={value}
       onChange={onChange}
+      maxLength={maxLength}
       className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
     />
   </div>
@@ -214,13 +222,13 @@ const Register = () => {
       discountAmt,
       netAmount,
       dueAmount,
+      cashRec,
       count: selectedTests.length,
     };
   }, [selectedTests, discountValue, discountType, cashReceived]);
 
   // 2. FIXED SAVE LOGIC: Sending objects instead of just string IDs
   const handleSave = async () => {
-    console.log("yesssssssssss");
     try {
       // Logic for Payment Status
       let paymentStatus = "UNPAID";
@@ -256,7 +264,7 @@ const Register = () => {
       alert(
         `Patient Registered Successfully ✅\nLab No: ${res.data.data.labNumber}`
       );
-      window.location.reload();
+      // window.location.reload();
     } catch (err) {
       console.error("Save Error:", err.response?.data);
       alert(err.response?.data?.message || "Validation failed. Check console.");
@@ -268,13 +276,22 @@ const Register = () => {
 
     const { labNo, regNo } = generateSerialNumbers();
     const doc = new jsPDF();
+    const leftX = 15; // left page margin
+    const now = new Date();
+
+    const formattedDate = now.toLocaleDateString("en-GB"); // DD/MM/YYYY
+    const formattedTime = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
     const pageWidth = doc.internal.pageSize.getWidth();
 
     // --- 1. HEADER (Laboratory Info) ---
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("ACCURATE DIAGNOSTIC CENTER", pageWidth / 2 + 30, 15, {
-      align: "center",
+    doc.text("ACCURATE DIAGNOSTIC CENTER", leftX, 15, {
+      align: "left",
     });
 
     doc.setFontSize(8);
@@ -287,7 +304,7 @@ const Register = () => {
       "Website: www.accuratediagnostics.co.in",
     ];
     headerLines.forEach((line, index) => {
-      doc.text(line, pageWidth / 2 + 30, 20 + index * 4, { align: "left" });
+      doc.text(line, leftX, 20 + index * 4, { align: "left" });
     });
 
     // --- 2. TITLE BAR ---
@@ -324,11 +341,7 @@ const Register = () => {
     doc.text(`25-26/${regNo}`, rightValX, 58); // Serialized Bill No
 
     doc.text(`Reg. Date :`, rightColX, 64);
-    doc.text(
-      `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
-      rightValX,
-      64
-    );
+    doc.text(`${formattedDate} ${formattedTime}`, rightValX, 64);
 
     doc.text(`Patient ID :`, rightColX, 70);
     doc.text(`157098`, rightValX, 70); // Static or from user context
@@ -343,22 +356,12 @@ const Register = () => {
       "DIAGNOSTICS", // Department
       t.name,
       "-", // Token No
-      new Date().toLocaleDateString(), // Delivery Date
       (t.defaultPrice || t.price || 0).toFixed(2),
     ]);
 
     autoTable(doc, {
       startY: 82,
-      head: [
-        [
-          "Sr.No",
-          "Department",
-          "Test Name",
-          "Token No",
-          "Delivery Date",
-          "Test Rate",
-        ],
-      ],
+      head: [["Sr.No", "Department", "Test Name", "Token No", "Test Rate"]],
       body: tableData,
       theme: "plain",
       styles: { fontSize: 8, cellPadding: 2 },
@@ -399,12 +402,14 @@ const Register = () => {
 
     doc.setFont("helvetica", "normal");
     doc.text(`Paid Amount:`, 137, finalY + 18);
-    doc.text(`${calculations.netAmount.toFixed(2)}`, 193, finalY + 18, {
+    doc.text(`${calculations.cashRec.toFixed(2)}`, 193, finalY + 18, {
       align: "right",
     });
 
     doc.text(`Due Amount:`, 137, finalY + 23);
-    doc.text(`0.00`, 193, finalY + 23, { align: "right" });
+    doc.text(`${calculations.dueAmount.toFixed(2)}`, 193, finalY + 23, {
+      align: "right",
+    });
 
     // --- 6. FOOTER & SIGNATURE ---
     const footerY = 270;
@@ -426,8 +431,10 @@ const Register = () => {
       footerY + 16
     );
 
-    // Save PDF
-    doc.save(`Bill_${labNo}.pdf`);
+    // --- PRINT PREVIEW INSTEAD OF DOWNLOAD ---
+    doc.autoPrint();
+    const pdfBlob = doc.output("bloburl");
+    window.open(pdfBlob);
   };
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
@@ -474,13 +481,30 @@ const Register = () => {
                     label="Title"
                     options={["Mr.", "Mrs.", "Miss.", "Dr.", "Ms.", "C/O"]}
                     value={form.title}
-                    onChange={(e) =>
-                      setForm({ ...form, title: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const selectedTitle = e.target.value;
+                      let autoGender = form.gender; // Default to current gender
+
+                      // Logic to determine gender based on title
+                      if (selectedTitle === "Mr.") {
+                        autoGender = "Male";
+                      } else if (
+                        ["Mrs.", "Miss.", "Ms."].includes(selectedTitle)
+                      ) {
+                        autoGender = "Female";
+                      }
+
+                      // Update both title and gender in one state update
+                      setForm({
+                        ...form,
+                        title: selectedTitle,
+                        gender: autoGender,
+                      });
+                    }}
                   />
                 </div>
                 <InputField
-                  label="First Name"
+                  label="Name"
                   placeholder="Harsh"
                   value={form.firstName}
                   onChange={(e) =>
@@ -505,6 +529,7 @@ const Register = () => {
                   label="Mobile No."
                   placeholder="987346665"
                   value={form.mobile}
+                  maxLength={10}
                   onChange={(e) => setForm({ ...form, mobile: e.target.value })}
                 />
 
@@ -669,20 +694,20 @@ const Register = () => {
                 </div>
 
                 {/* Billing Summary Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                  {/* Discount Inputs */}
-                  <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
-                    <h4 className="font-bold text-xs text-gray-500 uppercase">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 items-start">
+                  {/* 1. Discount Settings */}
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 h-full">
+                    <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider">
                       Discount Settings
                     </h4>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <select
                         value={discountType}
                         onChange={(e) => setDiscountType(e.target.value)}
-                        className="border rounded px-2 py-1 text-sm bg-white outline-none"
+                        className="border rounded-lg px-2 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500"
                       >
-                        <option value="amount">Amount (₹)</option>
                         <option value="percent">Percent (%)</option>
+                        <option value="amount">Amount (₹)</option>
                       </select>
                       <input
                         type="number"
@@ -690,71 +715,75 @@ const Register = () => {
                         onChange={(e) =>
                           setDiscountValue(Number(e.target.value))
                         }
-                        className="border rounded px-3 py-1 text-sm w-full outline-none"
-                        placeholder="Enter value"
+                        className="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[80px] outline-none focus:ring-2 focus:ring-teal-500"
+                        placeholder="Enter Value"
                       />
                       <select
                         value={discountReason}
                         onChange={(e) => setDiscountReason(e.target.value)}
-                        className="border rounded px-2 py-1 text-sm bg-white outline-none"
+                        className="border rounded-lg px-2 py-2 text-sm bg-white outline-none w-full"
                       >
                         <option value="staff">Staff reference</option>
                         <option value="sample">Sample</option>
                       </select>
                     </div>
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
-                    <h4 className="font-bold text-xs text-gray-500 uppercase">
-                      Discount Settings
+
+                  {/* 2. Payment Settings */}
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3 h-full">
+                    <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider">
+                      Payment Details
                     </h4>
-                    <div className="flex gap-2">
-                      <div className="col-span-3 bg-white p-4 rounded-lg border mt-4">
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                          Cash Collected (₹)
-                        </label>
-                        <input
-                          type="number"
-                          value={cashReceived}
-                          onChange={(e) =>
-                            setCashReceived(Number(e.target.value))
-                          }
-                          className="w-full border rounded px-3 py-2 text-sm outline-none"
-                          placeholder="Enter cash amount"
-                        />
-                      </div>
+                    <div className="bg-white p-3 rounded-lg border border-gray-100">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">
+                        Cash Collected (₹)
+                      </label>
+                      <input
+                        type="number"
+                        value={cashReceived}
+                        onChange={(e) =>
+                          setCashReceived(Number(e.target.value))
+                        }
+                        className="w-full text-lg font-semibold outline-none text-gray-700"
+                        placeholder="0"
+                      />
                     </div>
                   </div>
 
-                  {/* Final Calculations Show */}
-                  <div className="md:col-span-2 grid grid-cols-3 gap-4 bg-teal-50 p-4 rounded-lg border border-teal-100">
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-gray-500 uppercase">
-                        Gross Total
-                      </p>
-                      <p className="text-xl font-bold text-gray-800">
-                        ₹{calculations.grossTotal.toFixed(2)}
-                      </p>
+                  {/* 3. Summary Card */}
+                  <div className="bg-teal-50 p-5 rounded-xl border border-teal-100 shadow-sm space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase">
+                          Gross Total
+                        </p>
+                        <p className="text-lg font-bold text-gray-800">
+                          ₹{calculations.grossTotal.toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-bold text-red-500 uppercase">
+                          Discount (-)
+                        </p>
+                        <p className="text-lg font-bold text-red-600">
+                          ₹{calculations.discountAmt.toFixed(2)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-red-500 uppercase">
-                        Discount (-)
-                      </p>
-                      <p className="text-xl font-bold text-red-600">
-                        ₹{calculations.discountAmt.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="text-center bg-red-100 text-red-700 p-2 rounded">
-                      <p className="text-xs font-bold uppercase">Due Amount</p>
-                      <p className="text-xl font-extrabold">
-                        ₹{calculations.dueAmount.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="text-center bg-teal-600 text-white p-2 rounded shadow-md">
-                      <p className="text-xs font-bold uppercase opacity-80">
+
+                    <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-teal-200">
+                      <span className="text-xs font-bold text-teal-700 uppercase">
                         Net Payable
-                      </p>
-                      <p className="text-xl font-extrabold font-mono">
+                      </span>
+                      <span className="text-xl font-black text-teal-700">
                         ₹{calculations.netAmount.toFixed(2)}
+                      </span>
+                    </div>
+
+                    <div className="bg-red-500 text-white p-3 rounded-lg flex justify-between items-center shadow-md">
+                      <p className="text-xs font-bold uppercase">Due Amount</p>
+                      <p className="text-xl font-black">
+                        ₹{calculations.dueAmount.toFixed(2)}
                       </p>
                     </div>
                   </div>

@@ -12,7 +12,8 @@ import {
   Plus,
   Loader2,
 } from "lucide-react";
-import { useReactToPrint } from "react-to-print";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import axios from "axios";
 import Sidebar from "../Sidebar";
 import Navigation from "../Navigation";
@@ -23,8 +24,6 @@ const LabReports = () => {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [printNode, setPrintNode] = useState(null);
-
 
   // Fetch Patient Data on Load
   useEffect(() => {
@@ -42,15 +41,86 @@ const LabReports = () => {
     fetchPatientData();
   }, [id]);
 
-  useEffect(() => {
-  console.log("PRINT NODE:", printNode);
-}, [printNode]);
-  
+  const handlePrint = () => {
+    if (!patient) return;
 
-const handlePrint = useReactToPrint({
-  content: () => printNode,
-  documentTitle: `Lab_Report_${patient?.registrationNumber || "Export"}`,
-});
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // ===== HEADER =====
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("ACCURATE DIAGNOSTIC CENTER", 15, 15);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+
+    const headerLines = [
+      "7/15128/2, Janaura, NH-27, Ayodhya, Uttar Pradesh",
+      "Contact Nos : 8009904250",
+      "Branch Ayodhya Contact No: 05267315486, +8924962394",
+      "Email: accurate@gmail.com",
+      "Website: www.accuratediagnostics.co.in",
+    ];
+
+    headerLines.forEach((line, index) => {
+      doc.text(line, 15, 22 + index * 4);
+    });
+
+    // ===== TITLE BAR =====
+    doc.setFillColor(230, 230, 230);
+    doc.rect(15, 42, pageWidth - 30, 6, "F");
+    doc.setFont("helvetica", "bold");
+    doc.text("Lab Report", 18, 46);
+
+    // ===== PATIENT INFO =====
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+
+    doc.text(`Patient Name : ${patient.title} ${patient.firstName}`, 15, 58);
+    doc.text(`Age / Sex : ${patient.age} Y / ${patient.gender}`, 15, 64);
+    doc.text(`Referred By : ${patient.referredBy || "Self"}`, 15, 70);
+    doc.text(`Reg No : ${patient.registrationNumber}`, 130, 58);
+    doc.text(`Lab No : ${patient.labNumber}`, 130, 64);
+
+    const now = new Date();
+    const date = now.toLocaleDateString("en-GB");
+    const time = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    doc.text(`Reported On : ${date} ${time}`, 130, 70);
+
+    // ===== TEST TABLE =====
+    const tableData = patient.tests.map((test, i) => [
+      i + 1,
+      test.name,
+      test.resultValue || "---",
+      test.unit,
+      test.referenceRange,
+    ]);
+
+    autoTable(doc, {
+      startY: 80,
+      head: [["#", "Test Name", "Result", "Unit", "Reference"]],
+      body: tableData,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [220, 220, 220] },
+      margin: { left: 15, right: 15 },
+    });
+
+    // ===== FOOTER =====
+    const footerY = doc.lastAutoTable.finalY + 20;
+    doc.line(15, footerY, pageWidth - 15, footerY);
+    doc.setFontSize(8);
+    doc.text("Authorised Signatory", pageWidth - 60, footerY + 8);
+
+    // ===== PRINT PREVIEW (NO DOWNLOAD) =====
+    doc.autoPrint();
+    window.open(doc.output("bloburl"));
+  };
 
   const handleValueChange = (testId, newValue) => {
     const updatedTests = patient.tests.map((t) =>
@@ -96,12 +166,12 @@ const handlePrint = useReactToPrint({
     return <div className="p-10 text-center">Patient not found.</div>;
 
   return (
-   <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
       <Navigation />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <main className="flex-1 p-8 overflow-y-auto">
-          <div ref={setPrintNode} className="p-8">
+          <div className="p-8">
             {/* Top Header Bar */}
             <div className="flex justify-between items-center border-b pb-2 mb-4">
               <div>
@@ -251,13 +321,12 @@ const handlePrint = useReactToPrint({
           {/* Bottom Sticky Footer */}
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-end items-center shadow-lg">
             <div className="flex gap-3">
-             <button
-  onClick={handlePrint}
-  disabled={!printNode}
-  className="bg-slate-800 text-white px-6 py-2 text-sm font-bold rounded flex items-center gap-2 disabled:opacity-50"
->
-  <Printer size={16} /> Print PDF
-</button>
+              <button
+                onClick={handlePrint}
+                className="bg-slate-800 text-white px-6 py-2 text-sm font-bold rounded flex items-center gap-2 disabled:opacity-50"
+              >
+                <Printer size={16} /> Print PDF
+              </button>
 
               <button
                 onClick={handleSaveResults}

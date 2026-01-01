@@ -45,13 +45,13 @@ const Sidebar = () => {
           icon={<FlaskConicalIcon size={20} />}
           subItems={[
             { 
-              label: "Tests", 
+              label: "Categories", 
               path: "/TestCategories", 
               icon: <FileTextIcon size={18} />, 
               active: isActive("/TestCategories") 
             },
             { 
-              label: "Reports", 
+              label: "Tests", 
               path: "/lab", 
               icon: <BarChart3Icon size={18} />, 
               active: isActive("/lab") 

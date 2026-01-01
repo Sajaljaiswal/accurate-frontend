@@ -98,7 +98,7 @@ const AllPatient = () => {
   const headers = [
     "Date",
     "Lab No",
-    "MRN No",
+    // "MRN No",
     "Order Id",
     "Reg No",
     "Patient Name",
@@ -117,6 +117,7 @@ const AllPatient = () => {
   ];
 
   const filteredPatients = patients.filter((p) => {
+    console.log("Filtering patient:", p);
     const createdDate = new Date(p.createdAt);
 
     const matchesLab =
@@ -186,7 +187,7 @@ const AllPatient = () => {
                         Identification
                       </label>
                       <div className="flex gap-2">
-                        <select className="w-1/3 bg-slate-50 border border-slate-300 rounded p-2 text-sm">
+                        <select className="w-1/2 bg-slate-50 border border-slate-300 rounded p-2 text-sm">
                           <option>Lab No</option>
                         </select>
                         <input
@@ -206,6 +207,7 @@ const AllPatient = () => {
                       </label>
                       <input
                         type="text"
+                        placeholder="Enter No."
                         className="border border-slate-300 rounded p-2 text-sm"
                         value={filters.mobile}
                         onChange={(e) =>
@@ -224,7 +226,7 @@ const AllPatient = () => {
                       <div className="flex gap-2 items-center">
                         <input
                           type="date"
-                          className="w-1/2 border border-slate-300 rounded p-2 text-sm"
+                          className="border border-slate-300 rounded p-2 text-sm"
                           value={filters.fromDate}
                           onChange={(e) =>
                             setFilters({ ...filters, fromDate: e.target.value })
@@ -233,7 +235,7 @@ const AllPatient = () => {
                         <span className="text-slate-400">-</span>
                         <input
                           type="date"
-                          className="w-1/2 border border-slate-300 rounded p-2 text-sm"
+                          className="border border-slate-300 rounded p-2 text-sm"
                           value={filters.toDate}
                           onChange={(e) =>
                             setFilters({ ...filters, toDate: e.target.value })
@@ -241,19 +243,7 @@ const AllPatient = () => {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">
-                        Phlebotomist
-                      </label>
-                      <select className="border border-slate-300 rounded p-2 text-sm bg-white">
-                        <option>--Select--</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Column 4 */}
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-500 uppercase">
                         Patient Name
                       </label>
@@ -270,15 +260,36 @@ const AllPatient = () => {
                         }
                       />
                     </div>
-                    <div className="flex flex-col gap-1">
+                  </div>
+
+                  {/* Column 4 */}
+                  <div className="space-y-4 ml-24">
+                   
+                    <div className="flex flex-col gap-1 ">
                       <label className="text-xs font-bold text-slate-500 uppercase">
                         Order ID
                       </label>
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          className="w-1/2 border border-slate-300 rounded p-2 text-sm"
+                          className="w-full border border-slate-300 rounded p-2 text-sm"
                           placeholder="Order ID"
+                          value={filters.orderId}
+                          onChange={(e) =>
+                            setFilters({ ...filters, orderId: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                     <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Reg No.
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          className="w-full border border-slate-300 rounded p-2 text-sm"
+                          placeholder="Reg No"
                           value={filters.orderId}
                           onChange={(e) =>
                             setFilters({ ...filters, orderId: e.target.value })
@@ -397,7 +408,7 @@ const AllPatient = () => {
                             <td className="p-3 font-mono">{p.labNumber}</td>
 
                             {/* MRN (use Mongo _id short) */}
-                            <td className="p-3">{p._id.slice(-6)}</td>
+                            {/* <td className="p-3">{p._id.slice(-6)}</td> */}
 
                             {/* Order ID */}
                             <td className="p-3">{p.orderId}</td>
