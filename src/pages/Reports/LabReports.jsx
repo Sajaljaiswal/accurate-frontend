@@ -16,6 +16,8 @@ import autoTable from "jspdf-autotable";
 import axios from "axios";
 import Sidebar from "../Sidebar";
 import Navigation from "../Navigation";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 const LabReports = () => {
   const { id } = useParams(); // Get patient ID from URL
@@ -25,6 +27,21 @@ const LabReports = () => {
   const [saving, setSaving] = useState(false);
   const [activeComment, setActiveComment] = useState(null); // { testId, type, value }
 
+  const toggleReportType = (testId) => {
+    const updatedTests = patient.tests.map((t) =>
+      t.testId === testId
+        ? { ...t, reportType: t.reportType === "text" ? "range" : "text" }
+        : t
+    );
+    setPatient({ ...patient, tests: updatedTests });
+  };
+
+  const handleEditorChange = (testId, data) => {
+    const updatedTests = patient.tests.map((t) =>
+      t.testId === testId ? { ...t, richTextContent: data } : t
+    );
+    setPatient({ ...patient, tests: updatedTests });
+  };
   // 1. Function to open the comment modal
   const openCommentModal = (testId, type, currentValue) => {
     setActiveComment({ testId, type, value: currentValue || "" });
@@ -45,14 +62,15 @@ const LabReports = () => {
     };
     fetchPatientData();
   }, [id]);
+
   const saveComment = () => {
     const { testId, type, value } = activeComment;
-    const key = type.toLowerCase(); // 'notes', 'remarks', or 'advice'
+    const key = type.toLowerCase();
 
     const updatedTests = patient.tests.map((t) =>
       t.testId === testId ? { ...t, [key]: value } : t
     );
-    
+
     setPatient({ ...patient, tests: updatedTests });
     setActiveComment(null);
   };
@@ -109,38 +127,70 @@ const LabReports = () => {
 
     doc.text(`Reported On : ${date} ${time}`, 130, 70);
 
-   const tableData = [];
-    patient.tests.forEach((test, i) => {
-      // Main Test Row
-      tableData.push([
-        i + 1,
-        test.name,
-        test.resultValue || "---",
-        test.unit,
-        test.referenceRange,
-      ]);
+    const tableData = [];
 
-      // Add conditional rows for Notes/Remarks/Advice
-      if (test.notes) tableData.push([{ content: `Note: ${test.notes}`, colSpan: 5, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } }]);
-      if (test.remarks) tableData.push([{ content: `Remark: ${test.remarks}`, colSpan: 5, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } }]);
-      if (test.advice) tableData.push([{ content: `Advice: ${test.advice}`, colSpan: 5, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } }]);
+    patient.tests.forEach((test, i) => {
+      if (test.reportType === "text") {
+        // For Text reports, we might need a separate page or a large block
+        // Clean HTML tags for simple PDF printing or use a specialized library
+        const cleanText = test.richTextContent?.replace(/<[^>]*>?/gm, "") || "";
+        doc.text(
+          `${test.name}: ${cleanText}`,
+          15,
+          doc.lastAutoTable?.finalY + 10 || 80
+        );
+      } else {
+        // Main Test Row
+        tableData.push([
+          i + 1,
+          test.name,
+          test.resultValue || "---",
+          test.unit,
+          test.referenceRange,
+        ]);
+
+        // Add conditional rows for Notes/Remarks/Advice
+        if (test.notes)
+          tableData.push([
+            {
+              content: `Note: ${test.notes}`,
+              colSpan: 5,
+              styles: { fontStyle: "italic", textColor: [100, 100, 100] },
+            },
+          ]);
+        if (test.remarks)
+          tableData.push([
+            {
+              content: `Remark: ${test.remarks}`,
+              colSpan: 5,
+              styles: { fontStyle: "italic", textColor: [100, 100, 100] },
+            },
+          ]);
+        if (test.advice)
+          tableData.push([
+            {
+              content: `Advice: ${test.advice}`,
+              colSpan: 5,
+              styles: { fontStyle: "italic", textColor: [100, 100, 100] },
+            },
+          ]);
+      }
     });
 
-    
-   autoTable(doc, {
+    autoTable(doc, {
       startY: 80,
       head: [["#", "Test Name", "Result", "Unit", "Reference"]],
       body: tableData,
-      theme: 'plain', // Use plain to better show secondary rows
+      theme: "plain", // Use plain to better show secondary rows
       styles: { fontSize: 8 },
       headStyles: { fillColor: [220, 220, 220] },
       margin: { left: 15, right: 15 },
       didParseCell: function (data) {
-          // Add border for main test rows only
-          if (typeof data.row.raw[0] === 'number') {
-              data.cell.styles.borderBottom = 0.1;
-          }
-      }
+        // Add border for main test rows only
+        if (typeof data.row.raw[0] === "number") {
+          data.cell.styles.borderBottom = 0.1;
+        }
+      },
     });
 
     // ===== FOOTER =====
@@ -305,57 +355,103 @@ const LabReports = () => {
               {patient.tests.map((test) => (
                 <div
                   key={test.testId}
-                  className="space-y-4 mb-8 pb-4 border-b border-slate-50"
+                  className="mb-10 p-4 bg-white border rounded-lg shadow-sm"
                 >
-                  <div className="grid grid-cols-12 items-center text-sm">
-                    <div className="col-span-5 flex items-center gap-2">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-2">
                       <Edit size={14} className="text-slate-400" />
-                      <span className="font-medium">{test.name}</span>
-                    </div>
-                    <div className="col-span-3 flex justify-center items-center gap-2">
-                      <input
-                        type="text"
-                        className="w-24 border border-slate-300 rounded p-1.5 text-center focus:ring-1 focus:ring-blue-400 outline-none"
-                        value={test.resultValue}
-                        onChange={(e) =>
-                          handleValueChange(test.testId, e.target.value)
-                        }
-                      />
-                      <span className="hidden print:block font-bold text-lg">
-                        {test.resultValue || "---"}
+                      <span className="font-bold text-blue-900">
+                        {test.name}
                       </span>
                     </div>
-                    <span className="hidden print:block font-bold text-lg">
-                      {test.resultValue || "---"}
-                    </span>
-                    <div className="col-span-2 text-slate-600">{test.unit}</div>
-                    <div className="col-span-2 flex items-center gap-2">
-                      <span className="font-bold">{test.referenceRange}</span>
+
+                    {/* REPORT TYPE TOGGLE */}
+                    <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full">
+                      <label className="text-[10px] font-bold uppercase text-slate-500">
+                        Range
+                      </label>
+                      <input
+                        type="checkbox"
+                        className="toggle-checkbox" // Style this as a switch in CSS
+                        checked={test.reportType === "text"}
+                        onChange={() => toggleReportType(test.testId)}
+                      />
+                      <label className="text-[10px] font-bold uppercase text-slate-500">
+                        Text/Doc
+                      </label>
                     </div>
                   </div>
 
+                  {test.reportType === "text" ? (
+                    /* TEXT MODE: CKEDITOR */
+                    <div className="border border-slate-200 rounded-md overflow-hidden">
+                      <CKEditor
+                        editor={ClassicEditor}
+                        data={test.richTextContent || ""} // Loads data if exists, else empty
+                        onChange={(event, editor) => {
+                          const data = editor.getData();
+                          handleEditorChange(test.testId, data);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    /* RANGE MODE: Standard Value/Unit/Ref */
+                    <div className="grid grid-cols-12 items-center text-sm gap-4">
+                      <div className="col-span-4">
+                        <label className="text-[10px] text-gray-400 block">
+                          Result Value
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-300 rounded p-1.5 focus:ring-1 focus:ring-blue-400 outline-none"
+                          value={test.resultValue || ""}
+                          onChange={(e) =>
+                            handleValueChange(test.testId, e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="col-span-4">
+                        <label className="text-[10px] text-gray-400 block">
+                          Unit
+                        </label>
+                        <span className="font-medium text-slate-600">
+                          {test.unit || "N/A"}
+                        </span>
+                      </div>
+                      <div className="col-span-4">
+                        <label className="text-[10px] text-gray-400 block">
+                          Reference Range
+                        </label>
+                        <span className="font-bold text-slate-700">
+                          {test.referenceRange || "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Actions per test */}
-                 {/* Inside patient.tests.map */}
-<div className="flex gap-4 ml-6">
-  {["Notes", "Remarks", "Advice"].map((item) => {
-    const key = item.toLowerCase();
-    const hasValue = !!test[key]; // Check if this test already has this field
-    
-    return (
-      <button
-        key={item}
-        onClick={() => openCommentModal(test.testId, item, test[key])}
-        className={`text-[11px] flex items-center gap-1 border rounded-full px-2 py-0.5 transition-all ${
-          hasValue 
-            ? "bg-blue-50 border-blue-300 text-blue-700 font-bold" 
-            : "text-slate-500 border-slate-200"
-        }`}
-      >
-        <Plus size={12} /> {item} {hasValue && "✓"}
-      </button>
-    );
-  })}
-</div>
+                  <div className="flex gap-4 ml-6 mt-4">
+                    {["Notes", "Remarks", "Advice"].map((item) => {
+                      const key = item.toLowerCase();
+                      const hasValue = !!test[key]; // Check if this test already has this field
+
+                      return (
+                        <button
+                          key={item}
+                          onClick={() =>
+                            openCommentModal(test.testId, item, test[key])
+                          }
+                          className={`text-[11px] flex items-center gap-1 border rounded-full px-2 py-0.5 transition-all ${
+                            hasValue
+                              ? "bg-blue-50 border-blue-300 text-blue-700 font-bold"
+                              : "text-slate-500 border-slate-200"
+                          }`}
+                        >
+                          <Plus size={12} /> {item} {hasValue && "✓"}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
@@ -383,41 +479,48 @@ const LabReports = () => {
           <div className="h-24 print:hidden"></div>
 
           {/* Comment Modal */}
-{activeComment && (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-    <div className="bg-white w-full max-w-lg rounded-lg shadow-2xl">
-      <div className="flex justify-between items-center p-4 border-b">
-        <h3 className="text-lg font-bold text-slate-700 capitalize">
-          Add {activeComment.type} for Test
-        </h3>
-        <button onClick={() => setActiveComment(null)}><X size={20} /></button>
-      </div>
-      <div className="p-4">
-        <textarea
-          autoFocus
-          className="w-full border border-slate-300 rounded-md p-3 min-h-[150px] outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder={`Enter ${activeComment.type} here...`}
-          value={activeComment.value}
-          onChange={(e) => setActiveComment({ ...activeComment, value: e.target.value })}
-        />
-      </div>
-      <div className="p-4 border-t flex justify-end gap-3">
-        <button 
-          onClick={() => setActiveComment(null)}
-          className="px-4 py-2 text-slate-600 font-medium"
-        >
-          Cancel
-        </button>
-        <button 
-          onClick={saveComment}
-          className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700"
-        >
-          Done
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          {activeComment && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+              <div className="bg-white w-full max-w-lg rounded-lg shadow-2xl">
+                <div className="flex justify-between items-center p-4 border-b">
+                  <h3 className="text-lg font-bold text-slate-700 capitalize">
+                    Add {activeComment.type} for Test
+                  </h3>
+                  <button onClick={() => setActiveComment(null)}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="p-4">
+                  <textarea
+                    autoFocus
+                    className="w-full border border-slate-300 rounded-md p-3 min-h-[150px] outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder={`Enter ${activeComment.type} here...`}
+                    value={activeComment.value}
+                    onChange={(e) =>
+                      setActiveComment({
+                        ...activeComment,
+                        value: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="p-4 border-t flex justify-end gap-3">
+                  <button
+                    onClick={() => setActiveComment(null)}
+                    className="px-4 py-2 text-slate-600 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveComment}
+                    className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
