@@ -9,6 +9,7 @@ import {
   Calendar,
   Plus,
   Loader2,
+  X,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -22,6 +23,12 @@ const LabReports = () => {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeComment, setActiveComment] = useState(null); // { testId, type, value }
+
+  // 1. Function to open the comment modal
+  const openCommentModal = (testId, type, currentValue) => {
+    setActiveComment({ testId, type, value: currentValue || "" });
+  };
 
   // Fetch Patient Data on Load
   useEffect(() => {
@@ -38,6 +45,17 @@ const LabReports = () => {
     };
     fetchPatientData();
   }, [id]);
+  const saveComment = () => {
+    const { testId, type, value } = activeComment;
+    const key = type.toLowerCase(); // 'notes', 'remarks', or 'advice'
+
+    const updatedTests = patient.tests.map((t) =>
+      t.testId === testId ? { ...t, [key]: value } : t
+    );
+    
+    setPatient({ ...patient, tests: updatedTests });
+    setActiveComment(null);
+  };
 
   const handlePrint = () => {
     if (!patient) return;
@@ -91,22 +109,38 @@ const LabReports = () => {
 
     doc.text(`Reported On : ${date} ${time}`, 130, 70);
 
-    // ===== TEST TABLE =====
-    const tableData = patient.tests.map((test, i) => [
-      i + 1,
-      test.name,
-      test.resultValue || "---",
-      test.unit,
-      test.referenceRange,
-    ]);
+   const tableData = [];
+    patient.tests.forEach((test, i) => {
+      // Main Test Row
+      tableData.push([
+        i + 1,
+        test.name,
+        test.resultValue || "---",
+        test.unit,
+        test.referenceRange,
+      ]);
 
-    autoTable(doc, {
+      // Add conditional rows for Notes/Remarks/Advice
+      if (test.notes) tableData.push([{ content: `Note: ${test.notes}`, colSpan: 5, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } }]);
+      if (test.remarks) tableData.push([{ content: `Remark: ${test.remarks}`, colSpan: 5, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } }]);
+      if (test.advice) tableData.push([{ content: `Advice: ${test.advice}`, colSpan: 5, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } }]);
+    });
+
+    
+   autoTable(doc, {
       startY: 80,
       head: [["#", "Test Name", "Result", "Unit", "Reference"]],
       body: tableData,
+      theme: 'plain', // Use plain to better show secondary rows
       styles: { fontSize: 8 },
       headStyles: { fillColor: [220, 220, 220] },
       margin: { left: 15, right: 15 },
+      didParseCell: function (data) {
+          // Add border for main test rows only
+          if (typeof data.row.raw[0] === 'number') {
+              data.cell.styles.borderBottom = 0.1;
+          }
+      }
     });
 
     // ===== FOOTER =====
@@ -301,16 +335,27 @@ const LabReports = () => {
                   </div>
 
                   {/* Actions per test */}
-                  <div className="flex gap-4 ml-6">
-                    {["Notes", "Remarks", "Advice"].map((item) => (
-                      <button
-                        key={item}
-                        className="text-[11px] text-slate-500 flex items-center gap-1 border border-slate-200 rounded-full px-2 py-0.5"
-                      >
-                        <Plus size={12} /> {item}
-                      </button>
-                    ))}
-                  </div>
+                 {/* Inside patient.tests.map */}
+<div className="flex gap-4 ml-6">
+  {["Notes", "Remarks", "Advice"].map((item) => {
+    const key = item.toLowerCase();
+    const hasValue = !!test[key]; // Check if this test already has this field
+    
+    return (
+      <button
+        key={item}
+        onClick={() => openCommentModal(test.testId, item, test[key])}
+        className={`text-[11px] flex items-center gap-1 border rounded-full px-2 py-0.5 transition-all ${
+          hasValue 
+            ? "bg-blue-50 border-blue-300 text-blue-700 font-bold" 
+            : "text-slate-500 border-slate-200"
+        }`}
+      >
+        <Plus size={12} /> {item} {hasValue && "✓"}
+      </button>
+    );
+  })}
+</div>
                 </div>
               ))}
             </div>
@@ -336,6 +381,43 @@ const LabReports = () => {
             </div>
           </div>
           <div className="h-24 print:hidden"></div>
+
+          {/* Comment Modal */}
+{activeComment && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="bg-white w-full max-w-lg rounded-lg shadow-2xl">
+      <div className="flex justify-between items-center p-4 border-b">
+        <h3 className="text-lg font-bold text-slate-700 capitalize">
+          Add {activeComment.type} for Test
+        </h3>
+        <button onClick={() => setActiveComment(null)}><X size={20} /></button>
+      </div>
+      <div className="p-4">
+        <textarea
+          autoFocus
+          className="w-full border border-slate-300 rounded-md p-3 min-h-[150px] outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder={`Enter ${activeComment.type} here...`}
+          value={activeComment.value}
+          onChange={(e) => setActiveComment({ ...activeComment, value: e.target.value })}
+        />
+      </div>
+      <div className="p-4 border-t flex justify-end gap-3">
+        <button 
+          onClick={() => setActiveComment(null)}
+          className="px-4 py-2 text-slate-600 font-medium"
+        >
+          Cancel
+        </button>
+        <button 
+          onClick={saveComment}
+          className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700"
+        >
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         </main>
       </div>
     </div>

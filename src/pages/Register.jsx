@@ -99,7 +99,7 @@ const Register = () => {
     setIsFetching(true);
     try {
       // Calling your API with page and limit (20)
-      const res = await getAllTests(page, 20);
+      const res = await getAllTests(page, 10);
 
       const newTests = res.data.data || [];
       const pagination = res.data.pagination;
@@ -130,7 +130,6 @@ const Register = () => {
     const fetchTests = async () => {
       try {
         const res = await getAllTests();
-        console.log(res.data.data, "a>>>>>>>>>>>>>>>>");
         setTests(res.data.data || []);
       } catch (err) {
         console.error(err);
@@ -141,13 +140,14 @@ const Register = () => {
   }, []);
 
   const handleAddTest = (testId) => {
-    if (!testId) return;
-    const testObj = tests.find((t) => t._id === testId);
-    if (testObj && !selectedTests.some((t) => t._id === testObj._id)) {
-      setSelectedTests([...selectedTests, testObj]);
-    }
-  };
-
+  if (!testId) return;
+  const testObj = dropdownTests.find((t) => t._id === testId);
+  if (testObj && !selectedTests.some((t) => t._id === testObj._id)) {
+    setSelectedTests([...selectedTests, testObj]);
+  } else if (!testObj) {
+    console.warn("Test not found in the currently loaded dropdown list");
+  }
+};
   useEffect(() => {
     const fetchPanels = async () => {
       try {
@@ -387,7 +387,7 @@ const Register = () => {
     // --- 4. INVESTIGATION TABLE ---
     const tableData = selectedTests.map((t, index) => [
       index + 1,
-      "DIAGNOSTICS", // Department
+      t.category.name, // Department
       t.name,
       "-", // Token No
       (t.defaultPrice || t.price || 0).toFixed(2),
