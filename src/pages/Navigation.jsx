@@ -1,5 +1,4 @@
 import React from 'react'
-import { Database} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../auth/AuthContext";
 
@@ -31,12 +30,12 @@ const Navigation = () => {
             onClick={() => navigate('/register')}>
               New Registration
             </button>
-            <span className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono" onClick={()=>{navigate('/profile')}}>
+            <button className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono" onClick={()=>{navigate('/profile')}}>
              {user?.username || "Admin"}
-            </span>
-            <span className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono" onClick={()=>{handleLogout()}}>
+            </button>
+            <button className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono" onClick={()=>{handleLogout()}}>
              {"Logout"}
-            </span>
+            </button>
           </div>
         </header>
        

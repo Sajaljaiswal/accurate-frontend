@@ -20,6 +20,8 @@ import DoctorTestAssign from "./pages/Doctors/DoctorTestAssign";
 import PatientReports from "./pages/PatientReports/PatientReports";
 import TestCategories from "./pages/Lab/TestCategories";
 import LabReports from "./pages/Reports/LabReports";
+import DailyBusiness from "./pages/Business/DailyBusiness";
+import Settings from "./pages/Settings/Settings";
 
 export default function App() {
   return (
@@ -46,13 +48,15 @@ export default function App() {
           <Route path="/lab" element={<Lab />} />
           <Route path="/addTest" element={<AddTest />} />
           <Route path="/allTest" element={<AllTest />} />
-          <Route path="/profile" element={<ProfilePage/>} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/roleManagement" element={<RoleManagement />} />
           <Route path="/doctorTestList" element={<DoctorTestList />} />
           <Route path="/doctorTestAssign" element={<DoctorTestAssign />} />
-            <Route path="/patientReports" element={<PatientReports />} />
-            <Route path="/testCategories" element={<TestCategories />} />
-            <Route path="/lab-report/:id" element={<LabReports />} />
+          <Route path="/patientReports" element={<PatientReports />} />
+          <Route path="/testCategories" element={<TestCategories />} />
+          <Route path="/lab-report/:id" element={<LabReports />} />
+          <Route path="/dailyBusiness" element={<DailyBusiness/> }/>
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

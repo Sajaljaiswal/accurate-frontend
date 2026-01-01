@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import { getAllPanels } from "../api/panelApi";
 import Navigation from "./Navigation";
 import { Save, UserPlus, Trash2, RotateCcw, Printer } from "lucide-react";
-import { useAuth } from "../auth/AuthContext"; // Import your Auth Context
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { registerPatient } from "../api/patientApi";
@@ -85,7 +84,6 @@ const Register = () => {
   const [panels, setPanels] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [tests, setTests] = useState([]);
-  const [loadingTests, setLoadingTests] = useState(true);
 
   useEffect(() => {
     const fetchTests = async () => {
@@ -94,9 +92,7 @@ const Register = () => {
         setTests(res.data.data || []);
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoadingTests(false);
-      }
+      } 
     };
 
     fetchTests();

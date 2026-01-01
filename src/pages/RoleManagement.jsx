@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { 
-  Plus, Shield, Save, Edit2, LayoutGrid, 
-  Trash2, ChevronRight, CheckCircle2,
-  Lock, CreditCard, FlaskConical, BarChart3, Activity, Zap
+  Plus, Shield, Lock, CreditCard, FlaskConical, BarChart3, Activity, Zap
 } from "lucide-react";
 
 // CATEGORIES FROM YOUR IMAGE
@@ -65,17 +63,9 @@ const PERMISSIONS_DATA = [
   }
 ];
 
-const SIDEBAR_TABS = [
-  { value: "dashboard", label: "Dashboard" },
-  { value: "users", label: "Users" },
-  { value: "inventory", label: "Inventory" },
-  { value: "reports", label: "Reports" },
-  { value: "settings", label: "Settings" },
-];
 
 const RoleManagement = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
 
   const togglePermission = (id) => {

@@ -1,4 +1,4 @@
-import { Printer, Eye, User, Phone, ShieldCheck, X } from "lucide-react";
+import { Printer, Eye,X } from "lucide-react";
 import Navigation from "../Navigation";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";

@@ -2,7 +2,7 @@ import api from "../api/axios";
 import { useContext, useState } from "react";
 import { AuthContext } from "../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Lock, User, Phone, Globe, Mail, Landmark } from "lucide-react";
+import { Lock, User, Phone, Globe, Mail, Landmark, Loader2 } from "lucide-react";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -12,6 +12,8 @@ const Login = () => {
     username: "",
     password: "",
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submit = async (e) => {
     e?.preventDefault();
@@ -36,6 +38,9 @@ const Login = () => {
     } catch (err) {
       console.error("Login error:", err.response?.data || err.message);
       alert(err.response?.data?.message || "Invalid username or password");
+    }
+    finally {
+      setIsSubmitting(false); // 3. Stop loading regardless of success/fail
     }
   };
 
@@ -130,7 +135,14 @@ const Login = () => {
                 type="submit"
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform active:scale-[0.98] transition-all duration-150"
               >
-                Login to Portal
+               {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Login"
+                )}
               </button>
             </form>
           </div>

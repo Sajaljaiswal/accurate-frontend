@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Printer, Filter, Truck, Search } from "lucide-react";
+import { Filter,  Search } from "lucide-react";
 import Navigation from "../Navigation";
 import { getAllPatients } from "../../api/patientApi";
 import EditPatientModal from "./EditPatientModal";
@@ -432,7 +432,7 @@ const AllPatient = () => {
 
                             {/* Panel */}
                             <td className="p-3 italic text-[11px]">
-                              {p.panel?.name || "-"}
+                              {p.panel || "-"}
                             </td>
 
                             {/* Gross */}

@@ -3,7 +3,7 @@ import Navigation from "../Navigation";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { getAllPanels } from "../../api/panelApi";
-import { Building, Phone, Mail, Globe, ShieldCheck } from "lucide-react";
+import { Building, Phone, ShieldCheck } from "lucide-react";
 import Sidebar from "../Sidebar";
 
 const AllPanel = () => {

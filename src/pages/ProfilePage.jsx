@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { 
-  ArrowLeft, UserPlus, Lock, LogOut, 
+  UserPlus, 
   Edit2, Trash2, Search, Shield, Eye, EyeOff, X 
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +41,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (isSuperAdmin) getUsers();
-  }, []);
+  }, [isSuperAdmin]);
 
   // --- HANDLE CREATE USER ---
   const handleCreateUser = async (e) => {

@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
   Printer,
-  ChevronDown,
   Edit,
   Save,
   CheckCircle,
   Clock,
   Calendar,
-  MoreHorizontal,
   Plus,
   Loader2,
 } from "lucide-react";

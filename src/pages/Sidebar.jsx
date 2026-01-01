@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { 
-  CheckCircleIcon, LayoutDashboardIcon, BarChart3Icon, 
+  LayoutDashboardIcon, BarChart3Icon, 
   WalletIcon, UsersIcon, 
   FileTextIcon, SettingsIcon, ChevronUpIcon, ChevronDownIcon,
   FlaskConicalIcon // Example icon for Laboratory
@@ -72,7 +72,7 @@ const Sidebar = () => {
             },
             { 
               label: "USG Reports", 
-              path: "/", 
+              // path: "/", 
               icon: <BarChart3Icon size={18} />, 
               active: isActive("/") 
             },
@@ -80,7 +80,7 @@ const Sidebar = () => {
           onNavigate={navigate}
         />
          <SidebarDropdown 
-          label="Business" 
+          label="Panels & Doctors" 
           icon={<FlaskConicalIcon size={20} />}
           subItems={[
             { 
@@ -107,8 +107,8 @@ const Sidebar = () => {
 
         {/* Footer Links */}
         <div className="pt-4 mt-4 border-t border-gray-50">
-          <SidebarItem icon={<UsersIcon size={20} />} label="Customers" active={isActive("/admin/customers")} onClick={() => navigate('/admin/customers')} />
-          <SidebarItem icon={<SettingsIcon size={20} />} label="Settings" active={isActive("/admin/settings")} onClick={() => navigate('/admin/settings')} />
+          <SidebarItem icon={<UsersIcon size={20} />} label="Business" active={isActive("/dailyBusiness")} onClick={() => navigate('/dailyBusiness')} />
+          <SidebarItem icon={<SettingsIcon size={20} />} label="Settings" active={isActive("/settings")} onClick={() => navigate('/settings')} />
         </div>
       </nav>
     </aside>

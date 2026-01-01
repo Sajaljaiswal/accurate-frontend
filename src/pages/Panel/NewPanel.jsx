@@ -1,6 +1,4 @@
-import { Printer } from "lucide-react";
 import { useState } from "react";
-import axios from "axios";
 import Navigation from "../Navigation";
 import {
   Save,
@@ -12,7 +10,6 @@ import {
   CreditCard,
   ShieldCheck,
   Globe,
-  User,
 } from "lucide-react";
 import Sidebar from "../Sidebar";
 
@@ -62,11 +59,7 @@ const NewPanel = () => {
     }
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/panels/register",
-        form
-      );
-
+      
       alert("Hospital registered successfully ✅");
       window.location.reload();
     } catch (err) {

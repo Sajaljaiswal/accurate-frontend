@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";
-import { Printer, Edit, CreditCard, Loader2 } from "lucide-react";
+import { Printer, Edit, Loader2 } from "lucide-react";
 import { getAllPatients } from "../../api/patientApi";
 import { useNavigate } from "react-router-dom";
 
@@ -126,7 +126,10 @@ const PatientReports = () => {
 
                           {/* Time */}
                           <td className="p-4 text-slate-500 font-mono">
-                            {new Date(p.createdAt).toLocaleTimeString([], {
+                            {new Date(p.createdAt).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
                               hour: "2-digit",
                               minute: "2-digit",
                               hour12: true,

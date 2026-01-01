@@ -51,7 +51,7 @@ export default function Admin() {
         <main className="flex-1 p-8 overflow-y-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl text-gray-500 font-light">
-              Welcome{" "}
+              Welcome
               <span className="text-red-600 font-bold">
                 {user?.username || "Admin"}
               </span>
