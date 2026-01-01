@@ -72,9 +72,9 @@ const Sidebar = () => {
             },
             { 
               label: "USG Reports", 
-              // path: "/", 
+              path: "/usgReports", 
               icon: <BarChart3Icon size={18} />, 
-              active: isActive("/") 
+              active: isActive("/usgReports") 
             },
           ]}
           onNavigate={navigate}

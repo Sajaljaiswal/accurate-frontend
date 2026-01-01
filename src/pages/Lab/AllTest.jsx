@@ -3,11 +3,23 @@ import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";
 import { getAllTests } from "../../api/testApi";
 import { Search, Filter, RotateCcw } from "lucide-react";
-
+import { getAllCategories } from "../../api/categoryApi";
+import { Edit, Trash2, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { deleteTest } from "../../api/testApi";
+import { updateTest } from "../../api/testApi";
 const AllTest = () => {
+  const navigate = useNavigate();
+
   const [tests, setTests] = useState([]);
   const [loadingTests, setLoadingTests] = useState(true);
+  const [dbCategories, setDbCategories] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingTest, setEditingTest] = useState(null);
+  const [saving, setSaving] = useState(false);
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState(""); // active or inactive
@@ -15,7 +27,7 @@ const AllTest = () => {
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
   const fetchTests = async () => {
@@ -26,7 +38,8 @@ const AllTest = () => {
         currentPage,
         itemsPerPage,
         searchQuery,
-        statusFilter
+        statusFilter,
+        categoryFilter
       );
       setTests(res.data.data);
       setTotalPages(res.data.pagination.pages);
@@ -38,21 +51,52 @@ const AllTest = () => {
     }
   };
 
-  // Re-fetch when page, limit, or status changes
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const res = await getAllCategories();
+        setDbCategories(res.data.data);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   useEffect(() => {
     fetchTests();
-  }, [currentPage, itemsPerPage, statusFilter, searchQuery]);
+  }, [currentPage, itemsPerPage, statusFilter, searchQuery, categoryFilter]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setCurrentPage(1); // Reset to page 1 on new search
-    fetchTests();
+    setCurrentPage(1);
   };
 
   const resetFilters = () => {
     setSearchQuery("");
     setStatusFilter("");
+    setCategoryFilter("");
     setCurrentPage(1);
+  };
+
+  const handleDelete = async (testId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this test?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await deleteTest(testId);
+      fetchTests(); // refresh list after delete
+    } catch (err) {
+      alert("Failed to delete test");
+      console.error(err);
+    }
   };
 
   return (
@@ -82,18 +126,29 @@ const AllTest = () => {
                     className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
-                 <div>
+                <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
                     Category
                   </label>
                   <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+                    value={categoryFilter}
+                    onChange={(e) => {
+                      setCategoryFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                   >
-                    <option value="">All Categories</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="">
+                      {loadingCategories
+                        ? "Loading categories..."
+                        : "All Categories"}
+                    </option>
+
+                    {dbCategories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -172,6 +227,7 @@ const AllTest = () => {
                   <th className="p-3 text-center">Category</th>
                   <th className="p-3 text-center">Price (₹)</th>
                   <th className="p-3 text-center">Status</th>
+                  <th className="p-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -216,12 +272,132 @@ const AllTest = () => {
                           {test.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
+                      <td className="p-3 text-center">
+                        <div className="flex justify-center gap-3">
+                          {/* Edit */}
+                          <button
+                            onClick={() => {
+                              setEditingTest(test);
+                              setIsEditOpen(true);
+                            }}
+                            className="p-2 rounded bg-blue-100 text-blue-700 hover:bg-blue-200"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          {/* Delete */}
+                          <button
+                            onClick={() => handleDelete(test._id)}
+                            className="p-2 rounded bg-red-100 text-red-700 hover:bg-red-200 transition"
+                            title="Delete Test"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
+          {isEditOpen && editingTest && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white w-full max-w-lg rounded-lg shadow-lg">
+                {/* Header */}
+                <div className="flex justify-between items-center px-6 py-4 border-b">
+                  <h3 className="font-bold text-lg">Edit Test</h3>
+                  <button onClick={() => setIsEditOpen(false)}>
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase">
+                      Test Name
+                    </label>
+                    <input
+                      value={editingTest.name}
+                      onChange={(e) =>
+                        setEditingTest({ ...editingTest, name: e.target.value })
+                      }
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase">
+                      Price (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={editingTest.defaultPrice}
+                      onChange={(e) =>
+                        setEditingTest({
+                          ...editingTest,
+                          defaultPrice: e.target.value,
+                        })
+                      }
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase">
+                      Status
+                    </label>
+                    <select
+                      value={editingTest.isActive ? "active" : "inactive"}
+                      onChange={(e) =>
+                        setEditingTest({
+                          ...editingTest,
+                          isActive: e.target.value === "active",
+                        })
+                      }
+                      className="w-full border rounded px-3 py-2 text-sm"
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex justify-end gap-3 px-6 py-4 border-t">
+                  <button
+                    onClick={() => setIsEditOpen(false)}
+                    className="px-4 py-2 border rounded"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    disabled={saving}
+                    onClick={async () => {
+                      try {
+                        setSaving(true);
+                        await updateTest(editingTest._id, {
+                          name: editingTest.name,
+                          defaultPrice: editingTest.defaultPrice,
+                          isActive: editingTest.isActive,
+                        });
+                        setIsEditOpen(false);
+                        fetchTests(); // refresh list
+                      } catch (err) {
+                        alert("Update failed");
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    {saving ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Pagination Controls */}
           <div className="flex justify-between items-center mt-6">

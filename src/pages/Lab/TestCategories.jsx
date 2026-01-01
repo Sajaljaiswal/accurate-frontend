@@ -15,6 +15,7 @@ const TestCategories = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categories, setCategories] = useState([]); // Initialized as empty array
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const navigate = useNavigate();
 
   // 1. Fetch data from Backend on component load
@@ -33,11 +34,33 @@ const TestCategories = () => {
     fetchCategories();
   }, []);
 
-  // 2. This function is called after the Modal successfully saves to DB
-  const handleSaveCategory = (newCategoryObject) => {
-    // Add the new object returned from the backend directly to the list
-    setCategories((prev) => [...prev, newCategoryObject]);
+  const handleAddClick = () => {
+    setSelectedCategory(null); // Ensure no category is selected
+    setIsModalOpen(true);
+  };
+
+  const handleEditClick = (category) => {
+    setSelectedCategory(category); // Pass the whole object to state
+    setIsModalOpen(true);
+  };
+  // CLOSE MODAL
+  const handleCloseModal = () => {
     setIsModalOpen(false);
+    setSelectedCategory(null); // Clean up state
+  };
+ const handleSaveCategory = (savedCategory) => {
+    setCategories((prev) => {
+      // Check if this was an update or a new addition
+      const exists = prev.find(cat => cat._id === savedCategory._id);
+      if (exists) {
+        // Update existing item in the list
+        return prev.map(cat => cat._id === savedCategory._id ? savedCategory : cat);
+      } else {
+        // Add new item to the list
+        return [...prev, savedCategory];
+      }
+    });
+    handleCloseModal();
   };
 
   return (
@@ -105,11 +128,14 @@ const TestCategories = () => {
 
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-6">
-                            <button className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-bold transition-colors">
+                            <button className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-bold transition-colors"
+                            onClick={() => handleEditClick(category)}
+                            >
                               <Edit2 size={16} />
                               <span>Edit</span>
                             </button>
-                            <button className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-bold transition-colors">
+                            <button className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-bold transition-colors"
+                            onClick={() => navigate('/lab', { state: { categoryId: category._id } })}>
                               <Eye size={18} />
                               <span>View tests</span>
                             </button>
@@ -124,10 +150,11 @@ const TestCategories = () => {
           </div>
         </main>
 
-        <CategoryModal
+       <CategoryModal
           isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-          onSave={handleSaveCategory} 
+          onClose={handleCloseModal} 
+          onSave={handleSaveCategory}
+          categoryData={selectedCategory} // Pass the data to the modal
         />
       </div>
     </div>

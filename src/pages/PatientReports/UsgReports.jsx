@@ -5,7 +5,7 @@ import { Printer, Edit, Loader2 } from "lucide-react";
 import { getAllPatients } from "../../api/patientApi";
 import { useNavigate } from "react-router-dom";
 
-const PatientReports = () => {
+const UsgReports = () => {
   const navigate = useNavigate();
 
   const [patients, setPatients] = useState([]);
@@ -68,7 +68,7 @@ const PatientReports = () => {
             <div className="mb-6 flex justify-between items-end">
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">
-                  Pathology Reports
+                  USG Reports
                 </h1>
                 <p className="text-sm text-red-600 font-semibold tracking-wide uppercase">
                   Total Patients Found: {patients.length}
@@ -228,4 +228,4 @@ const PatientReports = () => {
   );
 };
 
-export default PatientReports;
+export default UsgReports;

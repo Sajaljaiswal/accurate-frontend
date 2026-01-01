@@ -13,6 +13,7 @@ import AllPanel from "./pages/Panel/AllPanel";
 import Lab from "./pages/Lab/AllTest";
 import AddTest from "./pages/Lab/AddTest";
 import AllTest from "./pages/Lab/AllTest";
+import DocumentEntry from "./pages/Lab/DocumentEntry";
 import ProfilePage from "./pages/ProfilePage";
 import RoleManagement from "./pages/RoleManagement";
 import DoctorTestList from "./pages/Doctors/DoctorTestList";
@@ -22,6 +23,7 @@ import TestCategories from "./pages/Lab/TestCategories";
 import LabReports from "./pages/Reports/LabReports";
 import DailyBusiness from "./pages/Business/DailyBusiness";
 import Settings from "./pages/Settings/Settings";
+import UsgReports from "./pages/PatientReports/UsgReports";
 
 export default function App() {
   return (
@@ -57,6 +59,8 @@ export default function App() {
           <Route path="/lab-report/:id" element={<LabReports />} />
           <Route path="/dailyBusiness" element={<DailyBusiness/> }/>
           <Route path="/settings" element={<Settings />} />
+          <Route path="/documentEntry" element={<DocumentEntry />} />
+          <Route path="/usgReports" element={<UsgReports />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

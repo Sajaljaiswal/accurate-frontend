@@ -90,10 +90,6 @@ export default function Admin() {
                     {formatDateTime(currentTime)}
                   </span>
                 </div>
-                {/* <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                  <span className="text-gray-400 text-sm">Last Logged Out at:</span>
-                  <span className="text-gray-700 font-medium">{user?.lastLogout || "Not Available"}</span>
-                </div> */}
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-gray-400 text-sm">
                     Total Registered Today:

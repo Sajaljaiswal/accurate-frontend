@@ -8,6 +8,7 @@ import { registerPatient } from "../api/patientApi";
 import { getAllDoctors } from "../api/doctorApi";
 import { getAllTests } from "../api/testApi";
 import Sidebar from "./Sidebar";
+import LazySelect from "../commom/LazySelect";
 
 // Reusable Input Component
 const InputField = ({
@@ -84,15 +85,56 @@ const Register = () => {
   const [panels, setPanels] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [tests, setTests] = useState([]);
+  const [dropdownTests, setDropdownTests] = useState([]); // Tests currently in dropdown
+  const [totalRecords, setTotalRecords] = useState(0);    // Total tests in DB
+  const [dropPage, setDropPage] = useState(1);            // Current page for dropdown
+  const [isFetching, setIsFetching] = useState(false);    // Loading state for dropdown
+
+  useEffect(() => {
+    fetchDropdownData(1, true);
+  }, []);
+
+  const fetchDropdownData = async (page, isInitial = false) => {
+    if (isFetching) return;
+    setIsFetching(true);
+    try {
+      // Calling your API with page and limit (20)
+      const res = await getAllTests(page, 20);
+
+      const newTests = res.data.data || [];
+      const pagination = res.data.pagination;
+
+      if (isInitial) {
+        setDropdownTests(newTests);
+      } else {
+        setDropdownTests((prev) => [...prev, ...newTests]);
+      }
+
+      setTotalRecords(pagination.totalItems);
+      setDropPage(page);
+    } catch (err) {
+      console.error("Failed to fetch dropdown tests:", err);
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  const loadMoreTests = () => {
+    if (dropdownTests.length < totalRecords) {
+      fetchDropdownData(dropPage + 1);
+    }
+  };
+
 
   useEffect(() => {
     const fetchTests = async () => {
       try {
         const res = await getAllTests();
+        console.log(res.data.data, "a>>>>>>>>>>>>>>>>");
         setTests(res.data.data || []);
       } catch (err) {
         console.error(err);
-      } 
+      }
     };
 
     fetchTests();
@@ -100,11 +142,7 @@ const Register = () => {
 
   const handleAddTest = (testId) => {
     if (!testId) return;
-
-    // Find the test in the API-fetched tests array
     const testObj = tests.find((t) => t._id === testId);
-
-    // Prevent duplicate adds based on MongoDB _id
     if (testObj && !selectedTests.some((t) => t._id === testObj._id)) {
       setSelectedTests([...selectedTests, testObj]);
     }
@@ -619,22 +657,14 @@ const Register = () => {
               <div className="space-y-4">
                 <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-gray-500 uppercase">
-                        Select Test
-                      </label>
-                      <select
-                        onChange={(e) => handleAddTest(e.target.value)}
-                        defaultValue=""
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-teal-500 outline-none bg-white"
-                      >
-                        <option value="">-- Search & Add Test --</option>
-                        {tests.map((t) => (
-                          <option key={t._id} value={t._id}>
-                            {t.name} (₹{t.defaultPrice || t.price || 0})
-                          </option>
-                        ))}
-                      </select>
+                    <div className="flex flex-col gap-1 w-full">
+                      <LazySelect
+                        tests={dropdownTests}
+                        totalItems={totalRecords}
+                        loading={isFetching}
+                        onLoadMore={loadMoreTests}
+                        onSelect={handleAddTest}
+                      />
                     </div>
                     <div className="text-right">
                       <span className="text-sm font-semibold text-blue-800">

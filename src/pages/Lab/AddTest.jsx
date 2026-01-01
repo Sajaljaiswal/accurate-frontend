@@ -3,7 +3,7 @@ import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";
 import { useNavigate } from "react-router-dom";
 import { addTest } from "../../api/testApi";
-import { getAllCategories } from "../../api/categoryApi"; // Ensure this import exists
+import { getAllCategories } from "../../api/categoryApi"; 
 import { Plus, Trash2 } from "lucide-react";
 
 const AddTest = () => {

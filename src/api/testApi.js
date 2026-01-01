@@ -8,9 +8,16 @@ export const addTest = (payload) =>
   api.post("/lab/tests", payload);
 
 
-// export const getAllTests = () => api.get("/lab/tests");
-export const getAllTests = (page, limit, search, status) => {
+export const getAllTests = (page, limit, search, status, category) => {
   return api.get("/lab/tests", {
-    params: { page, limit, search, status }
+    params: { page, limit, search, status, category }
   });
+};
+
+export const updateTest = (id, payload) => {
+  return api.put(`/lab/tests/${id}`, payload);   // ✅ FIX
+};
+
+export const deleteTest = (id) => {
+  return api.delete(`/lab/tests/${id}`);         // ✅ FIX
 };
