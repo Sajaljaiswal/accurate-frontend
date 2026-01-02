@@ -3,8 +3,10 @@ import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";
 import { useNavigate } from "react-router-dom";
 import { addTest } from "../../api/testApi";
-import { getAllCategories } from "../../api/categoryApi"; 
+import { getAllCategories } from "../../api/categoryApi";
 import { Plus, Trash2 } from "lucide-react";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 const AddTest = () => {
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ const AddTest = () => {
     isOptional: false,
     status: "ACTIVE",
     defaultPrice: "",
+    defaultResult: "",
     referenceRanges: [
       { gender: "BOTH", ageMin: 0, ageMax: 100, lowRange: "", highRange: "" },
     ],
@@ -52,6 +55,11 @@ const AddTest = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+  // 2. Handle CKEditor content changes
+  const handleEditorChange = (event, editor) => {
+    const data = editor.getData();
+    setForm((prev) => ({ ...prev, defaultResult: data }));
   };
 
   const handleRangeChange = (index, e) => {
@@ -115,7 +123,8 @@ const AddTest = () => {
               </div>
             </div>
 
-            <div className="p-4 space-y-8">
+            <div className="p-8 space-y-8">
+              {/* Basic Info Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-600">
@@ -125,7 +134,7 @@ const AddTest = () => {
                     name="name"
                     value={form.name}
                     onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none"
                     placeholder="Hemoglobin"
                   />
                 </div>
@@ -137,18 +146,18 @@ const AddTest = () => {
                     name="shortName"
                     value={form.shortName}
                     onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none"
                     placeholder="Hb"
                   />
                 </div>
               </div>
 
+              {/* Category & Input Type Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-600">
                     Category
                   </label>
-                  {/* 3. Updated Select field to use dynamic data */}
                   <select
                     name="category"
                     value={form.category}
@@ -167,64 +176,47 @@ const AddTest = () => {
                     ))}
                   </select>
                 </div>
-              </div>
-
-              {/* ... Rest of the form (Unit, Input Type, Result, Price) remains the same ... */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium text-slate-600">
-                      Unit
-                    </label>
-                    <button className="text-blue-600 text-xs font-bold flex items-center gap-1">
-                      <Plus size={12} /> Add new
-                    </button>
-                  </div>
-                  <select
-                    name="unit"
-                    value={form.unit}
-                    onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-lg p-3 text-sm bg-white focus:border-blue-500 outline-none"
-                  >
-                    <option value="g/dl">g/dl</option>
-                    <option value="mg/dl">mg/dl</option>
-                    <option value="%">%</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-600">
-                    Input type
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-slate-600 block">
+                    Input Type
                   </label>
-                  <select
-                    name="inputType"
-                    value={form.inputType}
-                    onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-lg p-3 text-sm bg-white focus:border-blue-500 outline-none"
-                  >
-                    <option value="Numeric">Numeric</option>
-                    <option value="Text">Text</option>
-                    <option value="RichText">Rich Text</option>
-                  </select>
+                  <div className="flex flex-wrap gap-6 p-3 border border-slate-200 rounded-lg bg-white">
+                    {[
+                      { id: "Numeric", label: "Numeric (Range)" },
+                      { id: "RichText", label: "Rich Text (Document)" },
+                    ].map((option) => (
+                      <label
+                        key={option.id}
+                        className="flex items-center gap-2 cursor-pointer group"
+                      >
+                        <input
+                          type="radio"
+                          name="inputType"
+                          value={option.id}
+                          checked={form.inputType === option.id}
+                          onChange={handleChange}
+                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <span
+                          className={`text-sm font-medium transition-colors ${
+                            form.inputType === option.id
+                              ? "text-blue-700 font-bold"
+                              : "text-slate-600 group-hover:text-blue-500"
+                          }`}
+                        >
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-400 italic">
+                    * Choose 'Rich Text' for descriptive reports like MRI or
+                    Ultrasound.
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  name="isOptional"
-                  id="isOptional"
-                  checked={form.isOptional}
-                  onChange={handleChange}
-                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label
-                  htmlFor="isOptional"
-                  className="text-sm text-slate-600 cursor-pointer"
-                >
-                  Optional
-                </label>
-              </div>
-
+              {/* Price & Unit Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-100">
                 <div className="space-y-1.5">
                   <label className="text-sm font-bold text-blue-900 uppercase">
@@ -236,104 +228,145 @@ const AddTest = () => {
                     value={form.defaultPrice}
                     onChange={handleChange}
                     placeholder="500"
-                    className="w-full border border-slate-300 bg-slate-50 rounded-lg p-3 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full border border-slate-300 bg-slate-50 rounded-lg p-3 text-sm font-bold focus:bg-white outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-600">
+                    Unit
+                  </label>
+                  <input
+                    name="unit"
+                    value={form.unit}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none"
+                    placeholder="mg/dl"
                   />
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-bold text-blue-800 uppercase tracking-widest">
-                    Reference Ranges (Gender/Age Wise)
-                  </h3>
-                  <button
-                    onClick={addRangeRow}
-                    className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 font-bold"
-                  >
-                    <Plus size={14} /> ADD RANGE
-                  </button>
-                </div>
 
-                <div className="overflow-x-auto border rounded-xl">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50 border-b">
-                      <tr className="text-slate-500 text-xs uppercase">
-                        <th className="p-3 text-left">Gender</th>
-                        <th className="p-3 text-left">Age Min</th>
-                        <th className="p-3 text-left">Age Max</th>
-                        <th className="p-3 text-left">Low</th>
-                        <th className="p-3 text-left">High</th>
-                        <th className="p-3 text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {form.referenceRanges.map((range, index) => (
-                        <tr key={index}>
-                          <td className="p-2">
-                            <select
-                              name="gender"
-                              value={range.gender}
-                              onChange={(e) => handleRangeChange(index, e)}
-                              className="border rounded p-1.5 w-full"
-                            >
-                              <option value="All">BOTH</option>
-                              <option value="Male">Male</option>
-                              <option value="Female">Female</option>
-                            </select>
-                          </td>
-                          <td className="p-2">
-                            <input
-                              type="number"
-                              name="ageMin"
-                              value={range.ageMin}
-                              onChange={(e) => handleRangeChange(index, e)}
-                              className="border rounded p-1.5 w-16"
-                            />
-                          </td>
-                          <td className="p-2">
-                            <input
-                              type="number"
-                              name="ageMax"
-                              value={range.ageMax}
-                              onChange={(e) => handleRangeChange(index, e)}
-                              className="border rounded p-1.5 w-16"
-                            />
-                          </td>
-                          <td className="p-2">
-                            <input
-                              type="text"
-                              name="lowRange"
-                              value={range.lowRange}
-                              onChange={(e) => handleRangeChange(index, e)}
-                              className="border rounded p-1.5 w-20"
-                              placeholder="0"
-                            />
-                          </td>
-                          <td className="p-2">
-                            <input
-                              type="text"
-                              name="highRange"
-                              value={range.highRange}
-                              onChange={(e) => handleRangeChange(index, e)}
-                              className="border rounded p-1.5 w-20"
-                              placeholder="100"
-                            />
-                          </td>
-                          <td className="p-2 text-center">
-                            <button
-                              onClick={() => removeRangeRow(index)}
-                              className="text-red-500 hover:bg-red-50 p-1.5 rounded-full"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
+              {/* 3. Conditional CKEditor for RichText Template */}
+              {form.inputType === "RichText" && (
+                <div className="space-y-3 pt-4 border-t border-slate-100">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-blue-800 uppercase tracking-widest">
+                      Report Document Template
+                    </h3>
+                  </div>
+                  <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <CKEditor
+                      editor={ClassicEditor}
+                      data={form.defaultResult}
+                      onChange={handleEditorChange}
+                      config={{
+                        placeholder:
+                          "Design your report template here (e.g., Obstetric USG structure)...",
+                      }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-400 italic">
+                    * This template will be loaded by default when generating
+                    reports for this test.
+                  </p>
+                </div>
+              )}
+
+              {/* Reference Ranges (Hide if RichText is used for document entry) */}
+              {form.inputType !== "RichText" && (
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-blue-800 uppercase tracking-widest">
+                      Reference Ranges
+                    </h3>
+                    <button
+                      onClick={addRangeRow}
+                      className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 font-bold"
+                    >
+                      <Plus size={14} /> ADD RANGE
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto border rounded-xl">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 border-b">
+                        <tr className="text-slate-500 text-xs uppercase">
+                          <th className="p-3 text-left">Gender</th>
+                          <th className="p-3 text-left">Age Min</th>
+                          <th className="p-3 text-left">Age Max</th>
+                          <th className="p-3 text-left">Low</th>
+                          <th className="p-3 text-left">High</th>
+                          <th className="p-3 text-center">Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y">
+                        {form.referenceRanges.map((range, index) => (
+                          <tr key={index}>
+                            <td className="p-2">
+                              <select
+                                name="gender"
+                                value={range.gender}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-full"
+                              >
+                                <option value="BOTH">BOTH</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                              </select>
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                name="ageMin"
+                                value={range.ageMin}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-16"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                name="ageMax"
+                                value={range.ageMax}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-16"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                name="lowRange"
+                                value={range.lowRange}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-20"
+                                placeholder="0"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                name="highRange"
+                                value={range.highRange}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-20"
+                                placeholder="100"
+                              />
+                            </td>
+                            <td className="p-2 text-center">
+                              <button
+                                onClick={() => removeRangeRow(index)}
+                                className="text-red-500 hover:bg-red-50 p-1.5 rounded-full"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-4 pt-4 border-t border-slate-100">
                 <button
                   onClick={handleSubmit}
                   className="bg-blue-600 text-white px-10 py-3 rounded-lg font-bold text-sm hover:bg-blue-700 shadow-md transition-colors"

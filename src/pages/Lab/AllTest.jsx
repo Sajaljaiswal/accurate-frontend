@@ -8,6 +8,9 @@ import { Edit, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { deleteTest } from "../../api/testApi";
 import { updateTest } from "../../api/testApi";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+
 const AllTest = () => {
   const navigate = useNavigate();
 
@@ -174,6 +177,7 @@ const AllTest = () => {
                   >
                     <Search size={16} /> Search Records
                   </button>
+
                   <button
                     type="button"
                     onClick={resetFilters}
@@ -193,6 +197,7 @@ const AllTest = () => {
               <h2 className="text-xl font-bold text-gray-800">
                 Diagnostic Test List
               </h2>
+
               <p className="text-sm text-gray-500">
                 Total {totalItems} tests found
               </p>
@@ -300,78 +305,181 @@ const AllTest = () => {
               </tbody>
             </table>
           </div>
+          {/* Edit Test Modal */}
           {isEditOpen && editingTest && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white w-full max-w-lg rounded-lg shadow-lg">
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+              <div className="bg-white w-full max-w-4xl rounded-lg shadow-xl overflow-hidden">
                 {/* Header */}
-                <div className="flex justify-between items-center px-6 py-4 border-b">
-                  <h3 className="font-bold text-lg">Edit Test</h3>
-                  <button onClick={() => setIsEditOpen(false)}>
+                <div className="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
+                  <h3 className="font-bold text-lg text-blue-900">
+                    Edit Diagnostic Test
+                  </h3>
+                  <button
+                    onClick={() => setIsEditOpen(false)}
+                    className="text-gray-400"
+                  >
                     <X size={20} />
                   </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-6 space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">
-                      Test Name
-                    </label>
-                    <input
-                      value={editingTest.name}
-                      onChange={(e) =>
-                        setEditingTest({ ...editingTest, name: e.target.value })
-                      }
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
+                <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase">
+                        Test Name
+                      </label>
+                      <input
+                        value={editingTest.name}
+                        onChange={(e) =>
+                          setEditingTest({
+                            ...editingTest,
+                            name: e.target.value,
+                          })
+                        }
+                        className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase">
+                        Default Price (₹)
+                      </label>
+                      <input
+                        type="number"
+                        value={editingTest.defaultPrice}
+                        onChange={(e) =>
+                          setEditingTest({
+                            ...editingTest,
+                            defaultPrice: e.target.value,
+                          })
+                        }
+                        className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">
-                      Price (₹)
+                  {/* INPUT TYPE SELECTION */}
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <label className="text-xs font-bold text-blue-700 uppercase block mb-3">
+                      Report Entry Type
                     </label>
-                    <input
-                      type="number"
-                      value={editingTest.defaultPrice}
-                      onChange={(e) =>
-                        setEditingTest({
-                          ...editingTest,
-                          defaultPrice: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
+                    <div className="flex gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name="inputType"
+                          value="Numeric"
+                          checked={editingTest.inputType === "Numeric"}
+                          onChange={(e) =>
+                            setEditingTest({
+                              ...editingTest,
+                              inputType: e.target.value,
+                            })
+                          }
+                          className="w-4 h-4 text-blue-600 border-gray-300"
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          Range Based (Numeric)
+                        </span>
+                      </label>
+
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name="inputType"
+                          value="RichText"
+                          checked={editingTest.inputType === "RichText"}
+                          onChange={(e) =>
+                            setEditingTest({
+                              ...editingTest,
+                              inputType: e.target.value,
+                            })
+                          }
+                          className="w-4 h-4 text-blue-600 border-gray-300"
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          Document Entry (Rich Text)
+                        </span>
+                      </label>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">
-                      Status
-                    </label>
-                    <select
-                      value={editingTest.isActive ? "active" : "inactive"}
-                      onChange={(e) =>
-                        setEditingTest({
-                          ...editingTest,
-                          isActive: e.target.value === "active",
-                        })
-                      }
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
+                  {/* ✅ DYNAMIC CKEDITOR: Only shows if RichText is selected */}
+                  {editingTest.inputType === "RichText" && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase">
+                        Default Report Template (Document)
+                      </label>
+                      <div className="border rounded-md overflow-hidden min-h-[250px]">
+                        <CKEditor
+                          editor={ClassicEditor}
+                          data={editingTest.defaultResult || ""}
+                          onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setEditingTest({
+                              ...editingTest,
+                              defaultResult: data,
+                            });
+                          }}
+                          config={{
+                            placeholder:
+                              "Design the default structure for MRI/USG reports here...",
+                          }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-blue-500 italic">
+                        * This template will be saved as the default starting
+                        point for this test.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase">
+                        Unit (e.g. mg/dL)
+                      </label>
+                      <input
+                        value={editingTest.unit || ""}
+                        onChange={(e) =>
+                          setEditingTest({
+                            ...editingTest,
+                            unit: e.target.value,
+                          })
+                        }
+                        className="w-full border rounded px-3 py-2 text-sm"
+                        placeholder="Leave empty if not applicable"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase">
+                        Active Status
+                      </label>
+                      <select
+                        value={editingTest.isActive ? "active" : "inactive"}
+                        onChange={(e) =>
+                          setEditingTest({
+                            ...editingTest,
+                            isActive: e.target.value === "active",
+                          })
+                        }
+                        className="w-full border rounded px-3 py-2 text-sm"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t">
+                <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
                   <button
                     onClick={() => setIsEditOpen(false)}
-                    className="px-4 py-2 border rounded"
+                    className="px-5 py-2 text-sm font-bold text-gray-500"
                   >
                     Cancel
                   </button>
-
                   <button
                     disabled={saving}
                     onClick={async () => {
@@ -381,16 +489,20 @@ const AllTest = () => {
                           name: editingTest.name,
                           defaultPrice: editingTest.defaultPrice,
                           isActive: editingTest.isActive,
+                          inputType: editingTest.inputType,
+                          unit: editingTest.unit,
+                          defaultResult: editingTest.defaultResult, // ✅ Save CKEditor data to DB
                         });
                         setIsEditOpen(false);
-                        fetchTests(); // refresh list
+                        fetchTests();
+                        alert("Test updated successfully!");
                       } catch (err) {
                         alert("Update failed");
                       } finally {
                         setSaving(false);
                       }
                     }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-md font-bold hover:bg-blue-700 disabled:opacity-50"
                   >
                     {saving ? "Saving..." : "Save Changes"}
                   </button>
@@ -398,7 +510,6 @@ const AllTest = () => {
               </div>
             </div>
           )}
-
           {/* Pagination Controls */}
           <div className="flex justify-between items-center mt-6">
             <span className="text-sm text-gray-500">
