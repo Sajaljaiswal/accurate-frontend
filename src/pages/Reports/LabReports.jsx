@@ -38,6 +38,13 @@ const LabReports = () => {
     setPatient({ ...patient, tests: updatedTests });
   };
 
+  const handleReportTypeChange = (testId, type) => {
+    const updatedTests = patient.tests.map((t) =>
+      t.testId === testId ? { ...t, reportType: type } : t
+    );
+    setPatient({ ...patient, tests: updatedTests });
+  };
+
   const handleEditorChange = (testId, data) => {
     const updatedTests = patient.tests.map((t) =>
       t.testId === testId ? { ...t, richTextContent: data } : t
@@ -53,7 +60,24 @@ const LabReports = () => {
     const fetchPatientData = async () => {
       try {
         const res = await axios.get(`http://localhost:5000/api/patients/${id}`);
-        setPatient(res.data.data);
+       const data = res.data.data;
+
+        // ✅ AUTO-SELECT LOGIC
+        // Map through tests: if defaultResult exists and richTextContent is empty,
+        // auto-select "text" mode and load the template.
+        const processedTests = data.tests.map((test) => {
+          if (test.defaultResult && (!test.richTextContent || test.richTextContent === "")) {
+            return {
+              ...test,
+              reportType: "text",
+              richTextContent: test.defaultResult,
+            };
+          }
+          return test;
+        });
+
+        setPatient({ ...data, tests: processedTests });
+        if (data.isSignedOff) setIsSignedOff(true);
       } catch (err) {
         console.error("Error fetching patient:", err);
       } finally {
@@ -356,18 +380,14 @@ const LabReports = () => {
                     </div>
 
                     {/* REPORT TYPE TOGGLE */}
-                    <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full">
-                      <label className="text-[10px] font-bold uppercase text-slate-500">
-                        Range
+                   <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                      <label className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-all ${test.reportType !== "text" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500"}`}>
+                        <input type="radio" className="hidden" name={`type-${test.testId}`} checked={test.reportType !== "text"} onChange={() => handleReportTypeChange(test.testId, "range")} />
+                        <span className="text-[11px] uppercase tracking-wider">Range Based</span>
                       </label>
-                      <input
-                        type="checkbox"
-                        className="toggle-checkbox" // Style this as a switch in CSS
-                        checked={test.reportType === "text"}
-                        onChange={() => toggleReportType(test.testId)}
-                      />
-                      <label className="text-[10px] font-bold uppercase text-slate-500">
-                        Text/Doc
+                      <label className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-all ${test.reportType === "text" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500"}`}>
+                        <input type="radio" className="hidden" name={`type-${test.testId}`} checked={test.reportType === "text"} onChange={() => handleReportTypeChange(test.testId, "text")} />
+                        <span className="text-[11px] uppercase tracking-wider">Document (Text)</span>
                       </label>
                     </div>
                   </div>

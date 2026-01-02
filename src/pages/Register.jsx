@@ -309,7 +309,7 @@ const Register = () => {
     //   if (!validateForm()) return;
 
     const { labNo, regNo } = generateSerialNumbers();
-    const doc = new jsPDF();
+    const doc = new jsPDF("p", "mm", "a5");
     const leftX = 15; // left page margin
     const now = new Date();
 
