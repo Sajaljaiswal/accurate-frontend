@@ -9,133 +9,64 @@ import { getAllDoctors } from "../api/doctorApi";
 import { getAllTests } from "../api/testApi";
 import Sidebar from "./Sidebar";
 import LazySelect from "../commom/LazySelect";
-
-// Reusable Input Component
-const InputField = ({
-  label,
-  type = "text",
-  placeholder,
-  value,
-  onChange,
-  maxLength,
-}) => (
-  <div>
-    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-      {label}
-    </label>
-    <input
-      type={type}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      maxLength={maxLength}
-      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-    />
-  </div>
-);
-
-const SelectField = ({
-  label,
-  options = [],
-  value,
-  onChange,
-  placeholder = "-- Select --",
-}) => {
-  return (
-    <div>
-      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-        {label}
-      </label>
-
-      <select
-        value={value}
-        onChange={onChange}
-        className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white"
-      >
-        <option value="">{placeholder}</option>
-
-        {options.map((opt, index) => {
-          // ✅ If API object
-          if (typeof opt === "object") {
-            return (
-              <option key={opt._id || index} value={opt._id}>
-                {opt.name || opt.label}
-              </option>
-            );
-          }
-
-          // ✅ If default string
-          return (
-            <option key={index} value={opt}>
-              {opt}
-            </option>
-          );
-        })}
-      </select>
-    </div>
-  );
-};
+import { InputField, SelectField } from "../commom/FormComponents";
+import { useBilling } from "./Register/useBilling";
+import { printReceipt } from "./Register/RegisterUtils";
 
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);
   const [discountValue, setDiscountValue] = useState(0);
   const [discountType, setDiscountType] = useState("amount");
-  const [discountReason, setDiscountReason] = useState("");
+  const [discountReason, setDiscountReason] = useState("staff");
   const [cashReceived, setCashReceived] = useState(0);
   const [panels, setPanels] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [tests, setTests] = useState([]);
   const [dropdownTests, setDropdownTests] = useState([]); // Tests currently in dropdown
-  const [totalRecords, setTotalRecords] = useState(0);    // Total tests in DB
-  const [dropPage, setDropPage] = useState(1);            // Current page for dropdown
-  const [isFetching, setIsFetching] = useState(false);    // Loading state for dropdown
-const [searchQuery, setSearchQuery] = useState("");
+  const [totalRecords, setTotalRecords] = useState(0); // Total tests in DB
+  const [dropPage, setDropPage] = useState(1); // Current page for dropdown
+  const [isFetching, setIsFetching] = useState(false); // Loading state for dropdown
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchDropdownData(1, true);
   }, []);
 
+  const fetchDropdownData = async (page, isInitial = false, search = "") => {
+    if (isFetching) return;
+    setIsFetching(true);
 
-const fetchDropdownData = async (page, isInitial = false, search = "") => {
-  if (isFetching) return;
-  setIsFetching(true);
-  
-  try {
-    // Pass the search term to your API call
-    // Assuming your getAllTests looks like: (page, limit, search)
-    const res = await getAllTests(page, 10, search);
+    try {
+      const res = await getAllTests(page, 10, search);
 
-    const newTests = res.data.data || [];
-    const pagination = res.data.pagination;
+      const newTests = res.data.data || [];
+      const pagination = res.data.pagination;
 
-    if (isInitial || page === 1) {
-      setDropdownTests(newTests);
-    } else {
-      setDropdownTests((prev) => [...prev, ...newTests]);
+      if (isInitial || page === 1) {
+        setDropdownTests(newTests);
+      } else {
+        setDropdownTests((prev) => [...prev, ...newTests]);
+      }
+
+      setTotalRecords(pagination.totalItems);
+      setDropPage(page);
+      setSearchQuery(search); // Keep track of current search
+    } catch (err) {
+      console.error("Failed to fetch dropdown tests:", err);
+    } finally {
+      setIsFetching(false);
     }
+  };
 
-    setTotalRecords(pagination.totalItems);
-    setDropPage(page);
-    setSearchQuery(search); // Keep track of current search
-  } catch (err) {
-    console.error("Failed to fetch dropdown tests:", err);
-  } finally {
-    setIsFetching(false);
-  }
-};
+  const handleSearchTests = (term) => {
+    fetchDropdownData(1, true, term);
+  };
 
- const handleSearchTests = (term) => {
-  // Trigger fetch for page 1 with the new search term
-  fetchDropdownData(1, true, term);
-};
-
-const loadMoreTests = () => {
-  if (dropdownTests.length < totalRecords) {
-    // Ensure we maintain the search term when loading more pages
-    fetchDropdownData(dropPage + 1, false, searchQuery);
-  }
-};
-
+  const loadMoreTests = () => {
+    if (dropdownTests.length < totalRecords) {
+      fetchDropdownData(dropPage + 1, false, searchQuery);
+    }
+  };
 
   useEffect(() => {
     const fetchTests = async () => {
@@ -151,37 +82,22 @@ const loadMoreTests = () => {
   }, []);
 
   const handleAddTest = (testId) => {
-  if (!testId) return;
-  const testObj = dropdownTests.find((t) => t._id === testId);
-  if (testObj && !selectedTests.some((t) => t._id === testObj._id)) {
-    setSelectedTests([...selectedTests, testObj]);
-  } else if (!testObj) {
-    console.warn("Test not found in the currently loaded dropdown list");
-  }
-};
-  useEffect(() => {
-    const fetchPanels = async () => {
-      try {
-        const res = await getAllPanels();
-        setPanels(res.data.data);
-      } catch (err) {
-        console.error("Failed to fetch panels", err);
-      }
-    };
-
-    fetchPanels();
-  }, []);
+    if (!testId) return;
+    const testObj = dropdownTests.find((t) => t._id === testId);
+    if (testObj && !selectedTests.some((t) => t._id === testObj._id)) {
+      setSelectedTests([...selectedTests, testObj]);
+    } else if (!testObj) {
+      console.warn("Test not found in the currently loaded dropdown list");
+    }
+  };
 
   useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        const res = await getAllDoctors();
-        setDoctors(res.data.data);
-      } catch (err) {
-        console.error("Failed to fetch doctors", err);
-      }
+    const fetchData = async () => {
+      const [pRes, dRes] = await Promise.all([getAllPanels(), getAllDoctors()]);
+      setPanels(pRes.data.data);
+      setDoctors(dRes.data.data);
     };
-    fetchDoctors();
+    fetchData();
   }, []);
 
   const removeTest = (id) => {
@@ -207,7 +123,7 @@ const loadMoreTests = () => {
     vitals: {
       weight: "",
       height: "",
-      bloodGroup: "",
+      bloodGroup: null,
     },
   });
 
@@ -228,51 +144,13 @@ const loadMoreTests = () => {
     });
   };
 
-  // Generate Serial Numbers (Note: In production, do this on Backend)
-  const generateSerialNumbers = () => {
-    const labNo = "LAB" + Date.now().toString().slice(-9); // 12 digits total
-    const regNo = Math.floor(10000 + Math.random() * 90000).toString(); // 5 digits
-    return { labNo, regNo };
-  };
+  const calculations = useBilling(
+    selectedTests,
+    discountValue,
+    discountType,
+    cashReceived
+  );
 
-  // Validation
-  //   const validateForm = () => {
-  //     if (!form.firstName || !form.mobile) {
-  //       alert("Please fill required fields (Name, Mobile) and add at least one test.");
-  //       return true;
-  //     }
-  //     return true;
-  //   };
-  // 1. FIXED CALCULATIONS: Ensure Number conversion to avoid NaN
-  const calculations = useMemo(() => {
-    // Ensure we are summing a number
-    const grossTotal = selectedTests.reduce(
-      (sum, item) => sum + (Number(item.defaultPrice) || 0),
-      0
-    );
-
-    const discountVal = Number(discountValue) || 0;
-    const cashRec = Number(cashReceived) || 0;
-
-    const discountAmt =
-      discountType === "percent"
-        ? (grossTotal * discountVal) / 100
-        : discountVal;
-
-    const netAmount = Math.max(0, grossTotal - discountAmt);
-    const dueAmount = cashRec < netAmount ? netAmount - cashRec : 0;
-
-    return {
-      grossTotal,
-      discountAmt,
-      netAmount,
-      dueAmount,
-      cashRec,
-      count: selectedTests.length,
-    };
-  }, [selectedTests, discountValue, discountType, cashReceived]);
-
-  // 2. FIXED SAVE LOGIC: Sending objects instead of just string IDs
   const handleSave = async () => {
     try {
       // Logic for Payment Status
@@ -294,6 +172,7 @@ const loadMoreTests = () => {
         billing: {
           grossTotal: calculations.grossTotal,
           discountType,
+          discountReason,
           discountValue: Number(discountValue),
           discountAmount: calculations.discountAmt,
           netAmount: calculations.netAmount,
@@ -317,168 +196,10 @@ const loadMoreTests = () => {
   };
 
   const handlePrint = () => {
-    //   if (!validateForm()) return;
+    // Call the imported utility function
+    printReceipt(form, selectedTests, calculations);
+    window.location.reload();
 
-    const { labNo, regNo } = generateSerialNumbers();
-    const doc = new jsPDF();
-    const leftX = 15; // left page margin
-    const now = new Date();
-
-    const formattedDate = now.toLocaleDateString("en-GB"); // DD/MM/YYYY
-    const formattedTime = now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    const pageWidth = doc.internal.pageSize.getWidth();
-
-    // --- 1. HEADER (Laboratory Info) ---
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("ACCURATE DIAGNOSTIC CENTER", leftX, 15, {
-      align: "left",
-    });
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    const headerLines = [
-      "7/15128/2, Janaura, NH-27, Ayodhya, Uttar Pradesh",
-      "Contact Nos : 8009904250",
-      "Email: accurate@gmail.com",
-      "Website: www.accuratediagnostics.co.in",
-    ];
-    headerLines.forEach((line, index) => {
-      doc.text(line, leftX, 20 + index * 4, { align: "left" });
-    });
-
-    // --- 2. TITLE BAR ---
-    doc.setFillColor(230, 230, 230);
-    doc.rect(15, 42, pageWidth - 30, 6, "F");
-    doc.setFont("helvetica", "bold");
-    doc.text("Bill / Money Receipt", pageWidth / 2, 46, { align: "left" });
-
-    // --- 3. PATIENT METADATA (Two Columns) ---
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-
-    // Left Column
-    doc.text(`Patient Name :`, 15, 58);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${form.firstName}`, 45, 58);
-    doc.setFont("helvetica", "normal");
-
-    doc.text(`Age :`, 15, 64);
-    doc.text(`${form.age} Y`, 45, 64);
-    doc.text(`Sex :`, 70, 64);
-    doc.text(`${form.gender}`, 90, 64);
-
-    doc.text(`Referred By :`, 15, 70);
-    doc.text(`${form.referredBy}`, 45, 70);
-
-    doc.text(`Contact No. :`, 15, 76);
-    doc.text(`${form.mobile}`, 45, 76);
-
-    // Right Column
-    const rightColX = 130;
-    const rightValX = 160;
-    doc.text(`Bill No :`, rightColX, 58);
-    doc.text(`25-26/${regNo}`, rightValX, 58); // Serialized Bill No
-
-    doc.text(`Reg. Date :`, rightColX, 64);
-    doc.text(`${formattedDate} ${formattedTime}`, rightValX, 64);
-
-    doc.text(`Patient ID :`, rightColX, 70);
-    doc.text(`157098`, rightValX, 70); // Static or from user context
-
-    doc.text(`Lab No. :`, rightColX, 76);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${labNo}`, rightValX, 76);
-
-    // --- 4. INVESTIGATION TABLE ---
-    const tableData = selectedTests.map((t, index) => [
-      index + 1,
-      t.category.name, // Department
-      t.name,
-      "-", // Token No
-      (t.defaultPrice || t.price || 0).toFixed(2),
-    ]);
-
-    autoTable(doc, {
-      startY: 82,
-      head: [["Sr.No", "Department", "Test Name", "Token No", "Test Rate"]],
-      body: tableData,
-      theme: "plain",
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: {
-        fillColor: [220, 220, 220],
-        textColor: [0, 0, 0],
-        fontStyle: "bold",
-      },
-      columnStyles: {
-        5: { halign: "right" },
-      },
-      margin: { left: 15, right: 15 },
-    });
-
-    // --- 5. BILLING SUMMARY ---
-    let finalY = doc.lastAutoTable.finalY + 2;
-    doc.setFontSize(8);
-    doc.text(`Gross Amount :`, 160, finalY, { align: "right" });
-    doc.text(`${calculations.grossTotal.toFixed(2)}`, 195, finalY, {
-      align: "right",
-    });
-
-    finalY += 15;
-    // Box for totals
-    doc.rect(135, finalY, 60, 25);
-    doc.text(`Discount Amount:`, 137, finalY + 5);
-    doc.text(`${calculations.discountAmt.toFixed(2)}`, 193, finalY + 5, {
-      align: "right",
-    });
-
-    doc.line(135, finalY + 8, 195, finalY + 8);
-
-    doc.setFont("helvetica", "bold");
-    doc.text(`Net Amount:`, 137, finalY + 13);
-    doc.text(`${calculations.netAmount.toFixed(2)}`, 193, finalY + 13, {
-      align: "right",
-    });
-
-    doc.setFont("helvetica", "normal");
-    doc.text(`Paid Amount:`, 137, finalY + 18);
-    doc.text(`${calculations.cashRec.toFixed(2)}`, 193, finalY + 18, {
-      align: "right",
-    });
-
-    doc.text(`Due Amount:`, 137, finalY + 23);
-    doc.text(`${calculations.dueAmount.toFixed(2)}`, 193, finalY + 23, {
-      align: "right",
-    });
-
-    // --- 6. FOOTER & SIGNATURE ---
-    const footerY = 270;
-    doc.setFontSize(8);
-    doc.text("Auth. Signatory", pageWidth - 45, footerY - 5);
-    doc.line(15, footerY, pageWidth - 15, footerY);
-
-    doc.setFontSize(7);
-    const note =
-      "This report is for diagnostic use only and is not valid for medico legal use...";
-    doc.text(note, 15, footerY + 5);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("NOTE", 15, footerY + 12);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      "* KINDLY DON'T ASK FOR THE REPORT WITHOUT SLIP.",
-      15,
-      footerY + 16
-    );
-
-    // --- PRINT PREVIEW INSTEAD OF DOWNLOAD ---
-    doc.autoPrint();
-    const pdfBlob = doc.output("bloburl");
-    window.open(pdfBlob);
   };
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
@@ -502,7 +223,7 @@ const loadMoreTests = () => {
                   label="Panel"
                   options={panels.map((panel) => ({
                     label: panel.name,
-                    value: panel._id,
+                    value: panel.name,
                   }))}
                   value={form.panel}
                   onChange={(e) => handleChange("panel", e.target.value)}
@@ -512,7 +233,7 @@ const loadMoreTests = () => {
                   label="Reffered By"
                   options={doctors.map((doc) => ({
                     label: doc.fullName,
-                    value: doc._id,
+                    value: doc.fullName,
                   }))}
                   value={form.referredBy}
                   onChange={(e) => handleChange("referredBy", e.target.value)}
@@ -527,9 +248,8 @@ const loadMoreTests = () => {
                     value={form.title}
                     onChange={(e) => {
                       const selectedTitle = e.target.value;
-                      let autoGender = form.gender; // Default to current gender
+                      let autoGender = form.gender; 
 
-                      // Logic to determine gender based on title
                       if (selectedTitle === "Mr.") {
                         autoGender = "Male";
                       } else if (
@@ -537,8 +257,6 @@ const loadMoreTests = () => {
                       ) {
                         autoGender = "Female";
                       }
-
-                      // Update both title and gender in one state update
                       setForm({
                         ...form,
                         title: selectedTitle,
@@ -559,6 +277,7 @@ const loadMoreTests = () => {
                 <InputField
                   label="Age (Years)"
                   value={form.age}
+                  type={"number"}
                   onChange={(e) => handleChange("age", e.target.value)}
                 />
 
@@ -574,6 +293,7 @@ const loadMoreTests = () => {
                   placeholder="987346665"
                   value={form.mobile}
                   maxLength={10}
+                  type={"number"}
                   onChange={(e) => setForm({ ...form, mobile: e.target.value })}
                 />
 
@@ -645,7 +365,7 @@ const loadMoreTests = () => {
 
                 <SelectField
                   label="Blood Group"
-                  options={["A+", "B+", "O+", "AB+"]}
+                  options={["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]}
                   value={form.vitals.bloodGroup}
                   onChange={(e) =>
                     setForm({
@@ -655,15 +375,6 @@ const loadMoreTests = () => {
                   }
                 />
               </div>
-
-              {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-blue-50/50 p-4 rounded-lg">
-                <SelectField
-                  label="Tests"
-                  options={["Test A", "Test B", "Test C"]}
-                />
-               table
-              </div> */}
-
               <div className="space-y-4">
                 <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
@@ -711,7 +422,7 @@ const loadMoreTests = () => {
                                 {test.name}
                               </td>
                               <td className="px-4 py-2 text-right">
-                                ₹{(test.defaultPrice || 0).toFixed(2)}
+                                ₹{(test.defaultPrice ?? 0).toFixed(2)}
                               </td>
                               <td className="px-4 py-2 text-center">
                                 <button
@@ -737,32 +448,67 @@ const loadMoreTests = () => {
                     <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider">
                       Discount Settings
                     </h4>
-                    <div className="flex flex-wrap gap-2">
-                      <select
-                        value={discountType}
-                        onChange={(e) => setDiscountType(e.target.value)}
-                        className="border rounded-lg px-2 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500"
-                      >
-                        <option value="percent">Percent (%)</option>
-                        <option value="amount">Amount (₹)</option>
-                      </select>
-                      <input
-                        type="number"
-                        value={discountValue}
-                        onChange={(e) =>
-                          setDiscountValue(Number(e.target.value))
-                        }
-                        className="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[80px] outline-none focus:ring-2 focus:ring-teal-500"
-                        placeholder="Enter Value"
-                      />
-                      <select
-                        value={discountReason}
-                        onChange={(e) => setDiscountReason(e.target.value)}
-                        className="border rounded-lg px-2 py-2 text-sm bg-white outline-none w-full"
-                      >
-                        <option value="staff">Staff reference</option>
-                        <option value="sample">Sample</option>
-                      </select>
+                    <div className="flex flex-wrap gap-4">
+                      {/* Discount Type */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-gray-700">
+                          Discount Type
+                        </label>
+                        <select
+                          value={discountType}
+                          onChange={(e) => setDiscountType(e.target.value)}
+                          className="border rounded-lg px-2 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500"
+                        >
+                          <option value="percent">Percent (%)</option>
+                          <option value="amount">Amount (₹)</option>
+                        </select>
+                      </div>
+
+                      {/* Discount Value */}
+                      <div className="flex flex-col gap-1.5 flex-1 min-w-[120px]">
+                        <label className="text-xs font-medium text-gray-700">
+                          Value
+                        </label>
+                        <input
+                          type="number"
+                          value={discountValue}
+                          onChange={(e) =>
+                            setDiscountValue(Number(e.target.value))
+                          }
+                          className="border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500"
+                          placeholder="Enter Value"
+                        />
+                      </div>
+
+                      {/* Discount Reason */}
+                      <div className="flex flex-col gap-1.5 flex-1 min-w-[150px]">
+                        <label className="text-xs font-medium text-gray-700">
+                          Reason
+                        </label>
+                        <select
+                          value={discountReason}
+                          onChange={(e) => setDiscountReason(e.target.value)}
+                          className="border rounded-lg px-2 py-2 text-sm bg-white outline-none w-full"
+                        >
+                          <option value="staff">Staff reference</option>
+                          <option value="sample">Sample</option>
+                        </select>
+                      </div>
+
+                      {/* Approved By */}
+                      <div className="flex flex-col gap-1.5 flex-1 min-w-[150px]">
+                        <label className="text-xs font-medium text-gray-700">
+                          Approved By
+                        </label>
+                        <select
+                          value={discountReason} // Changed from discountReason to avoid state duplication
+                          // onChange={(e) => setApprovedBy(e.target.value)}
+                          className="border rounded-lg px-2 py-2 text-sm bg-white outline-none w-full"
+                        >
+                          <option value="manager">Manager</option>
+                          <option value="director">Director</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
@@ -795,7 +541,7 @@ const loadMoreTests = () => {
                           Gross Total
                         </p>
                         <p className="text-lg font-bold text-gray-800">
-                          ₹{calculations.grossTotal.toFixed(2)}
+                         ₹{(calculations?.grossTotal ?? 0).toFixed(2)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -803,7 +549,7 @@ const loadMoreTests = () => {
                           Discount (-)
                         </p>
                         <p className="text-lg font-bold text-red-600">
-                          ₹{calculations.discountAmt.toFixed(2)}
+                         ₹{(calculations?.discountAmount ?? 0).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -813,14 +559,14 @@ const loadMoreTests = () => {
                         Net Payable
                       </span>
                       <span className="text-xl font-black text-teal-700">
-                        ₹{calculations.netAmount.toFixed(2)}
+                        ₹{(calculations?.netAmount ?? 0).toFixed(2)}
                       </span>
                     </div>
 
                     <div className="bg-red-500 text-white p-3 rounded-lg flex justify-between items-center shadow-md">
                       <p className="text-xs font-bold uppercase">Due Amount</p>
                       <p className="text-xl font-black">
-                        ₹{calculations.dueAmount.toFixed(2)}
+                        ₹{(calculations?.dueAmount ?? 0).toFixed(2)}
                       </p>
                     </div>
                   </div>

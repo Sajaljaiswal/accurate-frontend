@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Filter,  Search } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import Navigation from "../Navigation";
 import { getAllPatients } from "../../api/patientApi";
 import EditPatientModal from "./EditPatientModal";
@@ -13,6 +13,7 @@ const AllPatient = () => {
     fullyUnpaid: "bg-[#ff3366] text-white", // Red
     credit: "bg-[#f0fff0] text-green-800", // Light Green/Cream
     settlement: "bg-[#00ff00] text-green-950", // Bright Green
+    return: "bg-gray-100 text-gray-950", // Bright Green
   };
 
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -21,7 +22,6 @@ const AllPatient = () => {
   const [billingPatient, setBillingPatient] = useState(null);
   const [hoveredPatient, setHoveredPatient] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
-
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -88,6 +88,8 @@ const AllPatient = () => {
         return "bg-[#00ff99]"; // green
       case "PARTIAL":
         return "bg-[#ffb6c1]"; // light pink
+      case "RETURN":
+        return "bg-[#ff3366] text-white";
       case "UNPAID":
         return "bg-[#ff3366] text-white"; // red
       default:
@@ -107,9 +109,10 @@ const AllPatient = () => {
     "Panel",
     "Service By",
     "Gross Amt",
-    "Disc.",
-    "NetAmt",
-    "UnpaidAmt",
+    "Discount",
+    "Net Amount",
+    "Paid Amount",
+    "Current Balance",
     "Discount Reason",
     "Edit Info",
     "Receipt Edit",
@@ -117,7 +120,6 @@ const AllPatient = () => {
   ];
 
   const filteredPatients = patients.filter((p) => {
-    console.log("Filtering patient:", p);
     const createdDate = new Date(p.createdAt);
 
     const matchesLab =
@@ -155,10 +157,10 @@ const AllPatient = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
-         <Navigation />
-         <div className="flex flex-1 overflow-hidden">
-           <Sidebar />
-           <main className="flex-1 overflow-y-auto">
+      <Navigation />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto">
           <div className="min-h-screen bg-slate-100 font-sans p-4 md:p-6">
             <div className="max-w-[1600px] mx-auto mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
@@ -243,7 +245,7 @@ const AllPatient = () => {
                         />
                       </div>
                     </div>
-                  <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-500 uppercase">
                         Patient Name
                       </label>
@@ -264,7 +266,6 @@ const AllPatient = () => {
 
                   {/* Column 4 */}
                   <div className="space-y-4 ml-24">
-                   
                     <div className="flex flex-col gap-1 ">
                       <label className="text-xs font-bold text-slate-500 uppercase">
                         Order ID
@@ -281,7 +282,7 @@ const AllPatient = () => {
                         />
                       </div>
                     </div>
-                     <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-500 uppercase">
                         Reg No.
                       </label>
@@ -322,6 +323,11 @@ const AllPatient = () => {
                       className={`${statusColors.credit} text-[10px] font-bold px-2 py-1 rounded border border-slate-200 uppercase`}
                     >
                       Credit
+                    </span>
+                    <span
+                      className={`${statusColors.return} text-[10px] font-bold px-2 py-1 rounded border border-slate-200 uppercase`}
+                    >
+                      Return
                     </span>
                   </div>
 
@@ -435,6 +441,8 @@ const AllPatient = () => {
                               {p.panel || "-"}
                             </td>
 
+                            <td className="p-3 italic text-[11px]">{"-"}</td>
+
                             {/* Gross */}
                             <td className="p-3 font-bold">
                               ₹{p.billing?.grossTotal || 0}
@@ -484,16 +492,12 @@ const AllPatient = () => {
 
                             {/* Settlement */}
                             <td className="p-3 text-center">
-                              {paymentStatus !== "PAID" ? (
-                                <button
-                                  className="bg-blue-800 text-white px-2 py-0.5 rounded"
-                                  onClick={() => handleSettleClick(p)}
-                                >
-                                  Settle
-                                </button>
-                              ) : (
-                                "-"
-                              )}
+                              <button
+                                className="bg-blue-800 text-white px-2 py-0.5 rounded"
+                                onClick={() => handleSettleClick(p)}
+                              >
+                                Settle
+                              </button>
                             </td>
                           </tr>
                         );
@@ -526,8 +530,8 @@ const AllPatient = () => {
             </button>
           </div>
         </main>
-        </div>
-      
+      </div>
+
       {isEditOpen && (
         <EditPatientModal
           patient={selectedPatient}

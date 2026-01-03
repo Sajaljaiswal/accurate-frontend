@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 
-// Added 'onSearch' prop to the component
 const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // DEBOUNCE EFFECT: Wait for user to stop typing before calling API
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (isOpen) {
-        onSearch(searchTerm); // This triggers the backend search
+        onSearch(searchTerm); 
       }
     }, 400); // 400ms delay
 
@@ -48,7 +46,6 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading
           className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded mt-1 shadow-xl z-50 max-h-60 overflow-y-auto"
           onScroll={handleScroll}
         >
-          {/* Use 'tests' directly now, as they are pre-filtered by the server */}
           {tests.map((t) => (
             <div
               key={t._id}
@@ -81,7 +78,6 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading
         </div>
       )}
 
-      {/* Overlay to close dropdown */}
       {isOpen && (
         <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setIsOpen(false)} />
       )}
