@@ -89,41 +89,52 @@ const Register = () => {
   const [totalRecords, setTotalRecords] = useState(0);    // Total tests in DB
   const [dropPage, setDropPage] = useState(1);            // Current page for dropdown
   const [isFetching, setIsFetching] = useState(false);    // Loading state for dropdown
+const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchDropdownData(1, true);
   }, []);
 
-  const fetchDropdownData = async (page, isInitial = false) => {
-    if (isFetching) return;
-    setIsFetching(true);
-    try {
-      // Calling your API with page and limit (20)
-      const res = await getAllTests(page, 10);
 
-      const newTests = res.data.data || [];
-      const pagination = res.data.pagination;
+const fetchDropdownData = async (page, isInitial = false, search = "") => {
+  if (isFetching) return;
+  setIsFetching(true);
+  
+  try {
+    // Pass the search term to your API call
+    // Assuming your getAllTests looks like: (page, limit, search)
+    const res = await getAllTests(page, 10, search);
 
-      if (isInitial) {
-        setDropdownTests(newTests);
-      } else {
-        setDropdownTests((prev) => [...prev, ...newTests]);
-      }
+    const newTests = res.data.data || [];
+    const pagination = res.data.pagination;
 
-      setTotalRecords(pagination.totalItems);
-      setDropPage(page);
-    } catch (err) {
-      console.error("Failed to fetch dropdown tests:", err);
-    } finally {
-      setIsFetching(false);
+    if (isInitial || page === 1) {
+      setDropdownTests(newTests);
+    } else {
+      setDropdownTests((prev) => [...prev, ...newTests]);
     }
-  };
 
-  const loadMoreTests = () => {
-    if (dropdownTests.length < totalRecords) {
-      fetchDropdownData(dropPage + 1);
-    }
-  };
+    setTotalRecords(pagination.totalItems);
+    setDropPage(page);
+    setSearchQuery(search); // Keep track of current search
+  } catch (err) {
+    console.error("Failed to fetch dropdown tests:", err);
+  } finally {
+    setIsFetching(false);
+  }
+};
+
+ const handleSearchTests = (term) => {
+  // Trigger fetch for page 1 with the new search term
+  fetchDropdownData(1, true, term);
+};
+
+const loadMoreTests = () => {
+  if (dropdownTests.length < totalRecords) {
+    // Ensure we maintain the search term when loading more pages
+    fetchDropdownData(dropPage + 1, false, searchQuery);
+  }
+};
 
 
   useEffect(() => {
@@ -309,7 +320,7 @@ const Register = () => {
     //   if (!validateForm()) return;
 
     const { labNo, regNo } = generateSerialNumbers();
-    const doc = new jsPDF("p", "mm", "a5");
+    const doc = new jsPDF();
     const leftX = 15; // left page margin
     const now = new Date();
 
@@ -333,7 +344,6 @@ const Register = () => {
     const headerLines = [
       "7/15128/2, Janaura, NH-27, Ayodhya, Uttar Pradesh",
       "Contact Nos : 8009904250",
-      "Branch Ayodhya Contact No: 05267315486, +8924962394",
       "Email: accurate@gmail.com",
       "Website: www.accuratediagnostics.co.in",
     ];
@@ -664,6 +674,7 @@ const Register = () => {
                         loading={isFetching}
                         onLoadMore={loadMoreTests}
                         onSelect={handleAddTest}
+                        onSearch={handleSearchTests}
                       />
                     </div>
                     <div className="text-right">

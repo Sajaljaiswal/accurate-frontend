@@ -12,6 +12,7 @@ import {
   Globe,
 } from "lucide-react";
 import Sidebar from "../Sidebar";
+import { createPanel } from "../../api/panelApi";
 
 const NewPanel = () => {
   const [form, setForm] = useState({
@@ -52,21 +53,29 @@ const NewPanel = () => {
     });
   };
 
-  const handleSave = async () => {
-    if (!form.name || !form.contact.mobile) {
-      alert("Hospital name and mobile are required");
-      return;
-    }
+  const handleSave = async (e) => {
+  // 1. Prevent page refresh
+  if (e) e.preventDefault(); 
 
-    try {
-      
-      alert("Hospital registered successfully ✅");
-      window.location.reload();
-    } catch (err) {
-      alert(err.response?.data?.message || "Save failed");
-    }
-  };
+  if (!form.name || !form.contact.mobile) {
+    alert("Hospital name and mobile are required");
+    return;
+  }
 
+  try {
+    // Ensure createPanel is correctly imported and called
+    await createPanel(form);
+
+    alert("Hospital registered successfully ✅");
+    
+    // Optional: Instead of reload, reset form or redirect
+    // setForm(initialState); 
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+    alert(err.response?.data?.message || "Save failed");
+  }
+};
   return (
      <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
       <Navigation />
@@ -86,7 +95,7 @@ const NewPanel = () => {
               </span>
             </div>
 
-            <form className="p-6 md:p-10 space-y-10">
+            <form onSubmit={handleSave} className="p-6 md:p-10 space-y-10">
               {/* Section 1: Basic Information */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -379,7 +388,6 @@ const NewPanel = () => {
                 </button>
                 <button
                   className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg shadow-md flex items-center gap-2 transition-transform active:scale-95"
-                  onClick={handleSave}
                 >
                   <Save size={20} /> Register Hospital
                 </button>

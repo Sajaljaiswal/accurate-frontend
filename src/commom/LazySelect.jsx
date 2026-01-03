@@ -1,19 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 
-const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, loading }) => {
+// Added 'onSearch' prop to the component
+const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Filter local tests based on search (Optional: if searching is server-side, call API instead)
-  const filteredTests = tests.filter((t) =>
-    t.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // DEBOUNCE EFFECT: Wait for user to stop typing before calling API
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (isOpen) {
+        onSearch(searchTerm); // This triggers the backend search
+      }
+    }, 400); // 400ms delay
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
-    // Trigger onLoadMore when user is 10px from the bottom
     if (scrollHeight - scrollTop <= clientHeight + 10) {
       if (!loading && tests.length < totalItems) {
         onLoadMore();
@@ -29,7 +35,7 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, loading }) => {
         <input
           type="text"
           className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-teal-500 outline-none bg-white"
-          placeholder="Type test name (e.g., MRI, CBC)..."
+          placeholder="Search all tests..."
           value={searchTerm}
           onFocus={() => setIsOpen(true)}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -41,9 +47,9 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, loading }) => {
         <div 
           className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded mt-1 shadow-xl z-50 max-h-60 overflow-y-auto"
           onScroll={handleScroll}
-          ref={dropdownRef}
         >
-          {filteredTests.map((t) => (
+          {/* Use 'tests' directly now, as they are pre-filtered by the server */}
+          {tests.map((t) => (
             <div
               key={t._id}
               onClick={() => {
