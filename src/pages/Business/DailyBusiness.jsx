@@ -30,21 +30,25 @@ const DailyBusiness = () => {
 
   // Dynamic data from API
   const [stats, setStats] = useState({
-    totalRevenue: 3000,
+    totalRevenue: 0,
     totalPatients: 0,
     totalTests: 0,
     avgTicket: 0,
-    hourlyData: [], // For the graphs
+    hourlyData: [],
     recentBookings: [],
   });
 
+  const today = new Date().toISOString().split("T")[0];
+
   useEffect(() => {
+    if (!selectedDate) return;
+
     const fetchBusinessData = async () => {
       setLoading(true);
       try {
-        const res = await getDailyBusinessStats(selectedDate);
-        console.log("Business Data:", res.data);
+        const res = await getDailyBusinessStats(selectedDate || today);
         setStats(res.data);
+        console.log("Fetched business data:", res.data);
       } catch (err) {
         console.error("Error fetching business data:", err);
       } finally {
@@ -55,12 +59,30 @@ const DailyBusiness = () => {
     fetchBusinessData();
   }, [selectedDate]);
 
+  const safeHourlyData = useMemo(() => {
+    if (stats.hourlyData?.length) return stats.hourlyData;
+
+    return Array.from({ length: 24 }, (_, h) => ({
+      time: `${h}:00`,
+      revenue: 0,
+      tests: 0,
+    }));
+  }, [stats.hourlyData]);
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] font-sans">
       <Navigation />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <main className="flex-1 p-8 overflow-y-auto">
+          {loading && (
+            <div className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="text-slate-600 font-bold animate-pulse">
+                Loading Business Report...
+              </div>
+            </div>
+          )}
+
           {/* Header & Fixed Calendar UI */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
@@ -94,7 +116,7 @@ const DailyBusiness = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatCard
               title="Total Revenue"
-              value={`₹${stats.totalRevenue.toLocaleString()}`}
+              value={`₹${(stats.totalRevenue || 0).toLocaleString()}`}
               icon={<CreditCard className="text-emerald-600" />}
               color="emerald"
             />
@@ -132,7 +154,7 @@ const DailyBusiness = () => {
               </div>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.hourlyData}>
+                  <AreaChart data={safeHourlyData}>
                     <defs>
                       <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                         <stop
@@ -192,7 +214,7 @@ const DailyBusiness = () => {
               </div>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.hourlyData}>
+                  <BarChart data={safeHourlyData}>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
