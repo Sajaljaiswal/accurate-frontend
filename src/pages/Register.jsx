@@ -28,6 +28,16 @@ const Register = () => {
   const [isFetching, setIsFetching] = useState(false); // Loading state for dropdown
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Add this inside your Register component
+const [currentUser, setCurrentUser] = useState(null);
+
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user")); // Or wherever you store auth data
+  if (user) {
+    setCurrentUser(user);
+  }
+}, []);
+
   useEffect(() => {
     fetchDropdownData(1, true);
   }, []);
@@ -180,6 +190,8 @@ const Register = () => {
           dueAmount: calculations.dueAmount,
           paymentStatus: paymentStatus, // Ensure this matches your backend enum (PAID, UNPAID, PARTIAL)
         },
+          createdBy: currentUser?._id || null,
+
       };
       console.log("okokok");
 
@@ -196,10 +208,8 @@ const Register = () => {
   };
 
   const handlePrint = () => {
-    // Call the imported utility function
     printReceipt(form, selectedTests, calculations);
     window.location.reload();
-
   };
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">

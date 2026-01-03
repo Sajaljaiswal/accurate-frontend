@@ -5,6 +5,7 @@ import { getAllPatients } from "../../api/patientApi";
 import EditPatientModal from "./EditPatientModal";
 import SettleBillingModal from "./SettleBillingModal";
 import Sidebar from "../Sidebar";
+import { printReceipt } from "../Register/RegisterUtils";
 
 const AllPatient = () => {
   const statusColors = {
@@ -484,8 +485,25 @@ const AllPatient = () => {
                             </td>
 
                             {/* Receipt */}
+                            {/* Receipt Column */}
                             <td className="p-3 text-center">
-                              <button className="text-green-700 font-bold">
+                              <button
+                                className="text-green-700 font-bold hover:underline"
+                                onClick={() => {
+                                  const tests = p.tests || [];
+                                  const patientCalculations = {
+                                    grossTotal: p.billing?.grossTotal || 0,
+                                    discountAmt: p.billing?.discountAmount || 0,
+                                    discountAmount:
+                                      p.billing?.discountAmount || 0, // for compatibility
+                                    netAmount: p.billing?.netAmount || 0,
+                                    cashReceived: p.billing?.cashReceived || 0,
+                                    dueAmount: p.billing?.dueAmount || 0,
+                                  };
+
+                                  printReceipt(p, p.tests, patientCalculations);
+                                }}
+                              >
                                 Receipt
                               </button>
                             </td>

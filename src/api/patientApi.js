@@ -18,3 +18,8 @@ export const settleBilling = (id, payload) =>
   api.patch(`/patients/${id}/settle`, payload);
 
 export const getAllPatients = () => api.get("/patients");
+export const getDailyBusinessStats = (date) => {
+  return api.get("/patients/business-stats", {
+    params: { date },
+  });
+};
