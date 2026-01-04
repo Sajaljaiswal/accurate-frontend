@@ -1,7 +1,9 @@
-import axios from "axios";
+import api from "./axios"; // ✅ central axios instance
 
-const api = axios.create({
-  baseURL: "http://localhost:5000/api",
-});
-export const createPanel = (data) => api.post("/panels/register", data);
-export const getAllPanels = () => api.get("/panels");
+export const createPanel = (data) => {
+  return api.post("/panels/register", data);
+};
+
+export const getAllPanels = () => {
+  return api.get("/panels");
+};

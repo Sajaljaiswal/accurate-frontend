@@ -1,13 +1,10 @@
-// api/categoryApi.js
-import axios from 'axios';
-
-const API_URL = "http://localhost:5000/api/categories";
+// src/api/categoryApi.js
+import api from "./axios"; // 👈 use your existing axios instance
 
 export const createCategory = async (name) => {
-  // Must match the /addCategories path in categoryRoutes.js
-  return await axios.post(`${API_URL}/addCategories`, { name });
+  return await api.post("/categories/addCategories", { name });
 };
 
 export const getAllCategories = async () => {
-  return await axios.get(`${API_URL}/allCategories`);
+  return await api.get("/categories/allCategories");
 };
