@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Navigation from "../Navigation";
-import axios from "axios";
 import Sidebar from "../Sidebar";
+import api from "../../api/axios";
 
-const api = axios.create({ baseURL: "http://localhost:5000/api" });
 
 const DoctorTestAssign = () => {
   const [doctors, setDoctors] = useState([]);

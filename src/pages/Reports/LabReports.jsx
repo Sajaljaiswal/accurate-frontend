@@ -18,6 +18,7 @@ import Sidebar from "../Sidebar";
 import Navigation from "../Navigation";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import api from "../../api/axios";
 
 const LabReports = () => {
   const { id } = useParams(); // Get patient ID from URL
@@ -59,7 +60,7 @@ const LabReports = () => {
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/patients/${id}`);
+        const res = await api.get(`/patients/${id}`);
        const data = res.data.data;
 
         // ✅ AUTO-SELECT LOGIC
@@ -227,8 +228,8 @@ const LabReports = () => {
       // Check console to see if IDs are correct
       console.log("Sending tests to save:", patient.tests);
 
-      const res = await axios.put(
-        `http://localhost:5000/api/patients/${id}/results`,
+      const res = await api.put(
+        `/patients/${id}/results`,
         {
           tests: patient.tests, // Send the updated tests array
         }

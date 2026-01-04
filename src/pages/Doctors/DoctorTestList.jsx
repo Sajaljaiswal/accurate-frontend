@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Edit, Trash2, X, Loader2 } from "lucide-react"; 
+import api from "../../api/axios";
 
-const api = axios.create({ baseURL: "http://localhost:5000/api" });
 
 const DoctorTestList = ({ doctorId }) => {
   const [items, setItems] = useState([]);
