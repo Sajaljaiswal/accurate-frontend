@@ -7,7 +7,7 @@ import { getAllDoctors } from "../api/doctorApi";
 import { getAllTests } from "../api/testApi";
 import Sidebar from "./Sidebar";
 import LazySelect from "../commom/LazySelect";
-import { InputField, SelectField } from "../commom/FormComponents";
+import { InputField, PhoneInput, SelectField } from "../commom/FormComponents";
 import { useBilling } from "./Register/useBilling";
 import { printReceipt } from "./Register/RegisterUtils";
 import { useAuth } from "../auth/AuthContext";
@@ -77,7 +77,6 @@ const Register = () => {
       fetchDropdownData(dropPage + 1, false, searchQuery);
     }
   };
-
 
   const handleAddTest = (testId) => {
     if (!testId) return;
@@ -287,13 +286,9 @@ const Register = () => {
                   onChange={(e) => handleChange("dateOfBirth", e.target.value)}
                 />
 
-                <InputField
-                  label="Mobile No."
-                  placeholder="987346665"
+                <PhoneInput
                   value={form.mobile}
-                  maxLength={10}
-                  type={"number"}
-                  onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+                   onChange={(e) => setForm({ ...form, mobile: e })}
                 />
 
                 <InputField

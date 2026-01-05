@@ -274,15 +274,46 @@ const LabReports = () => {
 
     setSaving(true);
     try {
-      // Check console to see if IDs are correct
-      console.log("Sending tests to save:", patient.tests);
-
+      // 1. Save the patient's specific lab results
       const res = await api.put(`/patients/${id}/results`, {
-        tests: patient.tests, // Send the updated tests array
+        tests: patient.tests,
       });
 
+      // 2. Logic to update the Master Template (defaultResult)
+      // We loop through the tests currently in the state
+      const updateTemplatePromises = patient.tests.map(async (test) => {
+        // Check if:
+        // - It's a text report
+        // - richTextContent has data
+        // - The ORIGINAL defaultResult was missing/empty (based on what we fetched)
+        if (
+          test.reportType === "text" &&
+          test.richTextContent &&
+          test.richTextContent.trim() !== "" &&
+          (!test.defaultResult || test.defaultResult.trim() === "")
+        ) {
+          try {
+            // Update the global test definition so next time it's pre-filled
+            // NOTE: Ensure your backend has this route: PUT /tests/:id
+            await api.put(`lab/tests/${test.testId}`, {
+              defaultResult: test.richTextContent,
+            });
+            console.log(`Template updated for test: ${test.name}`);
+          } catch (templateErr) {
+            console.error("Failed to update master template:", templateErr);
+          }
+        }
+      });
+
+      await Promise.all(updateTemplatePromises);
+
       if (res.data.success) {
-        alert("Results saved successfully! ✅");
+        alert("Results saved and templates updated! ✅");
+        const updatedTests = patient.tests.map(t => ({
+        ...t,
+        defaultResult: t.reportType === "text" && t.richTextContent ? t.richTextContent : t.defaultResult
+      }));
+      setPatient({ ...patient, tests: updatedTests });
       }
     } catch (err) {
       console.error("Save Error Details:", err.response?.data);
@@ -291,6 +322,8 @@ const LabReports = () => {
       setSaving(false);
     }
   };
+
+  
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center bg-white">
@@ -478,7 +511,7 @@ const LabReports = () => {
                     <div className="border border-slate-200 rounded-md overflow-hidden">
                       <CKEditor
                         editor={ClassicEditor}
-                        data={test.defaultResult || ""} // Loads data if exists, else empty
+                       data={test.richTextContent || test.defaultResult || ""}
                         onChange={(event, editor) => {
                           const data = editor.getData();
                           handleEditorChange(test.testId, data);
