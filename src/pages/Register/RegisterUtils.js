@@ -11,8 +11,19 @@ export const printReceipt = (form, selectedTests, calculations) => {
   console.log("Printing Receipt...", { form });
   const { labNo, regNo } = generateSerialNumbers();
   const doc = new jsPDF();
-  const leftX = 15; // left page margin
+  const rightX = 100;
   const now = new Date();
+
+  const receiptDate = form?.createdAt ? new Date(form.createdAt) : new Date();
+
+  const Reg_Date = receiptDate.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 
   const formattedDate = now.toLocaleDateString("en-GB"); // DD/MM/YYYY
   const formattedTime = now.toLocaleTimeString("en-US", {
@@ -25,7 +36,7 @@ export const printReceipt = (form, selectedTests, calculations) => {
   // --- 1. HEADER (Laboratory Info) ---
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.text("ACCURATE DIAGNOSTIC CENTER", leftX, 15, {
+  doc.text("ACCURATE DIAGNOSTIC CENTER", rightX, 15, {
     align: "left",
   });
 
@@ -38,7 +49,7 @@ export const printReceipt = (form, selectedTests, calculations) => {
     "Website: www.accuratediagnostics.co.in",
   ];
   headerLines.forEach((line, index) => {
-    doc.text(line, leftX, 20 + index * 4, { align: "left" });
+    doc.text(line, rightX, 20 + index * 4, { align: "left" });
   });
 
   // --- 2. TITLE BAR ---
@@ -75,7 +86,7 @@ export const printReceipt = (form, selectedTests, calculations) => {
   doc.text(`25-26/${regNo}`, rightValX, 58); // Serialized Bill No
 
   doc.text(`Reg. Date :`, rightColX, 64);
-  doc.text(`${formattedDate} ${formattedTime}`, rightValX, 64);
+  doc.text(`${Reg_Date}`, rightValX, 64);
 
   doc.text(`Patient ID :`, rightColX, 70);
   doc.text(`157098`, rightValX, 70); // Static or from user context
@@ -89,7 +100,7 @@ export const printReceipt = (form, selectedTests, calculations) => {
     index + 1,
     t.category?.name || "Diagnostic",
     t.name,
-    "-", 
+    "-",
     Number(t.price || t.defaultPrice || 0).toFixed(2),
   ]);
   autoTable(doc, {
@@ -150,21 +161,32 @@ export const printReceipt = (form, selectedTests, calculations) => {
   });
 
   // --- 6. FOOTER & SIGNATURE ---
+  // footer base line
   const footerY = 270;
   doc.setFontSize(8);
   doc.text("Auth. Signatory", pageWidth - 45, footerY - 5);
   doc.line(15, footerY, pageWidth - 15, footerY);
 
+  const createdBy = form?.createdBy || "System";
+
+  // Left side footer info
   doc.setFontSize(7);
+  doc.text(`Printed On: ${formattedDate} ${formattedTime}`, 15, footerY + 5);
+  doc.text(`Created By: ${createdBy}`, 15, footerY + 9);
+
+  // ---- Disclaimer ----
   const note =
-    "This report is for diagnostic use only and is not valid for medico legal use...";
-  doc.text(note, 15, footerY + 5);
+    "This report is for diagnostic use only and is not valid for medico legal use.";
+  doc.text(note, 15, footerY + 14);
 
+  // ---- NOTE Section ----
   doc.setFont("helvetica", "bold");
-  doc.text("NOTE", 15, footerY + 12);
-  doc.setFont("helvetica", "normal");
-  doc.text("* KINDLY DON'T ASK FOR THE REPORT WITHOUT SLIP.", 15, footerY + 16);
+  doc.text("NOTE", 15, footerY + 20);
 
+  doc.setFont("helvetica", "normal");
+  doc.text("* KINDLY DON'T ASK FOR THE REPORT WITHOUT SLIP.", 15, footerY + 24);
+
+  // ---- Print ----
   doc.autoPrint();
   const pdfBlob = doc.output("bloburl");
   window.open(pdfBlob);

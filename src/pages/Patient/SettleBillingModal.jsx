@@ -25,7 +25,7 @@ const SettleBillingModal = ({ patient, onClose, onSuccess }) => {
     discountType,
     0
   );
-
+console.log("Calculations in SettleBillingModal:", calculations);
   useEffect(() => {
     if (patient) {
       const existingTests =
@@ -60,7 +60,7 @@ const SettleBillingModal = ({ patient, onClose, onSuccess }) => {
   const alreadyPaid = Number(patient.billing?.cashReceived || 0);
   const netAmount = calculations.netAmount; // New calculated net after edits
 
-  // Total money at hand after current collection
+  // Total  at hand after current collection
   const totalCashHandled = alreadyPaid + Number(paidNow);
 
   // Balance logic
@@ -90,17 +90,16 @@ const SettleBillingModal = ({ patient, onClose, onSuccess }) => {
 
   const handleSave = async () => {
     try {
-
       // Determine the status string
-    let finalStatus = "PENDING";
-    
-    if (totalCashHandled > netAmount) {
-      finalStatus = "RETURN"; // Use this if your backend Enum supports it
-    } else if (finalDue <= 0 && netAmount > 0) {
-      finalStatus = "PAID";
-    } else if (totalCashHandled > 0) {
-      finalStatus = "PARTIAL";
-    }
+      let finalStatus = "PENDING";
+
+      if (totalCashHandled > netAmount) {
+        finalStatus = "RETURN"; // Use this if your backend Enum supports it
+      } else if (finalDue <= 0 && netAmount > 0) {
+        finalStatus = "PAID";
+      } else if (totalCashHandled > 0) {
+        finalStatus = "PARTIAL";
+      }
       const payload = {
         tests: selectedTests.map((t) => ({
           testId: t._id,
@@ -174,9 +173,16 @@ const SettleBillingModal = ({ patient, onClose, onSuccess }) => {
             </div>
           </div>
 
-          {/* Section: Money Logic */}
-          {/* Section: Money Logic */}
           <div className="space-y-3 border-t pt-4">
+            <div className="flex justify-between text-gray-600 text-sm">
+              <span>
+                Discount Amount (
+                {discountType === "percent" ? `${discountValue}%` : "Fixed"}):
+              </span>
+              <span className="font-semibold text-red-600">
+                 ₹{(calculations.discountAmount ?? 0).toFixed(2)}
+              </span>
+            </div>
             <div className="flex justify-between text-gray-600">
               <span>New Net Amount:</span>
               <span className="font-bold text-black">

@@ -41,14 +41,6 @@ const Navigation = () => {
           <button
             className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono"
             onClick={() => {
-              navigate("/documentEntry");
-            }}
-          >
-            {"CLICK"}
-          </button>
-          <button
-            className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono"
-            onClick={() => {
               handleLogout();
             }}
           >

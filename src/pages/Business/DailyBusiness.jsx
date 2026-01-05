@@ -16,7 +16,6 @@ import {
   CreditCard,
   Activity,
   CalendarIcon,
-  ChevronRight,
 } from "lucide-react";
 import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";

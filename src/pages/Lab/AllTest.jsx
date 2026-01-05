@@ -10,16 +10,16 @@ import { deleteTest } from "../../api/testApi";
 import { updateTest } from "../../api/testApi";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 const AllTest = () => {
-  const navigate = useNavigate();
 
   const [tests, setTests] = useState([]);
   const [loadingTests, setLoadingTests] = useState(true);
   const [dbCategories, setDbCategories] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [loadingCategories, setLoadingCategories] = useState(true);
-
+  const [showFilters, setShowFilters] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingTest, setEditingTest] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -110,10 +110,27 @@ const AllTest = () => {
         <main className="flex-1 p-6 overflow-y-auto">
           {/* Search Criteria Panel (Based on your image) */}
           <div className="bg-white rounded-lg shadow-sm border mb-6">
-            <div className="p-4 border-b flex items-center gap-2 text-blue-900 font-bold">
-              <Filter size={18} />
-              <span>Search Criteria</span>
-            </div>
+           <div
+                className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center gap-2 cursor-pointer select-none"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                {showFilters ? (
+                  <ChevronDown size={18} className="text-slate-600" />
+                ) : (
+                  <ChevronRight size={18} className="text-slate-600" />
+                )}
+
+                <Filter size={18} className="text-blue-600" />
+                <h2 className="font-bold text-slate-700">Search Criteria</h2>
+              </div>
+
+              <div
+                className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                  showFilters
+                    ? "max-h-[2000px] opacity-100"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
 
             <form onSubmit={handleSearch} className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -189,6 +206,7 @@ const AllTest = () => {
                 </div>
               </div>
             </form>
+            </div>
           </div>
 
           {/* Table Header Row */}

@@ -1,7 +1,7 @@
 // Register/useBilling.js
 import { useMemo } from "react";
 
-export const useBilling = (selectedTests, discountValue, discountType, cashReceived) => {
+export const useBilling = (selectedTests, discountValue, discountType, cashReceived, discountAmount) => {
   return useMemo(() => {
     // 1. Ensure grossTotal is a valid number
     const grossTotal = selectedTests.reduce(

@@ -29,7 +29,8 @@ const LabReports = () => {
   const [activeComment, setActiveComment] = useState(null); // { testId, type, value }
   const [isSignedOff, setIsSignedOff] = useState(false);
 
-  const SIGNATURE_IMAGE_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ4AAACUCAMAAABV5TcGAAAAbFBMVEX+/v7///8AAAD39/fw8PD6+vr09PTs7OzDw8Pm5ubg4ODT09PX19dhYWHJycmgoKC1tbVpaWm8vLxKSkqKioqurq5QUFBWVlZERER9fX2SkpI8PDx2dnYyMjKoqKiamporKysbGxskJCQQEBDs2KSnAAANbElEQVR4nO1c6YKjrBK1cF9QURRRXKLv/463MHta0+mZjN3fbc+vLBLgUBtFEcPYsWPHjh07duzYsWPHjh07duzYsWPHjh07duzYsWPHjh07dvxfAY747mH8CGgiHD8InJ0PzYURdpKJvKR18Mv5QDKChFUN61PPSwSNfjMfSEYs81Zlke/gGzOmvflr+cD5F6wRXeQaRzMKkLDfqi4AVlIOzPPNq0eBQoS/kg4At65GPgvGzYfJrzQeSAZvxl571tvZg8Ol++voQJtRt4dea8nDF5FItgo9fkrMh+PoW1K7H8jQpiOPt2LDj36EDwPIBsKXyDDAVdLaZoxgJOwHWCmAqCTMtxclFbIm3Uo4opI7300HgC1JGy6TYYDF1UaGFKCbtmL+ySCKA0lXyMCvvbbYTDjEd8d7AL4gbH3TisLB/K2EoyD993oWDLHIFD4ZA3hDt51wVN53soFxV0W48YyNLYUjJfI7DSmaLnKInooneOOGwjFtZaUW+7foc9HQMYdk73MrT39IC8c3GlKAeCTxJ5YLssP7PB848AyRIMniF+/q/+nYoH7mUE4PBUy+LWiGjGRReIQXx7GnkaWIYgbGPrJL+r6vZ0gNpRTN7H9PCLiUJJ/1g/I7vM/Ug9+QpxjHA5mmA2Ich6FFNE1Ttd2/pwOifHzmXi9P8TfKKhh+4Lu+q+HMMBG2bc/fZQSN9jLeNoK1gUVlFXzOhtnnb91QPbMcASM0+hazoTWl/DyY0LZ2qzwHGCmZ6u+JSNGKti+sOviKbbSxR5tNpyr7Hi+LLu0F8wRGMW41QC0cjdqK+8fOu/yFxDiEzWbSC4GotktAPnb+yjYE41G6Fo++e9hgdq0qv+vs4hU6wF5VFTDsdw8oypmSb2f51d578bklDZu1kAOizHrveJy+7PJvS4NBnGefRec+W1MVcEvivXUltZVKVjXznwNsqZ5rCwZg7dpZAqTjFL51OJaksagXUvhbBT1ZUzzztGB4h1U7D6FMXtzWvTQd7GwsvOqjIQXbd9Z/+Y1MgV2X8TN5j3K5TtfLwTM4y7Td/wD4VPlKfRgO0qSSayhy3wb8+Zs3kQKuouEqH/itWFemj2SsmVyrWFQ4MIPoaijATNowajr7MQjDWISMl3QQNrosEIDryQJw/NabDA5ElK3xAWY9rB9Cogjfrzmu1DJ3EFdLuT5dViT4uQkY8dAbiYi6R88CXn44H/DoWiRRnF9bnpwOnS7W4vWbcquaj2V9weD8ScoSwLs3w+B4ajG8BuNcBnHPXljmPGnZmQ6fMscXPGwfU7JaOvrjISluJmlDquNLK+YtE5ULZkar/l3+CPkQS/4S5zuuBee6kjAq75KnENSEDUspTtyy1yhHDxt1iAYWArDptNQOb0Lwmuyjo4WoHGgX2jCfH+diSvUPWR5vaYGbS3CTRoZH4XiHCYFI5ekHgwkQVmpRAmcu0lqMVx+AH4W07fx0Scwgwy2qXsy0yHy4CENO8Q2w+kiT0x8ydLQsOjnaC3M6dcrSOi8TX2fzB9HoPKqboWR0PrhDEsk2cY+lWvCWbQP4vO2tB2ZRRJfMKPZpai5KNl5O87Xypi2Nl7M16L1YAGYsS0FzlZmnJI/SaSewktTTKxvVhwI/bJK4iueZGZZzUo9Q6AKssB+V41dkVB4+ncqWFZpNf5KzbM99+l7ylnoLcLpB3h+zgMWqDwH8iQtaqj72mpOGAdhxIojy5zGZrh/4V2r1QqZlAlZXsiIMMtnUkWOjcNEpRnnpcDJ5ybuENqgBdlpFCXVmSUo49/Qr2yu1qUd4xOMHJMHPetHI1J27C0lTa1oNK8oSVYn3JHSxs5zexesQVA9MH7nguMJJjGPpquC4ek5c5wPhpu1HXtHXijEmu+CsykEh2yp0ednPdLldSXnNqSBtmkjNRJYlkrJai5bLlKWU1gSZU85K1OAgyWVwEhPBJZFFzypax85RMTJ2GIowzopeUmySBm9KLiPPsrmJdVBgwvtwB2d25QKhN8NHi9bQgpO644oKwWTdJz3OJtSGz8DFFiqXnirTk60zwoRLnoQ1qg4vovnAxQrmuiuI2tSSJa5yrorA9HlZ91Qc7YJuKnhUM6b6LDCOpsKvG5WqUpTYL0+y4KbE8e8JcVFhbii48wLYdVaziiWef7JYoJ0q+IWscOjoOygOqMhC37JnWZ/3fWEvyjr0hBA0ti92BhzL1DTG50K8k7HBMKyybE+g+GQz037CUGouDc2mM5wgcI1zq4yh8YYgS9H8+M6788sYBwmMcD7uGLQ+9LdczJ/yvEMrUsl0HnoQBdZtfhwDr6gWIglNKMjII+OOW/jgdo15gyxRH8M4OtNkBsG12ATSQ3RthD3Wrbo13m/f5KFL4wfuPloMI+xUTutMD+1mUoFEEU08926FL41ckVPRRbpJzDP3pcHGOgS+/aHb3wQbo7TrO6OgTeG/n4M7gJVOLL5TGD+VGDxmkfPIP/hxHKzUkCGvbT6ToU2tBS/B4WK18EhH6lN8fRPKiX9+WPbX0F6+6c62C9Wnpg06SGtJFhcldP4wwFZNcSvHtmO5vh8E0fFoNj4DX+LbKAh8143a/p6f+99l9GZT2+YvStxfAueCXsKYhdYv0JH3sf9Z6PswCb+nI5NtnxZJX9f8eN7MGEW/I8oyz/PqCnyNH5ToGihlpMRHed13RRYfb0hcScGQPrvaH8ie16K8Eagwc0gVcgx2sscy7NsHrzCtIIq9LtGzV5QQUuVTk89zZEpJjnNMuq4o0jTT8G6hP9BH98lQogtG4jAwa7AxU7JPQ/9ECdTVbYi84ckD2s6Gpqoqk9Bd5OKq7a4OvDjOgJZV0zSlYhMhvEuzekxQB1AJAl8fTFv6THo+kV6xG4ZtB2NnW66rNQqVCQMrjrvVCgOKbB4FfdcO/osAHR2SoYrXohodEQdeh+GnJqEqqeJ9l3pxGPldS2RkmYbFtFVcnvhyl2AXrXv7HFobPwjjAmUUwy/wm/cmqV8EaK+QN706rJUDYSyoaciFQjHw0Az6uPjm3FA1bA5Zjaz96iEmOILdNrmwYgVxkldx2H7DWRT2H6pm6ALHFQsp3OMzVsILL9QsmLey78q28Y4bbbf5mPD8rOdgudZqtkw+Y1mzOR3Ys0eH/Bj7+2W5dnDsWPaFh3NLI6kOxdEHgSnbr1Zcgp20q0l5gLTJ8o2VZSbjILzTnHC51Hoq7DFyzUrCT3X9YKTjl8/RwCnVkzRknfv0jXWLrwwIYjrR+HLXS+cXXpvVqV7nXGwH0ci/vJAQTKvWBkcyJHZ22LC0Eu0gm0Rs3Th0MFn+gntHa8eHIb4kfMBtyy8nHVBXxrVGukoP4yDb36Bs8NyjxcfGuyVDfxqRz3NLqCcVSdyLOIBTtV+XajCrFV1BI6ZQD+/zDf8WyH916Fzj0SI80+dzS9QTdXMZCOxy+gOhhmCRee2v6qHJtrwFhl0qnNLHuBdMXj2vywboxza+uSYGUJI/qDAEozt8VAX8+UCO443obQA0VM3oLd58s7vmGR0Yo+QkuU3AA1TkT/ZWKFPsoZUON9KStMkHof2nwAWeN2xLX9nJEzpwuJKI4HblwG7+RDZ0oHvnxObQK2OEUM/ZlAwdMpFkpR4dTFWuDgb9ckPSO6ECdyJ/eOElnS4h3xzgprgrbjp/bY/zrwAWI6vlP+BMC5Unx680jew+AQMhmf6sABIM1VwzjGHdIhd9sDUXMxvT6sUNMOrDWhWUFo3sTo71HZTnhvfJMExyOIb8YZ8TQlhmbc/FrA1PLr+h81sRDnQ5hD6IBkgi/3QG4JIQzLCukAqxvYqcRwE1eVK94ZDloBQD2Bwt330m027Xle75GDT8VE5IBe2C1ZTIvwcUj7O6/dKZlsNmgGIqgwfRiMmXjeg5LZBKNBXkII8K8k1U6PH4jK+ZPhwmGZeLGSxJ7tN0OAdO2MsTueRHzKiT+pbPyLpoOSu/KXCzsbYl0cvdLLGBcSI9ZA+i4Tdk4exuoe15zk7g1XREJhrVheb3MzFjteIYB4emcjlnHJdldO9QjIQ0TxXlQoNtm1aQ1WzQ17sEnw+efwQTGhiO0sXKJbCjafnGN8bz1f2FTjCCkqzfZrjQ4FhB3ElxIGQaBE8jZz2N/F1Y+msSnavFDXW5GLXjXr65+6sbMMzu0Dw5GzQtKwizRIp2IochV0n2E4k4As3AB5uIas3J0K042Ky9ZQOZC8tD/aQI1+XtOB2GtlR9dvqvrR/JxAz0mGN3e73XdlyPkbZf3jWB4VU3bODjLh/LZ/tX8Ps6PRZx/GQezsAd60GF+pDE0QfKYacOgyjWtpC6/PRqMsGwinb45Prtf4SHM1D8KUoyr2uuRDtULAlWBw8Wv94TQzI8Mch/XV6xNXTNX82E0KVVxTECWHvSSIf0nGIHK1Rz2eR2I90IcItnzwWU28c9uOGGshXrf4nzC6Dz5cc6LNP3VCuK3/0/rmB3IkDXg/ZWVwP9bjIQEFcyS2valHIxzfzLAE7KypLJYt33/CoAOEHw9lLW/zD+SxHVjh07duzYsWPHjh07duzYsWPHjh07duzYsWPHjh07duzYseMH43/Swbx5s/2IjAAAAABJRU5ErkJggg==";
+  const SIGNATURE_IMAGE_URL =
+    "data:image/png;base64,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";
   const toggleReportType = (testId) => {
     const updatedTests = patient.tests.map((t) =>
       t.testId === testId
@@ -61,20 +62,35 @@ const LabReports = () => {
     const fetchPatientData = async () => {
       try {
         const res = await api.get(`/patients/${id}`);
-       const data = res.data.data;
+        const data = res.data.data;
+        console.log("Fetched patient data:", data);
 
-        // ✅ AUTO-SELECT LOGIC
-        // Map through tests: if defaultResult exists and richTextContent is empty,
-        // auto-select "text" mode and load the template.
+        // ✅ ENHANCED AUTO-SELECT LOGIC
+        // Inside LabReports.jsx useEffect
         const processedTests = data.tests.map((test) => {
-          if (test.defaultResult && (!test.richTextContent || test.richTextContent === "")) {
+          // After population, the template is inside test.testId.defaultResult
+          const template = test.testId?.defaultResult;
+
+          if (
+            template &&
+            (!test.richTextContent || test.richTextContent.trim() === "")
+          ) {
             return {
               ...test,
+              // Flatten the data back so the rest of your app doesn't break
+              testId: test.testId._id,
               reportType: "text",
-              richTextContent: test.defaultResult,
+              richTextContent: template,
             };
           }
-          return test;
+
+          // Ensure testId remains a string for your keys/APIs
+          return {
+            ...test,
+            testId:
+              typeof test.testId === "object" ? test.testId._id : test.testId,
+            reportType: test.reportType || "range",
+          };
         });
 
         setPatient({ ...data, tests: processedTests });
@@ -99,49 +115,61 @@ const LabReports = () => {
   };
 
   const handlePrint = async () => {
-  if (!patient) return;
+    if (!patient) return;
 
-  const doc = new jsPDF("p", "mm", "a4");
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = { top: 40, bottom: 30, left: 15, right: 15 };
+    const doc = new jsPDF("p", "mm", "a4");
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = { top: 40, bottom: 30, left: 15, right: 15 };
 
-  // --- Header & Metadata Setup ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("ACCURATE DIAGNOSTIC CENTER", margin.left, 15);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  const headerLines = [
-    "7/15128/2, Janaura, NH-27, Ayodhya, Uttar Pradesh",
-    "Contact Nos : 8009904250",
-    "Branch Ayodhya Contact No: 05267315486, +8924962394",
-    "Email: accurate@gmail.com",
-    "Website: www.accuratediagnostics.co.in",
-  ];
-  headerLines.forEach((line, index) => doc.text(line, margin.left, 22 + index * 4));
+    // --- Header & Metadata Setup ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("ACCURATE DIAGNOSTIC CENTER", margin.left, 15);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    const headerLines = [
+      "7/15128/2, Janaura, NH-27, Ayodhya, Uttar Pradesh",
+      "Contact Nos : 8009904250",
+      "Branch Ayodhya Contact No: 05267315486, +8924962394",
+      "Email: accurate@gmail.com",
+      "Website: www.accuratediagnostics.co.in",
+    ];
+    headerLines.forEach((line, index) =>
+      doc.text(line, margin.left, 22 + index * 4)
+    );
 
-  doc.setFillColor(230, 230, 230);
-  doc.rect(15, 42, pageWidth - 30, 6, "F");
-  doc.setFont("helvetica", "bold");
-  doc.text("Lab Report", 18, 46);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Patient Name : ${patient.title} ${patient.firstName}`, 15, 58);
-  doc.text(`Age / Sex : ${patient.age} Y / ${patient.gender}`, 15, 64);
-  doc.text(`Referred By : ${patient.referredBy || "Self"}`, 15, 70);
-  doc.text(`Reg No : ${patient.registrationNumber}`, 130, 58);
-  doc.text(`Lab No : ${patient.labNumber}`, 130, 64);
-  
-  const now = new Date();
-  doc.text(`Reported On : ${now.toLocaleDateString("en-GB")} ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}`, 130, 70);
+    doc.setFillColor(230, 230, 230);
+    doc.rect(15, 42, pageWidth - 30, 6, "F");
+    doc.setFont("helvetica", "bold");
+    doc.text("Lab Report", 18, 46);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Patient Name : ${patient.title} ${patient.firstName}`, 15, 58);
+    doc.text(`Age / Sex : ${patient.age} Y / ${patient.gender}`, 15, 64);
+    doc.text(`Referred By : ${patient.referredBy || "Self"}`, 15, 70);
+    doc.text(`Reg No : ${patient.registrationNumber}`, 130, 58);
+    doc.text(`Lab No : ${patient.labNumber}`, 130, 64);
 
-  // --- Prepare HTML Container (Signature removed from here) ---
-  const tempContainer = document.createElement("div");
-  tempContainer.style.width = "180mm";
-  tempContainer.style.fontFamily = "helvetica";
+    const now = new Date();
+    doc.text(
+      `Reported On : ${now.toLocaleDateString(
+        "en-GB"
+      )} ${now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })}`,
+      130,
+      70
+    );
 
-  let fullHtmlContent = `
+    // --- Prepare HTML Container (Signature removed from here) ---
+    const tempContainer = document.createElement("div");
+    tempContainer.style.width = "180mm";
+    tempContainer.style.fontFamily = "helvetica";
+
+    let fullHtmlContent = `
     <style>
       .test-section { margin-left: 0px; margin-bottom: 25px; page-break-inside: avoid; }
       .test-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
@@ -151,66 +179,87 @@ const LabReports = () => {
     </style>
   `;
 
-  patient.tests.forEach((test) => {
-    if (test.reportType === "text") {
-      fullHtmlContent += `<div class="test-section"><div class="test-title">${test.name.toUpperCase()}</div><div>${test.richTextContent || "No findings recorded."}</div></div>`;
-    } else {
-      fullHtmlContent += `
+    patient.tests.forEach((test) => {
+      if (test.reportType === "text") {
+        fullHtmlContent += `<div class="test-section"><div class="test-title">${test.name.toUpperCase()}</div><div>${
+          test.richTextContent || "No findings recorded."
+        }</div></div>`;
+      } else {
+        fullHtmlContent += `
         <div class="test-section">
           <div class="test-title">${test.name.toUpperCase()}</div>
           <table>
             <tr style="background-color: #eee;"><th>Result</th><th>Unit</th><th>Reference</th></tr>
-            <tr><td>${test.resultValue || "---"}</td><td>${test.unit || ""}</td><td>${test.referenceRange || ""}</td></tr>
+            <tr><td>${test.resultValue || "---"}</td><td>${
+          test.unit || ""
+        }</td><td>${test.referenceRange || ""}</td></tr>
           </table>
         </div>`;
-    }
-  });
+      }
+    });
 
-  tempContainer.innerHTML = fullHtmlContent;
-  document.body.appendChild(tempContainer);
+    tempContainer.innerHTML = fullHtmlContent;
+    document.body.appendChild(tempContainer);
 
-  // --- Render HTML ---
-  await doc.html(tempContainer, {
-    x: margin.left,
-    y: margin.top,
-    width: 180,
-    windowWidth: 750,
-    autoPaging: "text",
-    margin: [margin.top, margin.right, margin.bottom, margin.left],
-    callback: function (doc) {
-      const totalPages = doc.internal.getNumberOfPages();
-      
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        
-        // 1. Draw Footer Line
-        doc.line(margin.left, pageHeight - 25, pageWidth - margin.right, pageHeight - 25);
-        
-        // 2. Draw Authorised Signatory Text
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "bold");
-        doc.text("Authorised Signatory", pageWidth - 60, pageHeight - 15);
+    // --- Render HTML ---
+    await doc.html(tempContainer, {
+      x: margin.left,
+      y: margin.top,
+      width: 180,
+      windowWidth: 750,
+      autoPaging: "text",
+      margin: [margin.top, margin.right, margin.bottom, margin.left],
+      callback: function (doc) {
+        const totalPages = doc.internal.getNumberOfPages();
 
-        // 3. ADD SIGNATURE IMAGE (If signed off)
-        // Positioned right above the "Authorised Signatory" text
-        if (isSignedOff) {
-          // Parameters: image, x, y, width, height
-          // x: pageWidth - 55 (aligned with text)
-          // y: pageHeight - 40 (placed above line)
-          doc.addImage(SIGNATURE_IMAGE_URL, "PNG", pageWidth - 55, pageHeight - 40, 35, 12);
+        for (let i = 1; i <= totalPages; i++) {
+          doc.setPage(i);
+
+          // 1. Draw Footer Line
+          doc.line(
+            margin.left,
+            pageHeight - 25,
+            pageWidth - margin.right,
+            pageHeight - 25
+          );
+
+          // 2. Draw Authorised Signatory Text
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "bold");
+          doc.text("Authorised Signatory", pageWidth - 60, pageHeight - 15);
+
+          // 3. ADD SIGNATURE IMAGE (If signed off)
+          // Positioned right above the "Authorised Signatory" text
+          if (isSignedOff) {
+            // Parameters: image, x, y, width, height
+            // x: pageWidth - 55 (aligned with text)
+            // y: pageHeight - 40 (placed above line)
+            doc.addImage(
+              SIGNATURE_IMAGE_URL,
+              "PNG",
+              pageWidth - 55,
+              pageHeight - 40,
+              35,
+              12
+            );
+          }
+
+          // 4. Draw Page Numbers
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "normal");
+          doc.text(
+            `Page ${i} of ${totalPages}`,
+            pageWidth / 2,
+            pageHeight - 10,
+            { align: "center" }
+          );
         }
 
-        // 4. Draw Page Numbers
-        doc.setFontSize(8);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: "center" });
-      }
-
-      document.body.removeChild(tempContainer);
-      window.open(doc.output("bloburl"), "_blank");
-    },
-  });
-};
+        document.body.removeChild(tempContainer);
+        window.open(doc.output("bloburl"), "_blank");
+      },
+    });
+  };
 
   const handleValueChange = (testId, newValue) => {
     const updatedTests = patient.tests.map((t) =>
@@ -228,12 +277,9 @@ const LabReports = () => {
       // Check console to see if IDs are correct
       console.log("Sending tests to save:", patient.tests);
 
-      const res = await api.put(
-        `/patients/${id}/results`,
-        {
-          tests: patient.tests, // Send the updated tests array
-        }
-      );
+      const res = await api.put(`/patients/${id}/results`, {
+        tests: patient.tests, // Send the updated tests array
+      });
 
       if (res.data.success) {
         alert("Results saved successfully! ✅");
@@ -381,14 +427,48 @@ const LabReports = () => {
                     </div>
 
                     {/* REPORT TYPE TOGGLE */}
-                   <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-                      <label className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-all ${test.reportType !== "text" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500"}`}>
-                        <input type="radio" className="hidden" name={`type-${test.testId}`} checked={test.reportType !== "text"} onChange={() => handleReportTypeChange(test.testId, "range")} />
-                        <span className="text-[11px] uppercase tracking-wider">Range Based</span>
+                    {/* REPORT TYPE TOGGLE */}
+                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                      <label
+                        className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-all ${
+                          test.reportType === "range"
+                            ? "bg-white shadow-sm text-blue-600 font-bold"
+                            : "text-slate-500"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          className="hidden"
+                          name={`type-${test.testId}`}
+                          checked={test.reportType === "range"}
+                          onChange={() =>
+                            handleReportTypeChange(test.testId, "range")
+                          }
+                        />
+                        <span className="text-[11px] uppercase tracking-wider">
+                          Range Based
+                        </span>
                       </label>
-                      <label className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-all ${test.reportType === "text" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500"}`}>
-                        <input type="radio" className="hidden" name={`type-${test.testId}`} checked={test.reportType === "text"} onChange={() => handleReportTypeChange(test.testId, "text")} />
-                        <span className="text-[11px] uppercase tracking-wider">Document (Text)</span>
+
+                      <label
+                        className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-all ${
+                          test.reportType === "text"
+                            ? "bg-white shadow-sm text-blue-600 font-bold"
+                            : "text-slate-500"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          className="hidden"
+                          name={`type-${test.testId}`}
+                          checked={test.reportType === "text"}
+                          onChange={() =>
+                            handleReportTypeChange(test.testId, "text")
+                          }
+                        />
+                        <span className="text-[11px] uppercase tracking-wider">
+                          Document (Text)
+                        </span>
                       </label>
                     </div>
                   </div>

@@ -1,9 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { getAllPanels } from "../api/panelApi";
 import Navigation from "./Navigation";
 import { Save, UserPlus, Trash2, RotateCcw, Printer } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { registerPatient } from "../api/patientApi";
 import { getAllDoctors } from "../api/doctorApi";
 import { getAllTests } from "../api/testApi";
@@ -12,16 +10,17 @@ import LazySelect from "../commom/LazySelect";
 import { InputField, SelectField } from "../commom/FormComponents";
 import { useBilling } from "./Register/useBilling";
 import { printReceipt } from "./Register/RegisterUtils";
+import { useAuth } from "../auth/AuthContext";
 
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);
   const [discountValue, setDiscountValue] = useState(0);
   const [discountType, setDiscountType] = useState("amount");
   const [discountReason, setDiscountReason] = useState("staff");
+  const [approvedBy, setApprovedBy] = useState("");
   const [cashReceived, setCashReceived] = useState(0);
   const [panels, setPanels] = useState([]);
   const [doctors, setDoctors] = useState([]);
-  const [tests, setTests] = useState([]);
   const [dropdownTests, setDropdownTests] = useState([]); // Tests currently in dropdown
   const [totalRecords, setTotalRecords] = useState(0); // Total tests in DB
   const [dropPage, setDropPage] = useState(1); // Current page for dropdown
@@ -29,14 +28,15 @@ const Register = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Add this inside your Register component
-const [currentUser, setCurrentUser] = useState(null);
 
-useEffect(() => {
-  const user = JSON.parse(localStorage.getItem("user")); // Or wherever you store auth data
-  if (user) {
-    setCurrentUser(user);
-  }
-}, []);
+  const { user } = useAuth();
+  const [currentUser, setCurrentUser] = useState("");
+  console.log("Authenticated User:", user, currentUser);
+  useEffect(() => {
+    if (user.username) {
+      setCurrentUser(user.username);
+    }
+  }, []);
 
   useEffect(() => {
     fetchDropdownData(1, true);
@@ -78,18 +78,6 @@ useEffect(() => {
     }
   };
 
-  useEffect(() => {
-    const fetchTests = async () => {
-      try {
-        const res = await getAllTests();
-        setTests(res.data.data || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchTests();
-  }, []);
 
   const handleAddTest = (testId) => {
     if (!testId) return;
@@ -168,12 +156,15 @@ useEffect(() => {
       if (calculations.dueAmount <= 0 && calculations.netAmount > 0) {
         paymentStatus = "PAID";
       } else if (cashReceived > 0 && calculations.dueAmount > 0) {
-        paymentStatus = "PARTIAL";
+        paymentStatus = "UNPAID";
+      } else if (cashReceived > 0 && calculations.dueAmount > cashReceived) {
+        paymentStatus = "REFUND";
+      } else {
+        paymentStatus = "PENDING";
       }
 
       const payload = {
         ...form,
-        // FIX: Sending the whole test object so Mongoose can "embed" it
         tests: selectedTests.map((t) => ({
           testId: t._id,
           name: t.name,
@@ -183,6 +174,7 @@ useEffect(() => {
           grossTotal: calculations.grossTotal,
           discountType,
           discountReason,
+          approvedBy,
           discountValue: Number(discountValue),
           discountAmount: calculations.discountAmt,
           netAmount: calculations.netAmount,
@@ -190,13 +182,10 @@ useEffect(() => {
           dueAmount: calculations.dueAmount,
           paymentStatus: paymentStatus, // Ensure this matches your backend enum (PAID, UNPAID, PARTIAL)
         },
-          createdBy: currentUser?._id || null,
-
+        createdBy: currentUser || null,
       };
-      console.log("okokok");
 
       const res = await registerPatient(payload);
-
       alert(
         `Patient Registered Successfully ✅\nLab No: ${res.data.data.labNumber}`
       );
@@ -258,7 +247,7 @@ useEffect(() => {
                     value={form.title}
                     onChange={(e) => {
                       const selectedTitle = e.target.value;
-                      let autoGender = form.gender; 
+                      let autoGender = form.gender;
 
                       if (selectedTitle === "Mr.") {
                         autoGender = "Male";
@@ -511,12 +500,16 @@ useEffect(() => {
                           Approved By
                         </label>
                         <select
-                          value={discountReason} // Changed from discountReason to avoid state duplication
-                          // onChange={(e) => setApprovedBy(e.target.value)}
+                          value={approvedBy} // Changed from discountReason to avoid state duplication
+                          onChange={(e) => setApprovedBy(e.target.value)}
                           className="border rounded-lg px-2 py-2 text-sm bg-white outline-none w-full"
                         >
-                          <option value="manager">Manager</option>
-                          <option value="director">Director</option>
+                          <option value="Dr. Manvendra Singh">
+                            Dr. Manvendra Singh
+                          </option>
+                          <option value="Dr. Amit Verma">Dr. Amit Verma</option>
+                          <option value="By Doctor">By Doctor</option>
+                          <option value="Others">Others</option>
                         </select>
                       </div>
                     </div>
@@ -551,7 +544,7 @@ useEffect(() => {
                           Gross Total
                         </p>
                         <p className="text-lg font-bold text-gray-800">
-                         ₹{(calculations?.grossTotal ?? 0).toFixed(2)}
+                          ₹{(calculations?.grossTotal ?? 0).toFixed(2)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -559,7 +552,7 @@ useEffect(() => {
                           Discount (-)
                         </p>
                         <p className="text-lg font-bold text-red-600">
-                         ₹{(calculations?.discountAmount ?? 0).toFixed(2)}
+                          ₹{(calculations?.discountAmount ?? 0).toFixed(2)}
                         </p>
                       </div>
                     </div>

@@ -6,6 +6,7 @@ import EditPatientModal from "./EditPatientModal";
 import SettleBillingModal from "./SettleBillingModal";
 import Sidebar from "../Sidebar";
 import { printReceipt } from "../Register/RegisterUtils";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 const AllPatient = () => {
   const statusColors = {
@@ -16,7 +17,7 @@ const AllPatient = () => {
     settlement: "bg-[#00ff00] text-green-950", // Bright Green
     return: "bg-gray-100 text-gray-950", // Bright Green
   };
-
+  const [showFilters, setShowFilters] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isSettleOpen, setIsSettleOpen] = useState(false);
@@ -166,7 +167,7 @@ const AllPatient = () => {
             <div className="max-w-[1600px] mx-auto mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">
-                  Receipt Re-Print
+                    All Patients
                 </h1>
                 <p className="text-sm text-red-600 font-semibold uppercase tracking-wide">
                   Total Patients Found: {filteredPatients.length}
@@ -176,166 +177,192 @@ const AllPatient = () => {
 
             {/* Search Criteria Card */}
             <div className="max-w-[1600px] mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-              <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center gap-2">
+              <div
+                className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center gap-2 cursor-pointer select-none"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                {showFilters ? (
+                  <ChevronDown size={18} className="text-slate-600" />
+                ) : (
+                  <ChevronRight size={18} className="text-slate-600" />
+                )}
+
                 <Filter size={18} className="text-blue-600" />
                 <h2 className="font-bold text-slate-700">Search Criteria</h2>
               </div>
 
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 gap-y-6">
-                  {/* Column 1 */}
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">
-                        Identification
-                      </label>
-                      <div className="flex gap-2">
-                        <select className="w-1/2 bg-slate-50 border border-slate-300 rounded p-2 text-sm">
-                          <option>Lab No</option>
-                        </select>
+              <div
+                className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                  showFilters
+                    ? "max-h-[2000px] opacity-100"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 gap-y-6">
+                    {/* Column 1 */}
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">
+                          Identification
+                        </label>
+                        <div className="flex gap-2">
+                          <select className="w-1/2 bg-slate-50 border border-slate-300 rounded p-2 text-sm">
+                            <option>Lab No</option>
+                          </select>
+                          <input
+                            type="text"
+                            className="w-2/3 border border-slate-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="Enter ID..."
+                            value={filters.labNo}
+                            onChange={(e) =>
+                              setFilters({ ...filters, labNo: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">
+                          Mobile No
+                        </label>
                         <input
                           type="text"
-                          className="w-2/3 border border-slate-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                          placeholder="Enter ID..."
-                          value={filters.labNo}
-                          onChange={(e) =>
-                            setFilters({ ...filters, labNo: e.target.value })
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">
-                        Mobile No
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Enter No."
-                        className="border border-slate-300 rounded p-2 text-sm"
-                        value={filters.mobile}
-                        onChange={(e) =>
-                          setFilters({ ...filters, mobile: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Column 2 */}
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">
-                        Date Range (From - To)
-                      </label>
-                      <div className="flex gap-2 items-center">
-                        <input
-                          type="date"
+                          placeholder="Enter No."
                           className="border border-slate-300 rounded p-2 text-sm"
-                          value={filters.fromDate}
+                          value={filters.mobile}
                           onChange={(e) =>
-                            setFilters({ ...filters, fromDate: e.target.value })
+                            setFilters({ ...filters, mobile: e.target.value })
                           }
                         />
-                        <span className="text-slate-400">-</span>
+                      </div>
+                    </div>
+
+                    {/* Column 2 */}
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">
+                          Date Range (From - To)
+                        </label>
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="date"
+                            className="border border-slate-300 rounded p-2 text-sm"
+                            value={filters.fromDate}
+                            onChange={(e) =>
+                              setFilters({
+                                ...filters,
+                                fromDate: e.target.value,
+                              })
+                            }
+                          />
+                          <span className="text-slate-400">-</span>
+                          <input
+                            type="date"
+                            className="border border-slate-300 rounded p-2 text-sm"
+                            value={filters.toDate}
+                            onChange={(e) =>
+                              setFilters({ ...filters, toDate: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">
+                          Patient Name
+                        </label>
                         <input
-                          type="date"
+                          type="text"
                           className="border border-slate-300 rounded p-2 text-sm"
-                          value={filters.toDate}
+                          placeholder="Enter name..."
+                          value={filters.patientName}
                           onChange={(e) =>
-                            setFilters({ ...filters, toDate: e.target.value })
+                            setFilters({
+                              ...filters,
+                              patientName: e.target.value,
+                            })
                           }
                         />
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">
-                        Patient Name
-                      </label>
-                      <input
-                        type="text"
-                        className="border border-slate-300 rounded p-2 text-sm"
-                        placeholder="Enter name..."
-                        value={filters.patientName}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            patientName: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
 
-                  {/* Column 4 */}
-                  <div className="space-y-4 ml-24">
-                    <div className="flex flex-col gap-1 ">
-                      <label className="text-xs font-bold text-slate-500 uppercase">
-                        Order ID
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          className="w-full border border-slate-300 rounded p-2 text-sm"
-                          placeholder="Order ID"
-                          value={filters.orderId}
-                          onChange={(e) =>
-                            setFilters({ ...filters, orderId: e.target.value })
-                          }
-                        />
+                    {/* Column 4 */}
+                    <div className="space-y-4 ml-24">
+                      <div className="flex flex-col gap-1 ">
+                        <label className="text-xs font-bold text-slate-500 uppercase">
+                          Order ID
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            className="w-full border border-slate-300 rounded p-2 text-sm"
+                            placeholder="Order ID"
+                            value={filters.orderId}
+                            onChange={(e) =>
+                              setFilters({
+                                ...filters,
+                                orderId: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">
-                        Reg No.
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          className="w-full border border-slate-300 rounded p-2 text-sm"
-                          placeholder="Reg No"
-                          value={filters.orderId}
-                          onChange={(e) =>
-                            setFilters({ ...filters, orderId: e.target.value })
-                          }
-                        />
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">
+                          Reg No.
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            className="w-full border border-slate-300 rounded p-2 text-sm"
+                            placeholder="Reg No"
+                            value={filters.orderId}
+                            onChange={(e) =>
+                              setFilters({
+                                ...filters,
+                                orderId: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Status Legends & Action Bar */}
-                <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-6">
-                  <div className="flex flex-wrap gap-3">
-                    <span
-                      className={`${statusColors.fullPaid} text-[10px] font-bold px-2 py-1 rounded border border-emerald-200 uppercase`}
-                    >
-                      Full Paid
-                    </span>
-                    <span
-                      className={`${statusColors.partialPaid} text-[10px] font-bold px-2 py-1 rounded border border-pink-200 uppercase`}
-                    >
-                      Partial Paid
-                    </span>
-                    <span
-                      className={`${statusColors.fullyUnpaid} text-[10px] font-bold px-2 py-1 rounded border border-red-400 uppercase`}
-                    >
-                      Fully Unpaid
-                    </span>
-                    <span
-                      className={`${statusColors.credit} text-[10px] font-bold px-2 py-1 rounded border border-slate-200 uppercase`}
-                    >
-                      Credit
-                    </span>
-                    <span
-                      className={`${statusColors.return} text-[10px] font-bold px-2 py-1 rounded border border-slate-200 uppercase`}
-                    >
-                      Return
-                    </span>
-                  </div>
+                  {/* Status Legends & Action Bar */}
+                  <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-6">
+                    <div className="flex flex-wrap gap-3">
+                      <span
+                        className={`${statusColors.fullPaid} text-[10px] font-bold px-2 py-1 rounded border border-emerald-200 uppercase`}
+                      >
+                        Full Paid
+                      </span>
+                      <span
+                        className={`${statusColors.partialPaid} text-[10px] font-bold px-2 py-1 rounded border border-pink-200 uppercase`}
+                      >
+                        Partial Paid
+                      </span>
+                      <span
+                        className={`${statusColors.fullyUnpaid} text-[10px] font-bold px-2 py-1 rounded border border-red-400 uppercase`}
+                      >
+                        Fully Unpaid
+                      </span>
+                      <span
+                        className={`${statusColors.credit} text-[10px] font-bold px-2 py-1 rounded border border-slate-200 uppercase`}
+                      >
+                        Credit
+                      </span>
+                      <span
+                        className={`${statusColors.return} text-[10px] font-bold px-2 py-1 rounded border border-slate-200 uppercase`}
+                      >
+                        Return
+                      </span>
+                    </div>
 
-                  <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-6 rounded text-sm shadow-sm flex items-center gap-2">
-                      <Search size={14} /> Search Records
-                    </button>
+                    <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-6 rounded text-sm shadow-sm flex items-center gap-2">
+                        <Search size={14} /> Search Records
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -488,9 +515,8 @@ const AllPatient = () => {
                             {/* Receipt Column */}
                             <td className="p-3 text-center">
                               <button
-                                className="text-green-700 font-bold hover:underline"
+                                className="bg-blue-800 text-white px-2 py-0.5 rounded"
                                 onClick={() => {
-                                  const tests = p.tests || [];
                                   const patientCalculations = {
                                     grossTotal: p.billing?.grossTotal || 0,
                                     discountAmt: p.billing?.discountAmount || 0,

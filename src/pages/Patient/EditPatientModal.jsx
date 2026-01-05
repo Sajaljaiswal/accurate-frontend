@@ -111,6 +111,7 @@ const EditPatientModal = ({ patient, onClose, onSuccess }) => {
     alert("Patient and tests updated successfully ✅");
     onSuccess();
     onClose();
+    window.location.reload();
   } catch (err) {
     console.error("Update Error:", err.response?.data || err.message);
     alert(err.response?.data?.message || "Failed to update patient tests");
