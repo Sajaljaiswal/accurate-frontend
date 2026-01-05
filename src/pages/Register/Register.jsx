@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { getAllPanels } from "../api/panelApi";
-import Navigation from "./Navigation";
+import { getAllPanels } from "../../api/panelApi";
+import Navigation from "../Navigation";
 import { Save, UserPlus, Trash2, RotateCcw, Printer } from "lucide-react";
-import { registerPatient } from "../api/patientApi";
-import { getAllDoctors } from "../api/doctorApi";
-import { getAllTests } from "../api/testApi";
-import Sidebar from "./Sidebar";
-import LazySelect from "../commom/LazySelect";
-import { InputField, PhoneInput, SelectField } from "../commom/FormComponents";
-import { useBilling } from "./Register/useBilling";
-import { printReceipt } from "./Register/RegisterUtils";
-import { useAuth } from "../auth/AuthContext";
+import { registerPatient } from "../../api/patientApi";
+import { getAllDoctors } from "../../api/doctorApi";
+import { getAllTests } from "../../api/testApi";
+import Sidebar from "../Sidebar";
+import LazySelect from "../../commom/LazySelect";
+import { InputField, PhoneInput, SelectField } from "../../commom/FormComponents";
+import { useBilling } from "./useBilling";
+import { printReceipt } from "./RegisterUtils";
+import { useAuth } from "../../auth/AuthContext";
 
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);

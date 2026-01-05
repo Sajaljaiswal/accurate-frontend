@@ -19,8 +19,8 @@ const Sidebar = () => {
         <SidebarItem 
           icon={<LayoutDashboardIcon size={20} />} 
           label="Dashboard" 
-          active={isActive("/admin")}
-          onClick={() => navigate('/admin')}
+          active={isActive("/dashboard")}
+          onClick={() => navigate('/dashboard')}
         />
 
         {/* --- Dropdown: Cases --- */}

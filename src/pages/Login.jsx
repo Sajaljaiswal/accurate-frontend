@@ -29,7 +29,7 @@ const Login = () => {
 
       // ✅ redirect based on role
       if (res.data.user.role === "SUPERADMIN") {
-        navigate("/admin");
+        navigate("/dashboard");
       } else {
         navigate("/"); // fallback
       }
