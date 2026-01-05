@@ -20,14 +20,54 @@ import {
 import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";
 import { getDailyBusinessStats } from "../../api/patientApi"; // You'll need this API
+const getTodayLocal = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split("T")[0];
+};
+
+const getYesterdayLocal = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split("T")[0];
+};
+
+const getLast7DaysRange = () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - 6);
+
+  start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
+  end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
+
+  return {
+    startDate: start.toISOString().split("T")[0],
+    endDate: end.toISOString().split("T")[0],
+  };
+};
+
+const getThisMonthRange = () => {
+  const now = new Date();
+
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
+  end.setMinutes(end.getMinutes() - end.getTimezoneOffset());
+
+  return {
+    startDate: start.toISOString().split("T")[0],
+    endDate: end.toISOString().split("T")[0],
+  };
+};
 
 const DailyBusiness = () => {
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [startDate, setStartDate] = useState(getTodayLocal());
+  const [endDate, setEndDate] = useState(getTodayLocal());
+
   const [loading, setLoading] = useState(false);
 
-  // Dynamic data from API
   const [stats, setStats] = useState({
     totalRevenue: 0,
     totalPatients: 0,
@@ -35,17 +75,17 @@ const DailyBusiness = () => {
     avgTicket: 0,
     hourlyData: [],
     recentBookings: [],
+    paymentSplit: [],
+    panelWise: [],
   });
 
-  const today = new Date().toISOString().split("T")[0];
-
   useEffect(() => {
-    if (!selectedDate) return;
+    if (!startDate || !endDate) return;
 
     const fetchBusinessData = async () => {
       setLoading(true);
       try {
-        const res = await getDailyBusinessStats(selectedDate || today);
+        const res = await getDailyBusinessStats({ startDate, endDate });
         setStats(res.data);
         console.log("Fetched business data:", res.data);
       } catch (err) {
@@ -56,7 +96,7 @@ const DailyBusiness = () => {
     };
 
     fetchBusinessData();
-  }, [selectedDate]);
+  }, [startDate, endDate]);
 
   const safeHourlyData = useMemo(() => {
     if (stats.hourlyData?.length) return stats.hourlyData;
@@ -67,6 +107,32 @@ const DailyBusiness = () => {
       tests: 0,
     }));
   }, [stats.hourlyData]);
+
+  const applyPreset = (type) => {
+    if (type === "today") {
+      const today = getTodayLocal();
+      setStartDate(today);
+      setEndDate(today);
+    }
+
+    if (type === "yesterday") {
+      const yesterday = getYesterdayLocal();
+      setStartDate(yesterday);
+      setEndDate(yesterday);
+    }
+
+    if (type === "last7") {
+      const range = getLast7DaysRange();
+      setStartDate(range.startDate);
+      setEndDate(range.endDate);
+    }
+
+    if (type === "month") {
+      const range = getThisMonthRange();
+      setStartDate(range.startDate);
+      setEndDate(range.endDate);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] font-sans">
@@ -93,20 +159,48 @@ const DailyBusiness = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl shadow-sm border border-slate-200">
-              <div className="bg-blue-50 p-2 rounded-lg text-blue-600">
-                <CalendarIcon size={20} />
+            <div>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {[
+                  { label: "Today", key: "today" },
+                  { label: "Yesterday", key: "yesterday" },
+                  { label: "Last 7 Days", key: "last7" },
+                  { label: "This Month", key: "month" },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => applyPreset(item.key)}
+                    className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition"
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">
-                  Select Report Date
-                </span>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="outline-none text-sm font-bold text-slate-700 cursor-pointer bg-transparent"
-                />
+
+              <div className="flex items-center gap-4 bg-white px-4 py-2.5 rounded-xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon size={18} className="text-blue-600" />
+                  <input
+                    type="date"
+                    value={startDate}
+                    max={endDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="outline-none text-sm font-bold text-slate-700 cursor-pointer"
+                  />
+                </div>
+
+                <span className="text-slate-400 font-bold">to</span>
+
+                <div className="flex items-center gap-2">
+                  <CalendarIcon size={18} className="text-blue-600" />
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={startDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="outline-none text-sm font-bold text-slate-700 cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -137,6 +231,29 @@ const DailyBusiness = () => {
               icon={<TrendingUp className="text-amber-600" />}
               color="amber"
             />
+          </div>
+
+          {/* Payment Split */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {stats.paymentSplit?.map((p) => {
+              const colorMap = {
+                PAID: "emerald",
+                PARTIAL: "amber",
+                UNPAID: "rose",
+              };
+
+              const color = colorMap[p._id] || "blue";
+
+              return (
+                <StatCard
+                  key={p._id}
+                  title={`${p._id} Revenue`}
+                  value={`₹${(p.revenue || 0).toLocaleString()}`}
+                  icon={<CreditCard />}
+                  color={color}
+                />
+              );
+            })}
           </div>
 
           {/* Graphs Section */}
@@ -244,6 +361,41 @@ const DailyBusiness = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+          </div>
+
+          {/* Panel-wise Revenue */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-8">
+            <div className="p-6 border-b border-slate-100">
+              <h3 className="font-bold text-slate-800">Panel-wise Revenue</h3>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th className="px-6 py-3 text-left">Panel</th>
+                    <th className="px-6 py-3 text-right">Patients</th>
+                    <th className="px-6 py-3 text-right">Revenue (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.panelWise?.map((p) => (
+                    <tr
+                      key={p._id}
+                      className="border-t border-slate-100 hover:bg-slate-50"
+                    >
+                      <td className="px-6 py-3 font-medium">
+                        {p._id || "SELF"}
+                      </td>
+                      <td className="px-6 py-3 text-right">{p.patients}</td>
+                      <td className="px-6 py-3 text-right font-bold text-emerald-600">
+                        ₹{p.revenue.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 

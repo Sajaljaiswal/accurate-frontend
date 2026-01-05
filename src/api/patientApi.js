@@ -23,8 +23,8 @@ export const getAllPatients = () => {
 export const getPatientById = (id) => {
   return api.get(`/patients/${id}`);
 }
-export const getDailyBusinessStats = (date) => {
+export const getDailyBusinessStats = ({ startDate, endDate }) => {
   return api.get("/patients/business-stats", {
-    params: { date },
+    params: { startDate, endDate },
   });
 };

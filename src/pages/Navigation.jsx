@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import ConfirmModal from "../commom/ConfirmModal";
 
 const Navigation = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogoutConfirm = () => {
     logout();
     navigate("/login");
   };
@@ -40,14 +42,22 @@ const Navigation = () => {
           </button>
           <button
             className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono"
-            onClick={() => {
-              handleLogout();
-            }}
+            onClick={() => setShowLogoutModal(true)}
           >
             {"Logout"}
           </button>
         </div>
       </header>
+
+      <ConfirmModal
+        open={showLogoutModal}
+        title="Confirm Logout"
+        message="You will be logged out from the system."
+        confirmText="Logout"
+        variant="danger"
+        onConfirm={handleLogoutConfirm}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </div>
   );
 };

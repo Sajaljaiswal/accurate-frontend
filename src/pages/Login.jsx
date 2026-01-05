@@ -21,10 +21,8 @@ const Login = () => {
       alert("Please enter username and password");
       return;
     }
-    console.log("Submitting login form:", form);
     try {
       const res = await api.post("/auth/login", form);
-      console.log("Login successful:", res.data);
 
       // save user + token
       login(res.data);
@@ -116,20 +114,6 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between py-2">
-                <button
-                  type="button"
-                  className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  Forgot Password?
-                </button>
-                <button
-                  type="button"
-                  className="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
-                >
-                  Change Password
-                </button>
-              </div>
 
               <button
                 type="submit"

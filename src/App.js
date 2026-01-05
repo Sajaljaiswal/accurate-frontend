@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { AuthProvider } from "./auth/AuthContext";
-import Admin from "./pages/Admin";
 import Register from "./pages/Register";
 import AllPatient from "./pages/Patient/AllPatient";
 import NewDoctor from "./pages/Doctors/NewDoctor";
@@ -23,6 +22,7 @@ import LabReports from "./pages/Reports/LabReports";
 import DailyBusiness from "./pages/Business/DailyBusiness";
 import Settings from "./pages/Settings/Settings";
 import UsgReports from "./pages/PatientReports/UsgReports";
+import Dashboard from "./pages/Dashboard";
 
 export default function App() {
   return (
@@ -33,10 +33,10 @@ export default function App() {
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route
-            path="/admin"
+            path="/dashboard"
             element={
               <ProtectedRoute roles={["SUPERADMIN"]}>
-                <Admin />
+                <Dashboard />
               </ProtectedRoute>
             }
           />
