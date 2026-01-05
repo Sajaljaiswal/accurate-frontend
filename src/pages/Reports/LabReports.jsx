@@ -478,7 +478,7 @@ const LabReports = () => {
                     <div className="border border-slate-200 rounded-md overflow-hidden">
                       <CKEditor
                         editor={ClassicEditor}
-                        data={test.richTextContent || ""} // Loads data if exists, else empty
+                        data={test.defaultResult || ""} // Loads data if exists, else empty
                         onChange={(event, editor) => {
                           const data = editor.getData();
                           handleEditorChange(test.testId, data);

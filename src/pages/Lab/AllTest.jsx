@@ -110,102 +110,99 @@ const AllTest = () => {
         <main className="flex-1 p-6 overflow-y-auto">
           {/* Search Criteria Panel (Based on your image) */}
           <div className="bg-white rounded-lg shadow-sm border mb-6">
-           <div
-                className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center gap-2 cursor-pointer select-none"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                {showFilters ? (
-                  <ChevronDown size={18} className="text-slate-600" />
-                ) : (
-                  <ChevronRight size={18} className="text-slate-600" />
-                )}
+            <div
+              className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center gap-2 cursor-pointer select-none"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {showFilters ? (
+                <ChevronDown size={18} className="text-slate-600" />
+              ) : (
+                <ChevronRight size={18} className="text-slate-600" />
+              )}
 
-                <Filter size={18} className="text-blue-600" />
-                <h2 className="font-bold text-slate-700">Search Criteria</h2>
-              </div>
+              <Filter size={18} className="text-blue-600" />
+              <h2 className="font-bold text-slate-700">Search Criteria</h2>
+            </div>
 
-              <div
-                className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                  showFilters
-                    ? "max-h-[2000px] opacity-100"
-                    : "max-h-0 opacity-0"
-                }`}
-              >
-
-            <form onSubmit={handleSearch} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-                    Test Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter test name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-                    Category
-                  </label>
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => {
-                      setCategoryFilter(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                  >
-                    <option value="">
-                      {loadingCategories
-                        ? "Loading categories..."
-                        : "All Categories"}
-                    </option>
-
-                    {dbCategories.map((cat) => (
-                      <option key={cat._id} value={cat._id}>
-                        {cat.name}
+            <div
+              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                showFilters ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <form onSubmit={handleSearch} className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                      Test Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter test name..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                      Category
+                    </label>
+                    <select
+                      value={categoryFilter}
+                      onChange={(e) => {
+                        setCategoryFilter(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                    >
+                      <option value="">
+                        {loadingCategories
+                          ? "Loading categories..."
+                          : "All Categories"}
                       </option>
-                    ))}
-                  </select>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-                    Status
-                  </label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                  >
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
+                      {dbCategories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div className="flex items-end gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md py-2 text-sm font-bold flex items-center justify-center gap-2 transition-all"
-                  >
-                    <Search size={16} /> Search Records
-                  </button>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                    >
+                      <option value="">All Status</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={resetFilters}
-                    className="p-2 text-gray-500 hover:bg-gray-100 rounded-md border transition-all"
-                    title="Reset Filters"
-                  >
-                    <RotateCcw size={18} />
-                  </button>
+                  <div className="flex items-end gap-2">
+                    <button
+                      type="submit"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md py-2 text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Search size={16} /> Search Records
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="p-2 text-gray-500 hover:bg-gray-100 rounded-md border transition-all"
+                      title="Reset Filters"
+                    >
+                      <RotateCcw size={18} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </form>
+              </form>
             </div>
           </div>
 
@@ -297,7 +294,6 @@ const AllTest = () => {
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex justify-center gap-3">
-                          {/* Edit */}
                           <button
                             onClick={() => {
                               setEditingTest(test);
@@ -307,7 +303,6 @@ const AllTest = () => {
                           >
                             <Edit size={16} />
                           </button>
-                          {/* Delete */}
                           <button
                             onClick={() => handleDelete(test._id)}
                             className="p-2 rounded bg-red-100 text-red-700 hover:bg-red-200 transition"
