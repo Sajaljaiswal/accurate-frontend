@@ -76,6 +76,18 @@ const Sidebar = () => {
               icon: <BarChart3Icon size={18} />, 
               active: isActive("/usgReports") 
             },
+            { 
+              label: "Xray Reports", 
+              path: "/xrayReports", 
+              icon: <BarChart3Icon size={18} />, 
+              active: isActive("/xrayReports") 
+            },
+            { 
+              label: "CT Scan Reports", 
+              path: "/ctScanReports", 
+              icon: <BarChart3Icon size={18} />, 
+              active: isActive("/ctScanReports") 
+            },
           ]}
           onNavigate={navigate}
         />

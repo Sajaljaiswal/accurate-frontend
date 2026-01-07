@@ -22,7 +22,6 @@ import api from "../../api/axios";
 
 const LabReports = () => {
   const { id } = useParams(); // Get patient ID from URL
-  console.log("LabReports component loaded with ID:", id);
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -63,12 +62,8 @@ const LabReports = () => {
       try {
         const res = await api.get(`/patients/${id}`);
         const data = res.data.data;
-        console.log("Fetched patient data:", data);
 
-        // ✅ ENHANCED AUTO-SELECT LOGIC
-        // Inside LabReports.jsx useEffect
         const processedTests = data.tests.map((test) => {
-          // After population, the template is inside test.testId.defaultResult
           const template = test.testId?.defaultResult;
 
           if (

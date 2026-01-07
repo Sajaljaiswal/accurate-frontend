@@ -23,6 +23,9 @@ import DailyBusiness from "./pages/Business/DailyBusiness";
 import Settings from "./pages/Settings/Settings";
 import UsgReports from "./pages/PatientReports/UsgReports";
 import Dashboard from "./pages/Dashboard";
+import LandingPage from "./pages/Admin/LandingPage";
+import XrayReport from "./pages/PatientReports/XrayReport";
+import CtScanReport from "./pages/PatientReports/CtScanReport";
 
 export default function App() {
   return (
@@ -30,7 +33,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Default route */}
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<Navigate to="/landingPage" />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/dashboard"
@@ -59,6 +62,9 @@ export default function App() {
           <Route path="/dailyBusiness" element={<DailyBusiness/> }/>
           <Route path="/settings" element={<Settings />} />
           <Route path="/usgReports" element={<UsgReports />} />
+          <Route path="/xrayReports" element={<XrayReport />} />
+          <Route path="/ctScanReports" element={<CtScanReport />} />
+          <Route path="/landingPage" element={<LandingPage/>}/>
         </Routes>
       </BrowserRouter>
     </AuthProvider>

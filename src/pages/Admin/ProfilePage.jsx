@@ -12,9 +12,18 @@ import {
 import { useNavigate } from "react-router-dom";
 import { fetchAllUsers, createUser } from "../../api/axios";
 import { InputField, PhoneInput } from "../../commom/FormComponents";
+import { useAuth } from "../../auth/AuthContext";
+import ConfirmModal from "../../commom/ConfirmModal";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+  
+    const handleLogoutConfirm = () => {
+      logout();
+      navigate("/landingPage");
+    };
 
   // --- UI & DATA STATES ---
   const [isSuperAdmin] = useState(true);
@@ -121,6 +130,12 @@ return (
             </button>
           </div>
         )}
+        <button
+              onClick={() => setShowLogoutModal(true)}
+              className="w-full py-3 bg-blue-900 text-white rounded-xl font-bold"
+            >
+              LOGOUT
+            </button>
       </div>
 
       {/* RIGHT MANAGEMENT SECTION */}
@@ -346,6 +361,15 @@ return (
         </div>
       </div>
     )}
+      <ConfirmModal
+            open={showLogoutModal}
+            title="Confirm Logout"
+            message="You will be logged out from the system."
+            confirmText="Logout"
+            variant="danger"
+            onConfirm={handleLogoutConfirm}
+            onCancel={() => setShowLogoutModal(false)}
+          />
   </div>
 );
 };

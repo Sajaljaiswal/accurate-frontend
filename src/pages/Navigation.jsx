@@ -10,7 +10,7 @@ const Navigation = () => {
 
   const handleLogoutConfirm = () => {
     logout();
-    navigate("/login");
+    navigate("/landingPage");
   };
   return (
     <div>
