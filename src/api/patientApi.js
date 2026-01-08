@@ -16,8 +16,16 @@ export const settleBilling = (id, payload) => {
   return api.patch(`/patients/${id}/settle`, payload);
 };
 
-export const getAllPatients = () => {
-  return api.get("/patients");
+export const getAllPatients = (params) => {
+  return api.get("/patients", {
+    params: {
+      page: params.page,
+      limit: params.limit,
+      search: params.search,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+    },
+  });
 };
 
 export const getPatientById = (id) => {

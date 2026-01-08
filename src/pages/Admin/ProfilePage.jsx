@@ -17,8 +17,8 @@ import ConfirmModal from "../../commom/ConfirmModal";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
-    const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const { user, logout } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   
     const handleLogoutConfirm = () => {
       logout();
@@ -88,14 +88,19 @@ useEffect(() => {
 }, [isSuperAdmin]);
 
 const filteredUsers = users.filter((u) => {
-  const matchesSearch = u.username
-    .toLowerCase()
-    .includes(searchTerm.toLowerCase());
+  const q = searchTerm.toLowerCase();
+
+  const matchesSearch =
+    u.username?.toLowerCase().includes(q) ||
+    u.userId?.toLowerCase().includes(q) ||
+    u.email?.toLowerCase().includes(q) ||
+    u.phone?.includes(q);
+
   const matchesRole = roleFilter === "" || u.role === roleFilter;
+
   return matchesSearch && matchesRole;
 });
 
-console.log("Filtered Users:", filteredUsers);
 return (
   <div className="w-full min-h-screen p-10 bg-slate-50 relative">
     <div className="flex flex-col lg:flex-row gap-8">

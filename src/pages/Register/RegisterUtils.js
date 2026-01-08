@@ -8,7 +8,6 @@ export const generateSerialNumbers = () => {
 };
 
 export const printReceipt = (form, selectedTests, calculations) => {
-  console.log("Printing Receipt...", { form });
   const { labNo, regNo } = generateSerialNumbers();
   const doc = new jsPDF();
   const rightX = 100;

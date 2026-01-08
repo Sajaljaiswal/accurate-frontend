@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../Sidebar";
 import { createPanel } from "../../api/panelApi";
+import { PhoneInput } from "../../commom/FormComponents";
 
 const NewPanel = () => {
   const [form, setForm] = useState({
@@ -54,30 +55,30 @@ const NewPanel = () => {
   };
 
   const handleSave = async (e) => {
-  // 1. Prevent page refresh
-  if (e) e.preventDefault(); 
+    // 1. Prevent page refresh
+    if (e) e.preventDefault();
 
-  if (!form.name || !form.contact.mobile) {
-    alert("Hospital name and mobile are required");
-    return;
-  }
+    if (!form.name ) {
+      alert("Hospital name required");
+      return;
+    }
 
-  try {
-    // Ensure createPanel is correctly imported and called
-    await createPanel(form);
+    try {
+      // Ensure createPanel is correctly imported and called
+      await createPanel(form);
 
-    alert("Hospital registered successfully ✅");
-    
-    // Optional: Instead of reload, reset form or redirect
-    // setForm(initialState); 
-    window.location.reload();
-  } catch (err) {
-    console.error(err);
-    alert(err.response?.data?.message || "Save failed");
-  }
-};
+      alert("Hospital registered successfully ✅");
+
+      // Optional: Instead of reload, reset form or redirect
+      // setForm(initialState);
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Save failed");
+    }
+  };
   return (
-     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
       <Navigation />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
@@ -193,23 +194,10 @@ const NewPanel = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">
-                      Primary Mobile
-                    </label>
-                    <div className="relative">
-                      <Phone
-                        className="absolute left-3 top-2.5 text-slate-400"
-                        size={16}
-                      />
-                      <input
-                        type="tel"
-                        value={form.contact.mobile}
-                        onChange={(e) =>
-                          handleChange("contact.mobile", e.target.value)
-                        }
-                        className="w-full pl-10 border border-slate-300 rounded-lg p-2.5 text-sm outline-none"
-                      />
-                    </div>
+                    <PhoneInput
+                      value={form.contact.mobile}
+                      onChange={(e) => handleChange("contact.mobile", e)}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">
@@ -386,9 +374,7 @@ const NewPanel = () => {
                 >
                   Cancel
                 </button>
-                <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg shadow-md flex items-center gap-2 transition-transform active:scale-95"
-                >
+                <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg shadow-md flex items-center gap-2 transition-transform active:scale-95">
                   <Save size={20} /> Register Hospital
                 </button>
               </div>
