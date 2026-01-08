@@ -7,10 +7,17 @@ import { getAllDoctors } from "../../api/doctorApi";
 import { getAllTests } from "../../api/testApi";
 import Sidebar from "../Sidebar";
 import LazySelect from "../../commom/LazySelect";
-import { InputField, PhoneInput, SelectField } from "../../commom/FormComponents";
+import LazyDoctorSelect from "../../commom/LazyDoctorSelect";
+
+import {
+  InputField,
+  PhoneInput,
+  SelectField,
+} from "../../commom/FormComponents";
 import { useBilling } from "./useBilling";
 import { printReceipt } from "./RegisterUtils";
 import { useAuth } from "../../auth/AuthContext";
+import ConfirmModal from "../../commom/ConfirmModal";
 
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);
@@ -21,17 +28,19 @@ const Register = () => {
   const [cashReceived, setCashReceived] = useState(0);
   const [panels, setPanels] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [doctor, setDoctor] = useState(null);
+  console.log(doctor, "selected doctor,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,");
   const [dropdownTests, setDropdownTests] = useState([]); // Tests currently in dropdown
   const [totalRecords, setTotalRecords] = useState(0); // Total tests in DB
   const [dropPage, setDropPage] = useState(1); // Current page for dropdown
   const [isFetching, setIsFetching] = useState(false); // Loading state for dropdown
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSavedModal, setShowSavedModal] = useState(false);
 
   // Add this inside your Register component
 
   const { user } = useAuth();
   const [currentUser, setCurrentUser] = useState("");
-  console.log("Authenticated User:", user, currentUser);
   useEffect(() => {
     if (user.username) {
       setCurrentUser(user.username);
@@ -90,7 +99,10 @@ const Register = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [pRes, dRes] = await Promise.all([getAllPanels(), getAllDoctors()]);
+      const [pRes, dRes] = await Promise.all([
+        getAllPanels(),
+        getAllDoctors({}),
+      ]);
       setPanels(pRes.data.data);
       setDoctors(dRes.data.data);
     };
@@ -185,9 +197,7 @@ const Register = () => {
       };
 
       const res = await registerPatient(payload);
-      alert(
-        `Patient Registered Successfully ✅\nLab No: ${res.data.data.labNumber}`
-      );
+    setShowSavedModal(true)
       // window.location.reload();
     } catch (err) {
       console.error("Save Error:", err.response?.data);
@@ -227,14 +237,19 @@ const Register = () => {
                   onChange={(e) => handleChange("panel", e.target.value)}
                 />
 
-                <SelectField
-                  label="Reffered By"
-                  options={doctors.map((doc) => ({
-                    label: doc.fullName,
-                    value: doc.fullName,
-                  }))}
-                  value={form.referredBy}
-                  onChange={(e) => handleChange("referredBy", e.target.value)}
+                <LazyDoctorSelect
+                  value={doctor}
+                  onSelect={(doc) => {
+                    // 1. Update local UI state for the dropdown
+                    setDoctor(doc);
+
+                    // 2. Map the doctor's full name to the form field 'referredBy'
+                    // This will trigger your handleChange logic to update the form state
+                    handleChange(
+                      "referredBy",
+                      doc ? `Dr. ${doc.fullName}` : ""
+                    );
+                  }}
                 />
               </div>
               {/* Section 1: Basic Info */}
@@ -288,7 +303,7 @@ const Register = () => {
 
                 <PhoneInput
                   value={form.mobile}
-                   onChange={(e) => setForm({ ...form, mobile: e })}
+                  onChange={(e) => setForm({ ...form, mobile: e })}
                 />
 
                 <InputField
@@ -598,6 +613,15 @@ const Register = () => {
             </form>
           </div>
         </main>
+         <ConfirmModal
+        open={showSavedModal}
+        title="Form Submitted"
+        message="Form Submitted Successfully."
+        confirmText="Ok"
+        variant="info"
+        onConfirm={()=>{setShowSavedModal(false)}}
+        onCancel={() => setShowSavedModal(false)}
+      />
       </div>
     </div>
   );

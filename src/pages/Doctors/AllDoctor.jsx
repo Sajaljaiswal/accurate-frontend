@@ -20,7 +20,7 @@ const AllDoctor = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await getAllDoctors();
+        const res = await getAllDoctors({});
         // Access nested data based on your API log: { success: true, data: [...] }
         setDoctors(res.data.data);
       } catch (err) {
