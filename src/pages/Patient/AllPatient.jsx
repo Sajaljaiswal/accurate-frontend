@@ -71,7 +71,7 @@ const limit = 5;
 
   useEffect(() => {
     fetchPatients(page);
-  }, [page]);
+  }, [page, filters]);
 
   const handleSearch = () => {
     setPage(1);

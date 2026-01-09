@@ -29,7 +29,6 @@ const Register = () => {
   const [panels, setPanels] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [doctor, setDoctor] = useState(null);
-  console.log(doctor, "selected doctor,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,");
   const [dropdownTests, setDropdownTests] = useState([]); // Tests currently in dropdown
   const [totalRecords, setTotalRecords] = useState(0); // Total tests in DB
   const [dropPage, setDropPage] = useState(1); // Current page for dropdown
