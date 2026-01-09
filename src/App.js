@@ -16,7 +16,7 @@ import ProfilePage from "./pages/Admin/ProfilePage";
 import RoleManagement from "./pages/Admin/RoleManagement";
 import DoctorTestList from "./pages/Doctors/DoctorTestList";
 import DoctorTestAssign from "./pages/Doctors/DoctorTestAssign";
-import PatientReports from "./pages/PatientReports/PatientReports";
+import PathalogyReports from "./pages/PatientReports/PathalogyReports";
 import TestCategories from "./pages/Lab/TestCategories";
 import LabReports from "./pages/Reports/LabReports";
 import DailyBusiness from "./pages/Business/DailyBusiness";
@@ -56,7 +56,7 @@ export default function App() {
           <Route path="/roleManagement" element={<RoleManagement />} />
           <Route path="/doctorTestList" element={<DoctorTestList />} />
           <Route path="/doctorTestAssign" element={<DoctorTestAssign />} />
-          <Route path="/patientReports" element={<PatientReports />} />
+          <Route path="/pathalogyReports" element={<PathalogyReports />} />
           <Route path="/testCategories" element={<TestCategories />} />
           <Route path="/lab-report/:id" element={<LabReports />} />
           <Route path="/dailyBusiness" element={<DailyBusiness/> }/>

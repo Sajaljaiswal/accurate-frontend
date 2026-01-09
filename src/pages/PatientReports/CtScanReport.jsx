@@ -1,19 +1,19 @@
 import React from 'react'
 import Sidebar from '../Sidebar'
 import Navigation from '../Navigation'
+import CommonPatientReports from "./CommonPatientReports";
 
 const CtScanReport = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+    <>
       <Navigation />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-8 overflow-y-auto"> 
-
-          <h1>CT Scan Report</h1>
+        <main className="flex-1 p-8">
+          <CommonPatientReports title="CT Scan Reports" testType="ct" />
         </main>
-        </div>
-    </div>
+      </div>
+    </>
   )
 }
 

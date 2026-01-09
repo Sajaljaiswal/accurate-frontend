@@ -1,14 +1,13 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
+import logo from "../../img/acc.jpg";
 export const generateSerialNumbers = () => {
-  const labNo = "LAB" + Date.now().toString().slice(-9);
   const regNo = Math.floor(10000 + Math.random() * 90000).toString();
-  return { labNo, regNo };
+  return { regNo };
 };
 
 export const printReceipt = (form, selectedTests, calculations) => {
-  const { labNo, regNo } = generateSerialNumbers();
+  const { regNo } = generateSerialNumbers();
   const doc = new jsPDF();
   const rightX = 100;
   const now = new Date();
@@ -31,6 +30,7 @@ export const printReceipt = (form, selectedTests, calculations) => {
     hour12: true,
   });
   const pageWidth = doc.internal.pageSize.getWidth();
+  doc.addImage(logo, "PNG", 10, 10, 85, 30);
 
   // --- 1. HEADER (Laboratory Info) ---
   doc.setFont("helvetica", "bold");
@@ -92,7 +92,7 @@ export const printReceipt = (form, selectedTests, calculations) => {
 
   doc.text(`Lab No. :`, rightColX, 76);
   doc.setFont("helvetica", "bold");
-  doc.text(`${labNo}`, rightValX, 76);
+  doc.text(`${form.labNumber}`, rightValX, 76);
 
   // --- 4. INVESTIGATION TABLE ---
   const tableData = selectedTests.map((t, index) => [
@@ -119,7 +119,65 @@ export const printReceipt = (form, selectedTests, calculations) => {
     margin: { left: 15, right: 15 },
   });
 
-  // --- 5. BILLING SUMMARY ---
+  // --- 5. BILLING SUMMARY (FULL WIDTH + AMOUNT IN WORDS) ---
+
+  // Helper: number to words (Indian style – enough for receipts)
+  const numberToWords = (num) => {
+    const a = [
+      "",
+      "One",
+      "Two",
+      "Three",
+      "Four",
+      "Five",
+      "Six",
+      "Seven",
+      "Eight",
+      "Nine",
+      "Ten",
+      "Eleven",
+      "Twelve",
+      "Thirteen",
+      "Fourteen",
+      "Fifteen",
+      "Sixteen",
+      "Seventeen",
+      "Eighteen",
+      "Nineteen",
+    ];
+    const b = [
+      "",
+      "",
+      "Twenty",
+      "Thirty",
+      "Forty",
+      "Fifty",
+      "Sixty",
+      "Seventy",
+      "Eighty",
+      "Ninety",
+    ];
+
+    if (num === 0) return "Zero";
+    if (num < 20) return a[num];
+    if (num < 100)
+      return b[Math.floor(num / 10)] + (num % 10 ? " " + a[num % 10] : "");
+    if (num < 1000)
+      return (
+        a[Math.floor(num / 100)] +
+        " Hundred" +
+        (num % 100 ? " " + numberToWords(num % 100) : "")
+      );
+    if (num < 100000)
+      return (
+        numberToWords(Math.floor(num / 1000)) +
+        " Thousand" +
+        (num % 1000 ? " " + numberToWords(num % 1000) : "")
+      );
+
+    return "";
+  };
+
   let finalY = doc.lastAutoTable.finalY + 2;
   doc.setFontSize(8);
   doc.text(`Gross Amount :`, 160, finalY, { align: "right" });
@@ -142,23 +200,32 @@ export const printReceipt = (form, selectedTests, calculations) => {
 
   doc.line(135, finalY + 8, 195, finalY + 8);
 
+  // Net Amount (bold)
   doc.setFont("helvetica", "bold");
   doc.text(`Net Amount:`, 137, finalY + 13);
   doc.text(`${(calculations.netAmount ?? 0).toFixed(2)}`, 193, finalY + 13, {
     align: "right",
   });
 
+  // Paid Amount
   doc.setFont("helvetica", "normal");
   doc.text(`Paid Amount:`, 137, finalY + 18);
   doc.text(`${(calculations.cashReceived ?? 0).toFixed(2)}`, 193, finalY + 18, {
     align: "right",
   });
 
+  // Due Amount
   doc.text(`Due Amount:`, 137, finalY + 23);
   doc.text(`${(calculations.dueAmount ?? 0).toFixed(2)}`, 193, finalY + 23, {
     align: "right",
   });
 
+  // ---- Amount in words (LEFT aligned) ----
+  const paidAmount = Math.floor(calculations.cashReceived ?? 0);
+  const paidWords = numberToWords(paidAmount);
+
+  doc.setFont("helvetica", "bold");
+  doc.text(`Received ${paidWords} Rupees Only`, 15, finalY + 32 + 8);
   // --- 6. FOOTER & SIGNATURE ---
   // footer base line
   const footerY = 270;

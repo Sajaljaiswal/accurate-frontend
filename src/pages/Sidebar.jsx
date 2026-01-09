@@ -66,9 +66,9 @@ const Sidebar = () => {
           subItems={[
             { 
               label: "Lab Reports ", 
-              path: "/patientReports", 
+              path: "/pathalogyReports", 
               icon: <FileTextIcon size={18} />, 
-              active: isActive("/patientReports") 
+              active: isActive("/pathalogyReports") 
             },
             { 
               label: "USG Reports", 
@@ -120,7 +120,10 @@ const Sidebar = () => {
         {/* Footer Links */}
         <div className="pt-4 mt-4 border-t border-gray-50">
           <SidebarItem icon={<UsersIcon size={20} />} label="Business" active={isActive("/dailyBusiness")} onClick={() => navigate('/dailyBusiness')} />
-          <SidebarItem icon={<SettingsIcon size={20} />} label="Settings" active={isActive("/settings")} onClick={() => navigate('/settings')} />
+          <SidebarItem icon={<SettingsIcon size={20} />} label="New Requests" active={isActive("/settings")} onClick={() => navigate('/settings')} />
+        <SidebarItem icon={<SettingsIcon size={20} />} label="Settings" active={isActive("/settings")} onClick={() => navigate('/settings')} />
+        <SidebarItem icon={<SettingsIcon size={20} />} label="Logout" active={isActive("/settings")} onClick={() => navigate('/settings')} />
+       
         </div>
       </nav>
     </aside>
