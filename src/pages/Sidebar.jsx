@@ -70,24 +70,24 @@ const Sidebar = () => {
               icon: <FileTextIcon size={18} />, 
               active: isActive("/pathalogyReports") 
             },
-            { 
-              label: "USG Reports", 
-              path: "/usgReports", 
-              icon: <BarChart3Icon size={18} />, 
-              active: isActive("/usgReports") 
-            },
-            { 
-              label: "Xray Reports", 
-              path: "/xrayReports", 
-              icon: <BarChart3Icon size={18} />, 
-              active: isActive("/xrayReports") 
-            },
-            { 
-              label: "CT Scan Reports", 
-              path: "/ctScanReports", 
-              icon: <BarChart3Icon size={18} />, 
-              active: isActive("/ctScanReports") 
-            },
+            // { 
+            //   label: "USG Reports", 
+            //   path: "/usgReports", 
+            //   icon: <BarChart3Icon size={18} />, 
+            //   active: isActive("/usgReports") 
+            // },
+            // { 
+            //   label: "Xray Reports", 
+            //   path: "/xrayReports", 
+            //   icon: <BarChart3Icon size={18} />, 
+            //   active: isActive("/xrayReports") 
+            // },
+            // { 
+            //   label: "CT Scan Reports", 
+            //   path: "/ctScanReports", 
+            //   icon: <BarChart3Icon size={18} />, 
+            //   active: isActive("/ctScanReports") 
+            // },
           ]}
           onNavigate={navigate}
         />
@@ -123,6 +123,8 @@ const Sidebar = () => {
           <SidebarItem icon={<SettingsIcon size={20} />} label="New Requests" active={isActive("/settings")} onClick={() => navigate('/settings')} />
         <SidebarItem icon={<SettingsIcon size={20} />} label="Settings" active={isActive("/settings")} onClick={() => navigate('/settings')} />
         <SidebarItem icon={<SettingsIcon size={20} />} label="Logout" active={isActive("/settings")} onClick={() => navigate('/settings')} />
+        <SidebarItem icon={<SettingsIcon size={20} />} label="Help" active={isActive("/help")} onClick={() => navigate('/help')} />
+
        
         </div>
       </nav>

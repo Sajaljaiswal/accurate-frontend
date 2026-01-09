@@ -47,7 +47,7 @@ const AllPatient = () => {
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 5;
+  const limit = 10;
 
   const fetchPatients = async (pageToLoad = page) => {
     setLoading(true);

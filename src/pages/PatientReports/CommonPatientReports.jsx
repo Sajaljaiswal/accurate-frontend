@@ -3,7 +3,7 @@ import { Printer, Edit, Loader2 } from "lucide-react";
 import { getAllPatients } from "../../api/patientApi";
 import { useNavigate } from "react-router-dom";
 
-const CommonPatientReports = ({ title, testType }) => {
+const CommonPatientReports = ({ title }) => {
   const navigate = useNavigate();
 
   const [patients, setPatients] = useState([]);
@@ -20,16 +20,15 @@ const CommonPatientReports = ({ title, testType }) => {
         const allPatients = res.data.data || [];
 
         /* 🔥 FILTER BY TEST TYPE */
-        const filtered = allPatients.filter((p) =>
-          p.tests?.some(
-            (t) =>
-              t.category?.toLowerCase() === testType.toLowerCase() ||
-              t.type?.toLowerCase() === testType.toLowerCase() ||
-              t.name?.toLowerCase().includes(testType.toLowerCase())
-          )
-        );
-
-        setPatients(filtered);
+        // const filtered = allPatients.filter((p) =>
+        //   p.tests?.some(
+        //     (t) =>
+        //       t.category?.toLowerCase() === testType.toLowerCase() ||
+        //       t.type?.toLowerCase() === testType.toLowerCase() ||
+        //       t.name?.toLowerCase().includes(testType.toLowerCase())
+        //   )
+        // );
+        setPatients(allPatients);
         setTotalPages(res.data.totalPages || 1);
       } catch (err) {
         console.error("Error fetching reports:", err);
@@ -39,7 +38,7 @@ const CommonPatientReports = ({ title, testType }) => {
     };
 
     fetchData();
-  }, [page, testType]);
+  }, [page]);
 
   const headers = [
     "Reg. no.",
@@ -125,7 +124,6 @@ const CommonPatientReports = ({ title, testType }) => {
                         ?.filter((t) =>
                           t.name
                             ?.toLowerCase()
-                            .includes(testType.toLowerCase())
                         )
                         .map((t) => t.name)
                         .join(", ")}

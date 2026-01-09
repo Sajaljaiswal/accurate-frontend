@@ -92,7 +92,7 @@ export const printReceipt = (form, selectedTests, calculations) => {
 
   doc.text(`Lab No. :`, rightColX, 76);
   doc.setFont("helvetica", "bold");
-  doc.text(`${form.labNumber}`, rightValX, 76);
+  doc.text(`${form.labNumber || "LAB"}`, rightValX, 76);
 
   // --- 4. INVESTIGATION TABLE ---
   const tableData = selectedTests.map((t, index) => [

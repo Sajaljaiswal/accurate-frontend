@@ -19,6 +19,7 @@ import Navigation from "../Navigation";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import api from "../../api/axios";
+import { generateLabReportPDF } from "./reportGenerator";
 
 const LabReports = () => {
   const { id } = useParams(); // Get patient ID from URL
@@ -109,152 +110,9 @@ const LabReports = () => {
     setActiveComment(null);
   };
 
-  const handlePrint = async () => {
-    if (!patient) return;
-
-    const doc = new jsPDF("p", "mm", "a4");
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = { top: 40, bottom: 30, left: 15, right: 15 };
-
-    // --- Header & Metadata Setup ---
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("ACCURATE DIAGNOSTIC CENTER", margin.left, 15);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    const headerLines = [
-      "7/15128/2, Janaura, NH-27, Ayodhya, Uttar Pradesh",
-      "Contact Nos : 8009904250",
-      "Branch Ayodhya Contact No: 05267315486, +8924962394",
-      "Email: accurate@gmail.com",
-      "Website: www.accuratediagnostics.co.in",
-    ];
-    headerLines.forEach((line, index) =>
-      doc.text(line, margin.left, 22 + index * 4)
-    );
-
-    doc.setFillColor(230, 230, 230);
-    doc.rect(15, 42, pageWidth - 30, 6, "F");
-    doc.setFont("helvetica", "bold");
-    doc.text("Lab Report", 18, 46);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Patient Name : ${patient.title} ${patient.firstName}`, 15, 58);
-    doc.text(`Age / Sex : ${patient.age} Y / ${patient.gender}`, 15, 64);
-    doc.text(`Referred By : ${patient.referredBy || "Self"}`, 15, 70);
-    doc.text(`Reg No : ${patient.registrationNumber}`, 130, 58);
-    doc.text(`Lab No : ${patient.labNumber}`, 130, 64);
-
-    const now = new Date();
-    doc.text(
-      `Reported On : ${now.toLocaleDateString(
-        "en-GB"
-      )} ${now.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      })}`,
-      130,
-      70
-    );
-
-    // --- Prepare HTML Container (Signature removed from here) ---
-    const tempContainer = document.createElement("div");
-    tempContainer.style.width = "180mm";
-    tempContainer.style.fontFamily = "helvetica";
-
-    let fullHtmlContent = `
-    <style>
-      .test-section { margin-left: 0px; margin-bottom: 25px; page-break-inside: avoid; }
-      .test-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 10pt; }
-      table, th, td { border: 1px solid black; }
-      th, td { padding: 6px; text-align: left; }
-    </style>
-  `;
-
-    patient.tests.forEach((test) => {
-      if (test.reportType === "text") {
-        fullHtmlContent += `<div class="test-section"><div class="test-title">${test.name.toUpperCase()}</div><div>${
-          test.richTextContent || "No findings recorded."
-        }</div></div>`;
-      } else {
-        fullHtmlContent += `
-        <div class="test-section">
-          <div class="test-title">${test.name.toUpperCase()}</div>
-          <table>
-            <tr style="background-color: #eee;"><th>Result</th><th>Unit</th><th>Reference</th></tr>
-            <tr><td>${test.resultValue || "---"}</td><td>${
-          test.unit || ""
-        }</td><td>${test.referenceRange || ""}</td></tr>
-          </table>
-        </div>`;
-      }
-    });
-
-    tempContainer.innerHTML = fullHtmlContent;
-    document.body.appendChild(tempContainer);
-
-    // --- Render HTML ---
-    await doc.html(tempContainer, {
-      x: margin.left,
-      y: margin.top,
-      width: 180,
-      windowWidth: 750,
-      autoPaging: "text",
-      margin: [margin.top, margin.right, margin.bottom, margin.left],
-      callback: function (doc) {
-        const totalPages = doc.internal.getNumberOfPages();
-
-        for (let i = 1; i <= totalPages; i++) {
-          doc.setPage(i);
-
-          // 1. Draw Footer Line
-          doc.line(
-            margin.left,
-            pageHeight - 25,
-            pageWidth - margin.right,
-            pageHeight - 25
-          );
-
-          // 2. Draw Authorised Signatory Text
-          doc.setFontSize(9);
-          doc.setFont("helvetica", "bold");
-          doc.text("Authorised Signatory", pageWidth - 60, pageHeight - 15);
-
-          // 3. ADD SIGNATURE IMAGE (If signed off)
-          // Positioned right above the "Authorised Signatory" text
-          if (isSignedOff) {
-            // Parameters: image, x, y, width, height
-            // x: pageWidth - 55 (aligned with text)
-            // y: pageHeight - 40 (placed above line)
-            doc.addImage(
-              SIGNATURE_IMAGE_URL,
-              "PNG",
-              pageWidth - 55,
-              pageHeight - 40,
-              35,
-              12
-            );
-          }
-
-          // 4. Draw Page Numbers
-          doc.setFontSize(8);
-          doc.setFont("helvetica", "normal");
-          doc.text(
-            `Page ${i} of ${totalPages}`,
-            pageWidth / 2,
-            pageHeight - 10,
-            { align: "center" }
-          );
-        }
-
-        document.body.removeChild(tempContainer);
-        window.open(doc.output("bloburl"), "_blank");
-      },
-    });
-  };
+  const handlePrint = () => {
+  generateLabReportPDF(patient, isSignedOff);
+};
 
   const handleValueChange = (testId, newValue) => {
     const updatedTests = patient.tests.map((t) =>
