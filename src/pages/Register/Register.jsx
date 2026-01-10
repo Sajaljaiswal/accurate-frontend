@@ -161,6 +161,17 @@ const Register = () => {
 
   const handleSave = async () => {
     try {
+          // 🔴 VALIDATIONS
+    if (!form.age || Number(form.age) <= 0) {
+      alert("Age is required and must be greater than 0");
+      return;
+    }
+
+    if (!selectedTests || selectedTests.length === 0) {
+      alert("Please select at least one test");
+      return;
+    }
+
       // Logic for Payment Status
       let paymentStatus = "UNPAID";
       if (calculations.dueAmount <= 0 && calculations.netAmount > 0) {

@@ -9,7 +9,7 @@ export default function PathalogyReports() {
       <div className="flex">
         <Sidebar />
         <main className="flex-1 p-8">
-          <CommonPatientReports title="Lab Reports" />
+          <CommonPatientReports title="Lab Reports" testType="lab"/>
         </main>
       </div>
     </>

@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 
 /**
- * Generates and opens a Lab Report PDF
+ * Generates and opens a Lab Report PDF with fixed alignment.
  * @param {Object} patient - The patient data object
  * @param {boolean} isSignedOff - Whether to include the signature
  */
@@ -11,12 +11,11 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
   const doc = new jsPDF("p", "mm", "a4");
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = { top: 40, bottom: 30, left: 15, right: 15 };
+  const margin = { top: 45, bottom: 30, left: 15, right: 15 }; // Slightly increased top margin
   
-  
-  const SIGNATURE_IMAGE_URL = "data:image/png;base64,..."; // Keep your base64 string here
+  const SIGNATURE_IMAGE_URL = "data:image/png;base64,..."; 
 
-  // --- Header & Metadata ---
+  // --- Static Header (Direct PDF drawing for better alignment) ---
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.text("ACCURATE DIAGNOSTIC CENTER", margin.left, 15);
@@ -41,40 +40,73 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
   doc.text(`Age / Sex : ${patient.age} Y / ${patient.gender}`, 15, 64);
   doc.text(`Reg No : ${patient.registrationNumber}`, 130, 58);
 
-  // --- HTML Content Processing ---
+  // --- HTML Content Processing (Dynamic Section) ---
   const tempContainer = document.createElement("div");
-  // FIX: Force a specific width for calculation to prevent text overlap
+  // FIX: Force a specific pixel width to stabilize scale calculation and prevent overlap
   tempContainer.style.width = "750px"; 
   tempContainer.style.padding = "10px";
-  tempContainer.style.fontFamily = "helvetica";
-  tempContainer.style.lineHeight = "1.6";
+  tempContainer.style.fontFamily = "Arial, sans-serif";
+  // FIX: Higher line-height prevents vertical text bunching/overlapping
+  tempContainer.style.lineHeight = "1.6"; 
 
   let fullHtmlContent = `
     <style>
-      .test-section { margin-bottom: 25px; page-break-inside: avoid; }
-      .test-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; border-bottom: 1px solid #eee; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 10pt; }
-      th, td { border: 1px solid black; padding: 6px; text-align: left; }
+      .test-section { 
+        margin-bottom: 30px; 
+        page-break-inside: avoid; 
+        width: 100%;
+        display: block;
+      }
+      .test-title { 
+        font-weight: bold; 
+        font-size: 18px; 
+        margin-bottom: 12px; 
+        border-bottom: 2px solid #333;
+        padding-bottom: 4px;
+      }
+      .rich-text-body {
+        font-size: 14px;
+        color: #000;
+        text-align: justify;
+      }
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 10px; 
+      }
+      th, td { 
+        border: 1px solid black; 
+        padding: 12px; 
+        text-align: left; 
+        font-size: 14px; 
+      }
+      /* Standardize paragraph spacing to prevent overlapping lines */
+      p { margin: 8px 0; } 
     </style>
   `;
 
   patient.tests.forEach((test) => {
     if (test.reportType === "text") {
-      // FIX: Improved check for empty CKEditor content
-      const content = test.richTextContent?.replace(/<[^>]*>?/gm, '').trim();
-      const displayHtml = (content && content !== "") ? test.richTextContent : "No findings recorded.";
+      const plainText = test.richTextContent?.replace(/<[^>]*>?/gm, '').trim();
+      const displayHtml = (plainText && plainText.length > 0) 
+        ? test.richTextContent 
+        : "No findings recorded.";
 
       fullHtmlContent += `
         <div class="test-section">
           <div class="test-title">${test.name.toUpperCase()}</div>
-          <div>${displayHtml}</div>
+          <div class="rich-text-body">${displayHtml}</div>
         </div>`;
     } else {
       fullHtmlContent += `
         <div class="test-section">
           <div class="test-title">${test.name.toUpperCase()}</div>
           <table>
-            <tr style="background-color: #eee;"><th>Result</th><th>Unit</th><th>Reference</th></tr>
+            <tr style="background-color: #f2f2f2;">
+              <th style="width: 40%">Result</th>
+              <th style="width: 20%">Unit</th>
+              <th style="width: 40%">Reference</th>
+            </tr>
             <tr>
                 <td>${test.resultValue || "---"}</td>
                 <td>${test.unit || ""}</td>
@@ -91,10 +123,11 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
   await doc.html(tempContainer, {
     x: margin.left,
     y: margin.top,
-    width: 180,
-    windowWidth: 750,
+    // Target width in the PDF document (mm)
+    width: pageWidth - (margin.left + margin.right), 
+    // Reference width for scaling calculation (must match tempContainer.style.width)
+    windowWidth: 750, 
     autoPaging: "text",
-    margin: [margin.top, margin.right, margin.bottom, margin.left],
     callback: function (doc) {
       const totalPages = doc.internal.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
@@ -120,4 +153,4 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
       window.open(doc.output("bloburl"), "_blank");
     },
   });
-}
+};

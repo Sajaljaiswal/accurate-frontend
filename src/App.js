@@ -26,6 +26,8 @@ import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/Admin/LandingPage";
 import XrayReport from "./pages/PatientReports/XrayReport";
 import CtScanReport from "./pages/PatientReports/CtScanReport";
+import NewRequests from "./pages/Settings/NewRequests";
+import Help from "./pages/Settings/Help";
 
 export default function App() {
   return (
@@ -65,6 +67,9 @@ export default function App() {
           <Route path="/xrayReports" element={<XrayReport />} />
           <Route path="/ctScanReports" element={<CtScanReport />} />
           <Route path="/landingPage" element={<LandingPage/>}/>
+          <Route path="/newRequests" element={<NewRequests/>} />
+          <Route path="/help" element={<Help/>} />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>

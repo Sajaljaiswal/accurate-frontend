@@ -16,10 +16,14 @@ import {
   CreditCard,
   Activity,
   CalendarIcon,
+  Download,
 } from "lucide-react";
 import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";
-import { getDailyBusinessStats } from "../../api/patientApi"; // You'll need this API
+import { getDailyBusinessStats } from "../../api/patientApi"; 
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
 const getTodayLocal = () => {
   const d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -133,6 +137,56 @@ const DailyBusiness = () => {
       setEndDate(range.endDate);
     }
   };
+const downloadReport = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // 1. Header (Based on your Accurate Diagnostic Center Image)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("ACCURATE DIAGNOSTIC CENTER", 14, 22);
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("7/15128/2, Janaura, NH-27, Ayodhya, Uttar Pradesh", 14, 28);
+    doc.text("Contact Nos : 8009904250", 14, 33);
+    doc.text("Email: accurate@gmail.com", 14, 38);
+
+    // 2. Report Title
+    doc.setFillColor(240, 240, 240);
+    doc.rect(14, 45, pageWidth - 28, 8, "F");
+    doc.setFont("helvetica", "bold");
+    doc.text(`BUSINESS SUMMARY REPORT (${startDate} to ${endDate})`, 18, 50);
+
+    // 3. Stats Summary
+    autoTable(doc, {
+      startY: 58,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Total Revenue', `INR ${stats.totalRevenue.toLocaleString()}`],
+        ['Total Patients', stats.totalPatients.toString()],
+        ['Total Tests Conducted', stats.totalTests.toString()],
+        ['Average Ticket Size', `INR ${stats.avgTicket}`],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [51, 65, 85] }
+    });
+
+    // 5. Footer (Based on account report image)
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128);
+      doc.text(`Report Generated on: ${new Date().toLocaleString()}`, 14, doc.internal.pageSize.getHeight() - 10);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 10);
+    }
+
+     doc.autoPrint();
+  const pdfBlob = doc.output("bloburl");
+  window.open(pdfBlob);
+    // doc.save(`Business_Report_${startDate}_to_${endDate}.pdf`);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] font-sans">
@@ -178,6 +232,13 @@ const DailyBusiness = () => {
               </div>
 
               <div className="flex items-center gap-4 bg-white px-4 py-2.5 rounded-xl shadow-sm border border-slate-200">
+                <button
+                onClick={downloadReport}
+                className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition shadow-lg shadow-slate-200"
+              >
+                <Download size={18} />
+                Download PDF Report
+              </button>
                 <div className="flex items-center gap-2">
                   <CalendarIcon size={18} className="text-blue-600" />
                   <input
@@ -231,29 +292,6 @@ const DailyBusiness = () => {
               icon={<TrendingUp className="text-amber-600" />}
               color="amber"
             />
-          </div>
-
-          {/* Payment Split */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {stats.paymentSplit?.map((p) => {
-              const colorMap = {
-                PAID: "emerald",
-                PARTIAL: "amber",
-                UNPAID: "rose",
-              };
-
-              const color = colorMap[p._id] || "blue";
-
-              return (
-                <StatCard
-                  key={p._id}
-                  title={`${p._id} Revenue`}
-                  value={`₹${(p.revenue || 0).toLocaleString()}`}
-                  icon={<CreditCard />}
-                  color={color}
-                />
-              );
-            })}
           </div>
 
           {/* Graphs Section */}
