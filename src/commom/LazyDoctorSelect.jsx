@@ -12,7 +12,7 @@ const LazyDoctorSelect = ({ value, onSelect, label = "Select Doctor" }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const dropdownRef = useRef(null);
-  const limit = 10;
+  const limit = 1000;
 
   const fetchDoctors = async (pageToLoad = 1, reset = false) => {
     setLoading(true);

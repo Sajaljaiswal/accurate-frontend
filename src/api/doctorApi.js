@@ -4,7 +4,7 @@ export const createDoctor = (data) => {
   return api.post("/doctor", data);
 };
 
-export const getAllDoctors = ({ page = 1, limit = 5, search = ""}) => {
+export const getAllDoctors = ({ page = 1, limit = 1000, search = ""}) => {
   return api.get("/doctor", {
     params: {
       page,
