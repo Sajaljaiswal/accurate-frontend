@@ -161,16 +161,24 @@ const Register = () => {
 
   const handleSave = async () => {
     try {
-          // 🔴 VALIDATIONS
-    if (!form.age || Number(form.age) <= 0) {
-      alert("Age is required and must be greater than 0");
-      return;
-    }
+      // 🔴 VALIDATIONS
+      if (!form.age || Number(form.age) <= 0) {
+        alert("Age is required and must be greater than 0");
+        return;
+      }
 
-    if (!selectedTests || selectedTests.length === 0) {
-      alert("Please select at least one test");
-      return;
-    }
+      if (!selectedTests || selectedTests.length === 0) {
+        alert("Please select at least one test");
+        return;
+      }
+      if(cashReceived > calculations.netAmount){
+          alert("You cannot receive more Cash than Net Amount!");
+        return;
+      }
+      if(discountValue > calculations.netAmount){
+          alert("You cannot give more Discount than Net Amount!");
+        return;
+      }
 
       // Logic for Payment Status
       let paymentStatus = "UNPAID";
@@ -207,7 +215,7 @@ const Register = () => {
       };
 
       const res = await registerPatient(payload);
-    setShowSavedModal(true)
+      setShowSavedModal(true);
       // window.location.reload();
     } catch (err) {
       console.error("Save Error:", err.response?.data);
@@ -489,11 +497,13 @@ const Register = () => {
                           Value
                         </label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={discountValue}
-                          onChange={(e) =>
-                            setDiscountValue(Number(e.target.value))
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, "");
+                            setDiscountValue(value === "" ? "" : Number(value));
+                          }}
                           className="border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500"
                           placeholder="Enter Value"
                         />
@@ -545,13 +555,15 @@ const Register = () => {
                         Cash Collected (₹)
                       </label>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         value={cashReceived}
-                        onChange={(e) =>
-                          setCashReceived(Number(e.target.value))
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, "");
+                          setCashReceived(value === "" ? "" : Number(value));
+                        }}
                         className="w-full text-lg font-semibold outline-none text-gray-700"
-                        placeholder="0"
+                        placeholder="Enter Cash Amount"
                       />
                     </div>
                   </div>
@@ -623,15 +635,17 @@ const Register = () => {
             </form>
           </div>
         </main>
-         <ConfirmModal
-        open={showSavedModal}
-        title="Form Submitted"
-        message="Form Submitted Successfully."
-        confirmText="Ok"
-        variant="info"
-        onConfirm={()=>{setShowSavedModal(false)}}
-        onCancel={() => setShowSavedModal(false)}
-      />
+        <ConfirmModal
+          open={showSavedModal}
+          title="Form Submitted"
+          message="Form Submitted Successfully."
+          confirmText="Ok"
+          variant="info"
+          onConfirm={() => {
+            setShowSavedModal(false);
+          }}
+          onCancel={() => setShowSavedModal(false)}
+        />
       </div>
     </div>
   );
