@@ -11,43 +11,63 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
   const doc = new jsPDF("p", "mm", "a4");
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = { top: 45, bottom: 30, left: 15, right: 15 }; // Slightly increased top margin
-  
-  const SIGNATURE_IMAGE_URL = "data:image/png;base64,..."; 
+  const margin = { top: 20, bottom: 30, left: 15, right: 15 };
+  const FOOTER_SPACE = 30; // space needed for footer
 
-  // --- Static Header (Direct PDF drawing for better alignment) ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("ACCURATE DIAGNOSTIC CENTER", margin.left, 15);
-  
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  const headerLines = [
-    "7/15128/2, Janaura, NH-27, Ayodhya, Uttar Pradesh",
-    "Contact Nos : 8009904250",
-    "Email: accurate@gmail.com",
-  ];
-  headerLines.forEach((line, index) => doc.text(line, margin.left, 22 + index * 4));
+  const SIGNATURE_IMAGE_URL = "data:image/png;base64,...";
 
-  doc.setFillColor(230, 230, 230);
-  doc.rect(15, 42, pageWidth - 30, 6, "F");
-  doc.setFont("helvetica", "bold");
-  doc.text("Lab Report", 18, 46);
-  
+  const infoStartY = 35;
+
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text(`Patient Name : ${patient.title} ${patient.firstName}`, 15, 58);
-  doc.text(`Age / Sex : ${patient.age} Y / ${patient.gender}`, 15, 64);
-  doc.text(`Reg No : ${patient.registrationNumber}`, 130, 58);
+
+  // Outer Box
+  doc.rect(15, infoStartY, pageWidth - 30, 38);
+
+  // LEFT COLUMN
+  const leftX = 18;
+  let y = infoStartY + 6;
+
+  doc.text(`Patient Name : ${patient.firstName}`, leftX, y);
+  y += 6;
+  doc.text(`Age / Sex : ${patient.age} Years / ${patient.gender}`, leftX, y);
+  y += 6;
+  doc.text(`Referred By : ${patient.referredBy || "-"}`, leftX, y);
+  y += 6;
+  doc.text(`Ref. Lab/Hosp : ${patient.referredBy || "-"}`, leftX, y);
+  y += 6;
+  doc.text(`Client Name : ${patient.panel?.name || "-"}`, leftX, y);
+  y += 6;
+  doc.text(`Client Code : ${patient.panel?.code || "-"}`, leftX, y);
+
+  // RIGHT COLUMN
+  const rightX = pageWidth / 2 + 10;
+  y = infoStartY + 6;
+
+  doc.text(`Barcode No. : ${patient.barcode || "-"}`, rightX, y);
+  y += 6;
+  doc.text(`Lab No. : ${patient.labNumber}`, rightX, y);
+  y += 6;
+  doc.text(
+    `Reg Date : ${new Date(patient.createdAt).toLocaleString("en-GB")}`,
+    rightX,
+    y
+  );
+  y += 6;
+  doc.text(`Sample Rec. Date : ${patient.sampleReceivedAt || "-"}`, rightX, y);
+  y += 6;
+  doc.text(`Report Date : ${new Date().toLocaleString("en-GB")}`, rightX, y);
+  y += 6;
+  doc.text(`Report Status : Final Report`, rightX, y);
 
   // --- HTML Content Processing (Dynamic Section) ---
   const tempContainer = document.createElement("div");
   // FIX: Force a specific pixel width to stabilize scale calculation and prevent overlap
-  tempContainer.style.width = "750px"; 
+  tempContainer.style.width = "750px";
   tempContainer.style.padding = "10px";
   tempContainer.style.fontFamily = "Arial, sans-serif";
   // FIX: Higher line-height prevents vertical text bunching/overlapping
-  tempContainer.style.lineHeight = "1.6"; 
+  tempContainer.style.lineHeight = "1.5";
 
   let fullHtmlContent = `
     <style>
@@ -87,10 +107,11 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
 
   patient.tests.forEach((test) => {
     if (test.reportType === "text") {
-      const plainText = test.richTextContent?.replace(/<[^>]*>?/gm, '').trim();
-      const displayHtml = (plainText && plainText.length > 0) 
-        ? test.richTextContent 
-        : "No findings recorded.";
+      const plainText = test.richTextContent?.replace(/<[^>]*>?/gm, "").trim();
+      const displayHtml =
+        plainText && plainText.length > 0
+          ? test.richTextContent
+          : "No findings recorded.";
 
       fullHtmlContent += `
         <div class="test-section">
@@ -122,14 +143,16 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
 
   await doc.html(tempContainer, {
     x: margin.left,
-    y: margin.top,
+    y: infoStartY + 42,
+
     // Target width in the PDF document (mm)
-    width: pageWidth - (margin.left + margin.right), 
+    width: pageWidth - (margin.left + margin.right),
     // Reference width for scaling calculation (must match tempContainer.style.width)
-    windowWidth: 750, 
+    windowWidth: 750,
     autoPaging: "text",
     callback: function (doc) {
       const totalPages = doc.internal.getNumberOfPages();
+
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
         
