@@ -5,7 +5,6 @@ import { getAllDoctors } from "../api/doctorApi";
 const LazyDoctorSelect = ({ value, onSelect, label = "Select Doctor" }) => {
   const [doctors, setDoctors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  console.log(doctors.fullName, ">>>>>>>>>>>>>>>>>>>>>>>>")
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -71,7 +70,7 @@ const LazyDoctorSelect = ({ value, onSelect, label = "Select Doctor" }) => {
       <div className="relative">
         <input
           type="text"
-          value={value ? `Dr. ${value.fullName}` : searchTerm}
+          value={!isOpen && value ? `Dr. ${value.fullName}` : searchTerm}
           placeholder="Search doctor..."
           className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:border-blue-500 outline-none"
           onFocus={() => {
@@ -79,19 +78,26 @@ const LazyDoctorSelect = ({ value, onSelect, label = "Select Doctor" }) => {
             if (doctors.length === 0) fetchDoctors(1, true);
           }}
           onChange={(e) => {
-           if (value) onSelect(null); 
             setSearchTerm(e.target.value);
+            if (value) onSelect(null); // Clear selection when user starts typing
           }}
         />
         {value ? (
-          <button 
-            onClick={() => { onSelect(null); setSearchTerm(""); }}
+          <button
+            onClick={() => {
+              onSelect(null);
+              setSearchTerm("");
+            }}
             className="absolute right-2 top-2.5 text-gray-400 hover:text-red-500"
           >
             ×
           </button>
-        ) :  <Search className="absolute right-3 top-2.5 text-gray-400" size={16} />}
-       
+        ) : (
+          <Search
+            className="absolute right-3 top-2.5 text-gray-400"
+            size={16}
+          />
+        )}
       </div>
 
       {isOpen && (
