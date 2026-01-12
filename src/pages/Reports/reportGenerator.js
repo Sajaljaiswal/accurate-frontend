@@ -7,16 +7,19 @@ import jsPDF from "jspdf";
  */
 export const generateLabReportPDF = async (patient, isSignedOff) => {
   if (!patient) return;
+  const FOOTER_SPACE = 30; // space needed for footer
+  const infoStartY = 35;
+  const SIGNATURE_BUFFER = 45; // mm (signature + text space)
 
   const doc = new jsPDF("p", "mm", "a4");
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = { top: 20, bottom: 30, left: 15, right: 15 };
-  const FOOTER_SPACE = 30; // space needed for footer
+  const margin = { top: 20, bottom: FOOTER_SPACE + 10, left: 15, right: 15 };
+  const CONTENT_START_Y = infoStartY + 42;
+  const CONTENT_MAX_HEIGHT =
+    pageHeight - CONTENT_START_Y - FOOTER_SPACE - SIGNATURE_BUFFER;
 
   const SIGNATURE_IMAGE_URL = "data:image/png;base64,...";
-
-  const infoStartY = 35;
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -63,7 +66,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
   // --- HTML Content Processing (Dynamic Section) ---
   const tempContainer = document.createElement("div");
   // FIX: Force a specific pixel width to stabilize scale calculation and prevent overlap
-  tempContainer.style.width = "750px";
+  tempContainer.style.width = "700px";
   tempContainer.style.padding = "10px";
   tempContainer.style.fontFamily = "Arial, sans-serif";
   // FIX: Higher line-height prevents vertical text bunching/overlapping
@@ -74,18 +77,19 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
       .test-section { 
         margin-bottom: 30px; 
         page-break-inside: avoid; 
+  break-inside: avoid;
         width: 100%;
         display: block;
       }
       .test-title { 
         font-weight: bold; 
-        font-size: 18px; 
+        font-size: 14px; 
         margin-bottom: 12px; 
         border-bottom: 2px solid #333;
         padding-bottom: 4px;
       }
       .rich-text-body {
-        font-size: 14px;
+        font-size: 11px;
         color: #000;
         text-align: justify;
       }
@@ -96,10 +100,21 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
       }
       th, td { 
         border: 1px solid black; 
-        padding: 12px; 
+        padding: 6px; 
         text-align: left; 
-        font-size: 14px; 
+        font-size: 11px; 
+         word-break: break-word;
       }
+          ul, ol {
+    padding-left: 18px;
+    margin: 6px 0;
+    list-style-position: inside;   /* ⬅️ IMPORTANT */
+  }
+
+  li {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
       /* Standardize paragraph spacing to prevent overlapping lines */
       p { margin: 8px 0; } 
     </style>
@@ -138,42 +153,70 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
     }
   });
 
+  fullHtmlContent = fullHtmlContent.replace(/<ul[^>]*>/g, "<ul>");
+  fullHtmlContent = fullHtmlContent.replace(/<ol[^>]*>/g, "<ol>");
+
   tempContainer.innerHTML = fullHtmlContent;
   document.body.appendChild(tempContainer);
 
   await doc.html(tempContainer, {
     x: margin.left,
-    y: infoStartY + 42,
+    // y: infoStartY + 42,
+    y: CONTENT_START_Y,
 
     // Target width in the PDF document (mm)
-    width: pageWidth - (margin.left + margin.right),
+    width: pageWidth - margin.left - margin.right - 2,
     // Reference width for scaling calculation (must match tempContainer.style.width)
     windowWidth: 750,
-    autoPaging: "text",
+    autoPaging: "slice",
+    height: CONTENT_MAX_HEIGHT,
     callback: function (doc) {
       const totalPages = doc.internal.getNumberOfPages();
 
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        
+
         // Footer Line
-        doc.line(margin.left, pageHeight - 25, pageWidth - margin.right, pageHeight - 25);
-        
+        doc.line(
+          margin.left,
+          pageHeight - 25,
+          pageWidth - margin.right,
+          pageHeight - 25
+        );
+        doc.setDrawColor(0);
+        doc.line(
+          margin.left,
+          pageHeight - FOOTER_SPACE,
+          pageWidth - margin.right,
+          pageHeight - FOOTER_SPACE
+        );
         // Signatory
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.text("Authorised Signatory", pageWidth - 60, pageHeight - 15);
 
         if (isSignedOff) {
-          doc.addImage(SIGNATURE_IMAGE_URL, "PNG", pageWidth - 55, pageHeight - 40, 35, 12);
+          doc.addImage(
+            SIGNATURE_IMAGE_URL,
+            "PNG",
+            pageWidth - 55,
+            pageHeight - 40,
+            35,
+            12
+          );
         }
 
         // Page Numbers
         doc.setFontSize(8);
-        doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: "center" });
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, {
+          align: "center",
+        });
       }
       document.body.removeChild(tempContainer);
       window.open(doc.output("bloburl"), "_blank");
+      fullHtmlContent += `
+  <div style="height: 50px; page-break-before: always;"></div>
+`;
     },
   });
 };

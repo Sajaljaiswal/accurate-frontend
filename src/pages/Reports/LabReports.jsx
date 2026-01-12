@@ -11,9 +11,6 @@ import {
   Loader2,
   X,
 } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import axios from "axios";
 import Sidebar from "../Sidebar";
 import Navigation from "../Navigation";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -29,16 +26,14 @@ const LabReports = () => {
   const [activeComment, setActiveComment] = useState(null); // { testId, type, value }
   const [isSignedOff, setIsSignedOff] = useState(false);
 
-  const SIGNATURE_IMAGE_URL =
-    "data:image/png;base64,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";
-  const toggleReportType = (testId) => {
-    const updatedTests = patient.tests.map((t) =>
-      t.testId === testId
-        ? { ...t, reportType: t.reportType === "text" ? "range" : "text" }
-        : t
-    );
-    setPatient({ ...patient, tests: updatedTests });
-  };
+  // const toggleReportType = (testId) => {
+  //   const updatedTests = patient.tests.map((t) =>
+  //     t.testId === testId
+  //       ? { ...t, reportType: t.reportType === "text" ? "range" : "text" }
+  //       : t
+  //   );
+  //   setPatient({ ...patient, tests: updatedTests });
+  // };
 
   const handleReportTypeChange = (testId, type) => {
     const updatedTests = patient.tests.map((t) =>
@@ -55,7 +50,11 @@ const LabReports = () => {
   };
 
   const openCommentModal = (testId, type, currentValue) => {
-    setActiveComment({ testId, type, value: currentValue || "" });
+    setActiveComment({
+      testId,
+      type,
+      value: typeof currentValue === "string" ? currentValue : "",
+    });
   };
 
   useEffect(() => {
@@ -67,25 +66,24 @@ const LabReports = () => {
         const processedTests = data.tests.map((test) => {
           const template = test.testId?.defaultResult;
 
-          if (
-            template &&
-            (!test.richTextContent || test.richTextContent.trim() === "")
-          ) {
-            return {
-              ...test,
-              // Flatten the data back so the rest of your app doesn't break
-              testId: test.testId._id,
-              reportType: "text",
-              richTextContent: template,
-            };
-          }
-
-          // Ensure testId remains a string for your keys/APIs
           return {
             ...test,
+
+            // ✅ ALWAYS preserve these
+            notes: test.notes || "",
+            remarks: test.remarks || "",
+            advice: test.advice || "",
+
+            // flatten testId
             testId:
               typeof test.testId === "object" ? test.testId._id : test.testId,
-            reportType: test.reportType || "range",
+
+            reportType: test.reportType || (template ? "text" : "range"),
+
+            richTextContent:
+              test.richTextContent && test.richTextContent.trim() !== ""
+                ? test.richTextContent
+                : template || "",
           };
         });
 
@@ -101,18 +99,24 @@ const LabReports = () => {
   }, [id]);
 
   const saveComment = () => {
+    if (!activeComment) return;
+
     const { testId, type, value } = activeComment;
     const key = type.toLowerCase();
-    const updatedTests = patient.tests.map((t) =>
-      t.testId === testId ? { ...t, [key]: value } : t
-    );
-    setPatient({ ...patient, tests: updatedTests });
+
+    setPatient((prev) => ({
+      ...prev,
+      tests: prev.tests.map((t) =>
+        t.testId === testId ? { ...t, [key]: value.trim() } : t
+      ),
+    }));
+
     setActiveComment(null);
   };
 
   const handlePrint = () => {
-  generateLabReportPDF(patient, isSignedOff);
-};
+    generateLabReportPDF(patient, isSignedOff);
+  };
 
   const handleValueChange = (testId, newValue) => {
     const updatedTests = patient.tests.map((t) =>
@@ -127,14 +131,31 @@ const LabReports = () => {
 
     setSaving(true);
     try {
+      const normalizedTests = patient.tests.map((t) => ({
+        testId: typeof t.testId === "object" ? t.testId._id : t.testId,
+        name: t.name,
+        reportType: t.reportType,
+        resultValue: t.resultValue || "",
+        richTextContent: t.richTextContent || "",
+        defaultResult: t.defaultResult || "",
+        unit: t.unit || "",
+        referenceRange: t.referenceRange || "",
+        status: t.status || "Pending",
+
+        // ✅ THESE WERE MISSING / INCONSISTENT
+        notes: t.notes || "",
+        remarks: t.remarks || "",
+        advice: t.advice || "",
+      }));
+
       // 1. Save the patient's specific lab results
       const res = await api.put(`/patients/${id}/results`, {
-        tests: patient.tests,
+        tests: normalizedTests,
       });
 
       // 2. Logic to update the Master Template (defaultResult)
       // We loop through the tests currently in the state
-      const updateTemplatePromises = patient.tests.map(async (test) => {
+      const updateTemplatePromises = normalizedTests.map(async (test) => {
         // Check if:
         // - It's a text report
         // - richTextContent has data
@@ -162,11 +183,22 @@ const LabReports = () => {
 
       if (res.data.success) {
         alert("Results saved and templates updated! ✅");
-        const updatedTests = patient.tests.map(t => ({
-        ...t,
-        defaultResult: t.reportType === "text" && t.richTextContent ? t.richTextContent : t.defaultResult
-      }));
-      setPatient({ ...patient, tests: updatedTests });
+
+        // 1️⃣ Apply local test updates (defaultResult, resultValue, notes, etc.)
+        const updatedTests = normalizedTests.map((t) => ({
+          ...t,
+          defaultResult:
+            t.reportType === "text" && t.richTextContent
+              ? t.richTextContent
+              : t.defaultResult,
+        }));
+
+        // 2️⃣ Merge backend patient + updated tests (SAFE)
+        setPatient((prev) => ({
+          ...prev, // keep existing patient info (name, age, reg no)
+          ...res.data.data, // merge backend response safely
+          tests: updatedTests, // updated tests are authoritative
+        }));
       }
     } catch (err) {
       console.error("Save Error Details:", err.response?.data);
@@ -176,7 +208,6 @@ const LabReports = () => {
     }
   };
 
-  
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center bg-white">
@@ -364,7 +395,7 @@ const LabReports = () => {
                     <div className="border border-slate-200 rounded-md overflow-hidden">
                       <CKEditor
                         editor={ClassicEditor}
-                       data={test.richTextContent || test.defaultResult || ""}
+                        data={test.richTextContent || test.defaultResult || ""}
                         onChange={(event, editor) => {
                           const data = editor.getData();
                           handleEditorChange(test.testId, data);
@@ -474,10 +505,10 @@ const LabReports = () => {
                     placeholder={`Enter ${activeComment.type} here...`}
                     value={activeComment.value}
                     onChange={(e) =>
-                      setActiveComment({
-                        ...activeComment,
+                      setActiveComment((prev) => ({
+                        ...prev,
                         value: e.target.value,
-                      })
+                      }))
                     }
                   />
                 </div>

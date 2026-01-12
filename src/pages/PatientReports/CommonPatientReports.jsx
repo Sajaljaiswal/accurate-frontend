@@ -2,6 +2,22 @@ import React, { useEffect, useState } from "react";
 import { Printer, Edit, Loader2 } from "lucide-react";
 import { getAllPatients } from "../../api/patientApi";
 import { useNavigate } from "react-router-dom";
+const XRAY_CATEGORIES = [
+  "X-RAY DIGITAL",
+  "SPECIAL INVESTIGATION X-RAY",
+  "OPG & CEPHALO",
+];
+
+const CT_CATEGORIES = ["CT SCAN", "MRI", "MAMMOGRAPHY"];
+
+const USG_CATEGORIES = [
+  "ULTRASOUND",
+  "USG OBS",
+  "USG NT/NB SCAN",
+  "TIFFA SCAN",
+];
+
+const normalize = (val = "") => val.toLowerCase().trim();
 
 const CommonPatientReports = ({ title, testType }) => {
   const navigate = useNavigate();
@@ -10,6 +26,34 @@ const CommonPatientReports = ({ title, testType }) => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const isTestMatchingType = (test, testType) => {
+    const category = normalize(test.category);
+
+    if (testType === "xray") {
+      console.log(testType,">>>>>>>>>>>>>")
+      return XRAY_CATEGORIES.some((c) => normalize(c) === category);
+    }
+
+    if (testType === "ct") {
+      return CT_CATEGORIES.some((c) => normalize(c) === category);
+    }
+
+    if (testType === "usg") {
+      return USG_CATEGORIES.some((c) => normalize(c) === category);
+    }
+
+    // LAB = everything NOT in xray, ct, usg
+    if (testType === "lab") {
+      return (
+        !XRAY_CATEGORIES.some((c) => normalize(c) === category) &&
+        !CT_CATEGORIES.some((c) => normalize(c) === category) &&
+        !USG_CATEGORIES.some((c) => normalize(c) === category)
+      );
+    }
+
+    return false;
+  };
 
   /* Fetch + Filter */
   useEffect(() => {
@@ -21,14 +65,11 @@ const CommonPatientReports = ({ title, testType }) => {
 
         /* 🔥 FILTER BY TEST TYPE */
         const filtered = allPatients.filter((p) =>
-          p.tests?.some(
-            (t) =>
-              t.category?.toLowerCase() === testType.toLowerCase() ||
-              t.type?.toLowerCase() === testType.toLowerCase() ||
-              t.name?.toLowerCase().includes(testType.toLowerCase())
-          )
+          p.tests?.some((t) => isTestMatchingType(t, testType))
         );
-        setPatients(allPatients);
+console.log(filtered,"filtered")
+        setPatients(filtered);
+
         setTotalPages(res.data.totalPages || 1);
       } catch (err) {
         console.error("Error fetching reports:", err);
@@ -51,8 +92,7 @@ const CommonPatientReports = ({ title, testType }) => {
   ];
 
   const getStatusBadge = (status) => {
-    const base =
-      "text-[10px] font-bold px-2 py-0.5 rounded border uppercase";
+    const base = "text-[10px] font-bold px-2 py-0.5 rounded border uppercase";
     if (status === "PAID")
       return `${base} bg-emerald-50 text-emerald-700 border-emerald-200`;
     if (status === "PARTIAL")
@@ -121,25 +161,21 @@ const CommonPatientReports = ({ title, testType }) => {
 
                     <td className="p-4">
                       {p.tests
-                        ?.filter((t) =>
-                          t.name
-                            ?.toLowerCase()
-                            .includes(testType.toLowerCase())
-                        )
+                        ?.filter((t) => isTestMatchingType(t, testType))
                         .map((t) => t.name)
                         .join(", ")}
                     </td>
 
                     <td className="p-4">
-                      <span className={getStatusBadge(p.billing?.paymentStatus)}>
+                      <span
+                        className={getStatusBadge(p.billing?.paymentStatus)}
+                      >
                         {p.billing?.paymentStatus || "UNPAID"}
                       </span>
                     </td>
 
                     <td className="p-4">
-                      <button
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded"
-                      >
+                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
                         <Printer size={16} />
                       </button>
                       <button
