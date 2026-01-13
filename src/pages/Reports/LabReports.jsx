@@ -23,6 +23,7 @@ import { updatePatient } from "../../api/patientApi";
 const LabReports = () => {
   const { id } = useParams(); // Get patient ID from URL
   const [patient, setPatient] = useState(null);
+  console.log(patient, "pppppppppppppp");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeComment, setActiveComment] = useState(null); // { testId, type, value }
@@ -140,37 +141,38 @@ const LabReports = () => {
   };
 
   const handlePrint = async () => {
-  const testsToPrint = patient.tests.filter((t) => selectedTests[t.testId]);
+    const testsToPrint = patient.tests.filter((t) => selectedTests[t.testId]);
 
-  if (testsToPrint.length === 0) {
-    alert("Please select at least one test to print.");
-    return;
-  }
+    if (testsToPrint.length === 0) {
+      alert("Please select at least one test to print.");
+      return;
+    }
 
-  // 1. Generate PDF
-  generateLabReportPDF({ ...patient, tests: testsToPrint }, isSignedOff);
+    // 1. Generate PDF
+    generateLabReportPDF({ ...patient, tests: testsToPrint }, isSignedOff);
 
-  // 2. Map tests to include updated isPrinted status
-  const updatedTests = patient.tests.map((t) => ({
-    ...t,
-    // Only set true if the test was actually in the 'testsToPrint' selection
-    isPrinted: selectedTests[t.testId] ? true : (t.isPrinted || false),
-  }));
-  try {
-    // 3. Save to DB immediately so it persists on refresh
-    await updatePatient(id, { tests: updatedTests });
+    // 2. Map tests to include updated isPrinted status
+    const updatedTests = patient.tests.map((t) => ({
+      ...t,
+      // Only set true if the test was actually in the 'testsToPrint' selection
+      isPrinted: selectedTests[t.testId] ? true : t.isPrinted || false,
+    }));
+    try {
+      // 3. Save to DB immediately so it persists on refresh
+      await updatePatient(id, { tests: updatedTests });
 
-    // 4. Update local state
-    setPatient((prev) => ({ ...prev, tests: updatedTests }));
-    // Update local printedTests state for UI colors
-    const newlyPrintedMap = { ...printedTests };
-    testsToPrint.forEach((t) => { newlyPrintedMap[t.testId] = true; });
-    setPrintedTests(newlyPrintedMap);
-
-  } catch (err) {
-    console.error("Failed to update printed status:", err);
-  }
-};
+      // 4. Update local state
+      setPatient((prev) => ({ ...prev, tests: updatedTests }));
+      // Update local printedTests state for UI colors
+      const newlyPrintedMap = { ...printedTests };
+      testsToPrint.forEach((t) => {
+        newlyPrintedMap[t.testId] = true;
+      });
+      setPrintedTests(newlyPrintedMap);
+    } catch (err) {
+      console.error("Failed to update printed status:", err);
+    }
+  };
 
   const handleValueChange = (testId, newValue) => {
     const updatedTests = patient.tests.map((t) =>
@@ -183,63 +185,73 @@ const LabReports = () => {
   // import { updatePatient } from "../../api/patientService";
 
   const handleSaveResults = async () => {
-  if (!patient || !patient.tests) return;
+    if (!patient || !patient.tests) return;
 
-  setSaving(true);
-  try {
-    // We map the tests ensuring all custom fields are included
-    const normalizedTests = patient.tests.map((t) => ({
-      // Preserve all existing properties (like isPrinted, price, etc)
-      ...t, 
-      testId: t.testId,
-      name: t.name,
-      reportType: t.reportType,
-      resultValue: t.resultValue || "",
-      richTextContent: t.richTextContent || "",
-      unit: t.unit || "",
-      referenceRange: t.referenceRange || "",
+    setSaving(true);
+    try {
+      // We map the tests ensuring all custom fields are included
+      const normalizedTests = patient.tests.map((t) => ({
+        // Preserve all existing properties (like isPrinted, price, etc)
+        ...t,
+        testId: t.testId,
+        name: t.name,
+        reportType: t.reportType,
+        resultValue: t.resultValue || "",
+        richTextContent: t.richTextContent || "",
+        unit: t.unit || "",
+        referenceRange: t.referenceRange || "",
         defaultResult: t.defaultResult,
-      
-      // ENSURE THESE ARE MAPPED CORRECTLY
-      notes: t.notes || "",
-      remarks: t.remarks || "",
-      advice: t.advice || "",
-      status: t.status || "Completed",
-    }));
 
-    // 1. Update Patient DB
-    const res = await updatePatient(id, {
-      tests: normalizedTests,
-      isSignedOff,
-    });
-
-    // 2. Global Template Logic (Only for empty templates)
-    const updateTemplatePromises = normalizedTests.map(async (test) => {
-      const hasNoGlobalTemplate = !test.originalMasterTemplate || test.originalMasterTemplate.trim() === "";
-      if (test.reportType === "text" && test.richTextContent?.trim() !== "" && hasNoGlobalTemplate) {
-        try {
-          await api.put(`lab/tests/${test.testId}`, { defaultResult: test.richTextContent });
-        } catch (e) { console.error("Template Save Error", e); }
-      }
-    });
-
-    await Promise.all(updateTemplatePromises);
-
-    if (res.data.success) {
-      alert("Results, Notes, and Remarks saved successfully! ✅");
-      setPatient((prev) => ({
-        ...prev,
-        ...res.data.data,
-        tests: normalizedTests,
+        // ENSURE THESE ARE MAPPED CORRECTLY
+        notes: t.notes || "",
+        remarks: t.remarks || "",
+        advice: t.advice || "",
+        status: t.status || "Completed",
       }));
+
+      // 1. Update Patient DB
+      const res = await updatePatient(id, {
+        tests: normalizedTests,
+        isSignedOff,
+      });
+
+      // 2. Global Template Logic (Only for empty templates)
+      const updateTemplatePromises = normalizedTests.map(async (test) => {
+        const hasNoGlobalTemplate =
+          !test.originalMasterTemplate ||
+          test.originalMasterTemplate.trim() === "";
+        if (
+          test.reportType === "text" &&
+          test.richTextContent?.trim() !== "" &&
+          hasNoGlobalTemplate
+        ) {
+          try {
+            await api.put(`lab/tests/${test.testId}`, {
+              defaultResult: test.richTextContent,
+            });
+          } catch (e) {
+            console.error("Template Save Error", e);
+          }
+        }
+      });
+
+      await Promise.all(updateTemplatePromises);
+
+      if (res.data.success) {
+        alert("Results, Notes, and Remarks saved successfully! ✅");
+        setPatient((prev) => ({
+          ...prev,
+          ...res.data.data,
+          tests: normalizedTests,
+        }));
+      }
+    } catch (err) {
+      console.error("Save Error:", err.response?.data);
+      alert(err.response?.data?.message || "Failed to save");
+    } finally {
+      setSaving(false);
     }
-  } catch (err) {
-    console.error("Save Error:", err.response?.data);
-    alert(err.response?.data?.message || "Failed to save");
-  } finally {
-    setSaving(false);
-  }
-};
+  };
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center bg-white">
@@ -315,14 +327,25 @@ const LabReports = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500">Registered on:</span>
                     <span className="font-medium flex items-center gap-2">
-                      <Edit size={12} className="text-slate-400" /> 27/12/2025
-                      11:40 AM
+                      <Edit size={12} className="text-slate-400" />
+                      {new Date(patient.createdAt).toLocaleString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500">Collected on:</span>
                     <div className="flex gap-1 border rounded px-1 text-xs items-center">
-                      <span>27-12-2025</span> <Calendar size={12} />{" "}
+                     {new Date(patient.createdAt).toLocaleString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
                       <span className="border-l pl-1">--:--</span>{" "}
                       <Clock size={12} />
                     </div>
@@ -330,7 +353,11 @@ const LabReports = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500">Received on:</span>
                     <div className="flex gap-1 border rounded px-1 text-xs items-center">
-                      <span>27-12-2025</span> <Calendar size={12} />{" "}
+                     {new Date(patient.createdAt).toLocaleString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
                       <span className="border-l pl-1">--:--</span>{" "}
                       <Clock size={12} />
                     </div>

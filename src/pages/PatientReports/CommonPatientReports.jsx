@@ -11,17 +11,12 @@ const CommonPatientReports = ({ title, testType }) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  /* Fetch + Filter */
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await getAllPatients(page);
         const allPatients = res.data.data || [];
-        console.log(
-          allPatients,
-          "allPatientsallPatientsallPatientsallPatientsallPatientsallPatients"
-        );
         setPatients(allPatients);
         setTotalPages(res.data.totalPages || 1);
       } catch (err) {
@@ -40,19 +35,35 @@ const CommonPatientReports = ({ title, testType }) => {
     "Patient",
     "Referred by",
     "Tests",
-    "Status",
+    "Print Status", // Updated Header Name
     "Actions",
   ];
 
-  const getStatusBadge = (status) => {
+  // Helper to calculate print status based on tests array
+  const getPrintStatus = (tests = []) => {
+    if (tests.length === 0) return { label: "NO TESTS", style: "bg-gray-50 text-gray-500 border-gray-200" };
+
+    const totalTests = tests.length;
+    const printedCount = tests.filter((t) => t.isPrinted).length;
+
     const base = "text-[10px] font-bold px-2 py-0.5 rounded border uppercase";
-    if (status === "PAID")
-      return `${base} bg-emerald-50 text-emerald-700 border-emerald-200`;
-    if (status === "PARTIAL")
-      return `${base} bg-pink-50 text-pink-700 border-pink-200`;
-    if (status === "UNPAID")
-      return `${base} bg-red-50 text-red-700 border-red-200`;
-    return `${base} bg-gray-50 text-gray-700 border-gray-200`;
+
+    if (printedCount === totalTests) {
+      return { 
+        label: "DONE", 
+        style: `${base} bg-emerald-50 text-emerald-700 border-emerald-200` 
+      };
+    } else if (printedCount > 0) {
+      return { 
+        label: "PARTIAL", 
+        style: `${base} bg-amber-50 text-amber-700 border-amber-200` 
+      };
+    } else {
+      return { 
+        label: "PENDING", 
+        style: `${base} bg-rose-50 text-rose-700 border-rose-200` 
+      };
+    }
   };
 
   return (
@@ -91,61 +102,61 @@ const CommonPatientReports = ({ title, testType }) => {
                   </td>
                 </tr>
               ) : (
-                patients.map((p) => (
-                  <tr key={p._id} className="hover:bg-slate-50">
-                    <td className="p-4 font-medium text-blue-700">
-                      {p.registrationNumber}
-                    </td>
+                patients.map((p) => {
+                  // Calculate status for each patient row
+                  const printStatus = getPrintStatus(p.tests);
 
-                    <td className="p-4 text-slate-500 font-mono">
-                      {new Date(p.createdAt).toLocaleString("en-IN")}
-                    </td>
+                  return (
+                    <tr key={p._id} className="hover:bg-slate-50">
+                      <td className="p-4 font-medium text-blue-700">
+                        {p.registrationNumber}
+                      </td>
 
-                    <td className="p-4">
-                      <div className="font-bold">
-                        {p.title} {p.firstName}
-                      </div>
-                      <div className="text-[11px] text-slate-400">
-                        {p.gender} / {p.age} Y
-                      </div>
-                    </td>
+                      <td className="p-4 text-slate-500 font-mono">
+                        {new Date(p.createdAt).toLocaleString("en-IN")}
+                      </td>
 
-                    <td className="p-4">{p.referredBy || "Self"}</td>
+                      <td className="p-4">
+                        <div className="font-bold">
+                          {p.title} {p.firstName}
+                        </div>
+                        <div className="text-[11px] text-slate-400">
+                          {p.gender} / {p.age} Y
+                        </div>
+                      </td>
 
-                    <td className="p-4">
-                      {p.tests
-                        ?.filter((t) => t.name) 
-                        .map((t) => t.name) 
-                        .join(", ") || 
-                        "No tests"}
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={getStatusBadge(p.billing?.paymentStatus)}
-                      >
-                        {p.billing?.paymentStatus || "UNPAID"}
-                      </span>
-                    </td>
+                      <td className="p-4">{p.referredBy || "Self"}</td>
 
-                    <td className="p-4">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
-                        <Printer size={16} />
-                      </button>
-                      <button
-                        className="p-2 text-slate-500 hover:bg-slate-100 rounded"
-                        onClick={() => navigate(`/lab-report/${p._id}`)}
-                      >
-                        <Edit size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      <td className="p-4">
+                        {p.tests?.filter((t) => t.name).map((t) => t.name).join(", ") || "No tests"}
+                      </td>
+
+                      <td className="p-4">
+                        <span className={printStatus.style}>
+                          {printStatus.label}
+                        </span>
+                      </td>
+
+                      <td className="p-4">
+                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
+                          <Printer size={16} />
+                        </button>
+                        <button
+                          className="p-2 text-slate-500 hover:bg-slate-100 rounded"
+                          onClick={() => navigate(`/lab-report/${p._id}`)}
+                        >
+                          <Edit size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination UI remains same */}
         <div className="flex justify-between items-center p-4 bg-slate-50 border-t">
           <button
             disabled={page === 1}
@@ -154,11 +165,9 @@ const CommonPatientReports = ({ title, testType }) => {
           >
             PREVIOUS
           </button>
-
           <span className="text-xs font-bold">
             PAGE {page} OF {totalPages}
           </span>
-
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}

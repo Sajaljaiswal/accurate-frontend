@@ -1,30 +1,17 @@
 import jsPDF from "jspdf";
+import sig from "../../img/sig.png";
 
-/**
- * Generates and opens a Lab Report PDF with fixed alignment.
- * @param {Object} patient - The patient data object
- * @param {boolean} isSignedOff - Whether to include the signature
- */
 export const generateLabReportPDF = async (patient, isSignedOff) => {
   if (!patient) return;
   const FOOTER_SPACE = 30; // space needed for footer
   const infoStartY = 35;
-  const SIGNATURE_BUFFER = 45; // mm (signature + text space)
 
   const doc = new jsPDF("p", "mm", "a4");
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = { top: 20, bottom: FOOTER_SPACE + 10, left: 15, right: 15 };
   const CONTENT_START_Y = infoStartY + 42;
-  const CONTENT_MAX_HEIGHT =
-    pageHeight - CONTENT_START_Y - FOOTER_SPACE - SIGNATURE_BUFFER;
-const htmlMargins = [
-    0, // Top (CONTENT_START_Y)
-    0,              // Right
-    FOOTER_SPACE,    // Bottom (This prevents content from overlapping footer)
-    0               // Left
-  ];
-  const SIGNATURE_IMAGE_URL = "data:image/png;base64,...";
+  const htmlMargins = [0, 0, FOOTER_SPACE, 0];
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -42,11 +29,7 @@ const htmlMargins = [
   y += 6;
   doc.text(`Referred By : ${patient.referredBy || "-"}`, leftX, y);
   y += 6;
-  doc.text(`Ref. Lab/Hosp : ${patient.referredBy || "-"}`, leftX, y);
-  y += 6;
-  doc.text(`Client Name : ${patient.panel?.name || "-"}`, leftX, y);
-  y += 6;
-  doc.text(`Client Code : ${patient.panel?.code || "-"}`, leftX, y);
+  doc.text(`Ref. Lab/Hosp : ${patient.panel || "-"}`, leftX, y);
 
   // RIGHT COLUMN
   const rightX = pageWidth / 2 + 10;
@@ -62,11 +45,7 @@ const htmlMargins = [
     y
   );
   y += 6;
-  doc.text(`Sample Rec. Date : ${patient.sampleReceivedAt || "-"}`, rightX, y);
-  y += 6;
   doc.text(`Report Date : ${new Date().toLocaleString("en-GB")}`, rightX, y);
-  y += 6;
-  doc.text(`Report Status : Final Report`, rightX, y);
 
   // --- HTML Content Processing (Dynamic Section) ---
   const tempContainer = document.createElement("div");
@@ -181,7 +160,7 @@ const htmlMargins = [
         doc.setPage(i);
 
         // Footer Line
-        
+
         doc.setDrawColor(0);
         doc.line(
           margin.left,
@@ -195,14 +174,7 @@ const htmlMargins = [
         doc.text("Authorised Signatory", pageWidth - 60, pageHeight - 15);
 
         if (isSignedOff) {
-          doc.addImage(
-            SIGNATURE_IMAGE_URL,
-            "PNG",
-            pageWidth - 55,
-            pageHeight - 40,
-            35,
-            12
-          );
+          doc.addImage(sig, "PNG", pageWidth - 55, pageHeight - 40, 35, 12);
         }
 
         // Page Numbers

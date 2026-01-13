@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { getAllPanels } from "../../api/panelApi";
 import Navigation from "../Navigation";
-import { Save, UserPlus, Trash2, RotateCcw, Printer } from "lucide-react";
+import {
+  Save,
+  UserPlus,
+  Trash2,
+  RotateCcw,
+  Printer,
+  Loader2,
+} from "lucide-react";
 import { registerPatient } from "../../api/patientApi";
 import { getAllDoctors } from "../../api/doctorApi";
 import { getAllTests } from "../../api/testApi";
@@ -18,6 +25,7 @@ import { useBilling } from "./useBilling";
 import { printReceipt } from "./RegisterUtils";
 import { useAuth } from "../../auth/AuthContext";
 import ConfirmModal from "../../commom/ConfirmModal";
+import LazyPanelSelect from "../../commom/LazyPanelSelect";
 
 const Register = () => {
   const [selectedTests, setSelectedTests] = useState([]);
@@ -29,14 +37,14 @@ const Register = () => {
   const [panels, setPanels] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [doctor, setDoctor] = useState(null);
-  const [dropdownTests, setDropdownTests] = useState([]); // Tests currently in dropdown
-  const [totalRecords, setTotalRecords] = useState(0); // Total tests in DB
-  const [dropPage, setDropPage] = useState(1); // Current page for dropdown
-  const [isFetching, setIsFetching] = useState(false); // Loading state for dropdown
+  const [dropdownTests, setDropdownTests] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [dropPage, setDropPage] = useState(1);
+  const [isFetching, setIsFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSavedModal, setShowSavedModal] = useState(false);
-
-  // Add this inside your Register component
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   const { user } = useAuth();
   const [currentUser, setCurrentUser] = useState("");
@@ -86,16 +94,6 @@ const Register = () => {
     }
   };
 
-  const handleAddTest = (testId) => {
-    if (!testId) return;
-    const testObj = dropdownTests.find((t) => t._id === testId);
-    if (testObj && !selectedTests.some((t) => t._id === testObj._id)) {
-      setSelectedTests([...selectedTests, testObj]);
-    } else if (!testObj) {
-      console.warn("Test not found in the currently loaded dropdown list");
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       const [pRes, dRes] = await Promise.all([
@@ -135,8 +133,9 @@ const Register = () => {
     },
   });
 
-  // Handle Input Changes
+  // Wrap your change logic to set isDirty to true
   const handleChange = (path, value) => {
+    setIsDirty(true); // Mark form as changed
     setForm((prev) => {
       const updated = { ...prev };
       const keys = path.split(".");
@@ -152,6 +151,16 @@ const Register = () => {
     });
   };
 
+  // Also add setIsDirty(true) to handleAddTest, removeTest, setDiscountValue, etc.
+  const handleAddTest = (testId) => {
+    if (!testId) return;
+    const testObj = dropdownTests.find((t) => t._id === testId);
+    if (testObj && !selectedTests.some((t) => t._id === testObj._id)) {
+      setSelectedTests([...selectedTests, testObj]);
+      setIsDirty(true); // Mark as changed
+    }
+  };
+
   const calculations = useBilling(
     selectedTests,
     discountValue,
@@ -160,6 +169,7 @@ const Register = () => {
   );
 
   const handleSave = async () => {
+    if (isSubmitting || !isDirty) return;
     try {
       // 🔴 VALIDATIONS
       if (!form.age || Number(form.age) <= 0 || Number(form.age) > 120) {
@@ -171,12 +181,12 @@ const Register = () => {
         alert("Please select at least one test");
         return;
       }
-      if(cashReceived > calculations.netAmount){
-          alert("You cannot receive more Cash than Net Amount!");
+      if (cashReceived > calculations.netAmount) {
+        alert("You cannot receive more Cash than Net Amount!");
         return;
       }
-      if(discountValue > calculations.netAmount){
-          alert("You cannot give more Discount than Net Amount!");
+      if (discountValue > calculations.netAmount) {
+        alert("You cannot give more Discount than Net Amount!");
         return;
       }
 
@@ -192,6 +202,7 @@ const Register = () => {
         paymentStatus = "PENDING";
       }
 
+      setIsSubmitting(true);
       const payload = {
         ...form,
         tests: selectedTests.map((t) => ({
@@ -216,10 +227,13 @@ const Register = () => {
 
       const res = await registerPatient(payload);
       setShowSavedModal(true);
+      setIsDirty(false);
       // window.location.reload();
     } catch (err) {
       console.error("Save Error:", err.response?.data);
       alert(err.response?.data?.message || "Validation failed. Check console.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -245,16 +259,13 @@ const Register = () => {
 
             <form className="p-6 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-blue-50/50 p-4 rounded-lg">
-                <SelectField
+                <LazyPanelSelect
                   label="Panel"
-                  options={panels.map((panel) => ({
-                    label: panel.name,
-                    value: panel.name,
-                  }))}
                   value={form.panel}
-                  onChange={(e) => handleChange("panel", e.target.value)}
+                  onSelect={(selectedPanel) => {
+                    handleChange("panel", selectedPanel);
+                  }}
                 />
-
                 <LazyDoctorSelect
                   value={doctor}
                   onSelect={(doc) => {
@@ -627,9 +638,22 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="flex items-center gap-2 bg-blue-700 text-white px-10 py-2 rounded-lg font-bold shadow-lg hover:bg-blue-800 transition active:scale-95"
+                  disabled={isSubmitting || !isDirty} // Disable logic
+                  className={`flex items-center gap-2 px-10 py-2 rounded-lg font-bold shadow-lg transition active:scale-95 ${
+                    isSubmitting || !isDirty
+                      ? "bg-gray-400 cursor-not-allowed opacity-70"
+                      : "bg-blue-700 text-white hover:bg-blue-800"
+                  }`}
                 >
-                  <Save size={18} /> SAVE IN DATABASE
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} /> SAVING...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={18} /> SAVE
+                    </>
+                  )}
                 </button>
               </div>
             </form>
