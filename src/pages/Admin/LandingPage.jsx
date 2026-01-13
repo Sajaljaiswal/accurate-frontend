@@ -16,15 +16,39 @@ import {
   Calendar,
   User,
   Microscope,
+  Loader2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import api from "../../api/axios";
 
 const LandingPage = () => {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    address: "",
+    date: ""
+  });
   const [formStatus, setFormStatus] = useState(null);
-
-  const handleFormSubmit = (e) => {
+const [loading, setLoading] = useState(false);
+  // 3. Handle Form Submission
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setFormStatus("Success! We will call you in 10 minutes.");
+    setLoading(true);
+    try {
+      await api.post("/home-collections", formData);
+      setFormStatus("Request submitted successfully! ✅");
+      
+      // Clear form
+      setFormData({ fullName: "", phone: "", address: "", date: "" });
+      
+      
+      // Clear status message after 3 seconds
+      setTimeout(() => setFormStatus(""), 3000);
+    } catch (err) {
+      setFormStatus("Failed to submit request. ❌");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -289,6 +313,8 @@ const LandingPage = () => {
                     />
                     <input
                       required
+                      value={formData.fullName}
+                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                       placeholder="John Doe"
                     />
@@ -306,6 +332,8 @@ const LandingPage = () => {
                     <input
                       required
                       type="tel"
+                      value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                       placeholder="98765 43210"
                     />
@@ -323,6 +351,8 @@ const LandingPage = () => {
                   />
                   <input
                     required
+                    value={formData.address}
+              onChange={(e) => setFormData({...formData, address: e.target.value})}
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                     placeholder="Flat, Street, Landmark"
                   />
@@ -340,13 +370,18 @@ const LandingPage = () => {
                   <input
                     required
                     type="date"
+                    value={formData.date}
+              onChange={(e) => setFormData({...formData, date: e.target.value})}
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                   />
                 </div>
               </div>
-              <button className="w-full bg-indigo-600 text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex justify-center items-center gap-2">
-                <Send size={20} /> Submit Request
-              </button>
+             <button 
+          disabled={loading}
+          className="w-full bg-indigo-600 text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex justify-center items-center gap-2 disabled:opacity-70"
+        >
+          {loading ? <Loader2 className="animate-spin" /> : <Send size={20} />} Submit Request
+        </button>
               {formStatus && (
                 <p className="text-emerald-600 font-bold text-center mt-4 animate-pulse">
                   {formStatus}

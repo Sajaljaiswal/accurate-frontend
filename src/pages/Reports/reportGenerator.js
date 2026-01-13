@@ -18,7 +18,12 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
   const CONTENT_START_Y = infoStartY + 42;
   const CONTENT_MAX_HEIGHT =
     pageHeight - CONTENT_START_Y - FOOTER_SPACE - SIGNATURE_BUFFER;
-
+const htmlMargins = [
+    0, // Top (CONTENT_START_Y)
+    0,              // Right
+    FOOTER_SPACE,    // Bottom (This prevents content from overlapping footer)
+    0               // Left
+  ];
   const SIGNATURE_IMAGE_URL = "data:image/png;base64,...";
 
   doc.setFontSize(9);
@@ -77,7 +82,6 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
       .test-section { 
         margin-bottom: 30px; 
         page-break-inside: avoid; 
-  break-inside: avoid;
         width: 100%;
         display: block;
       }
@@ -168,8 +172,8 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
     width: pageWidth - margin.left - margin.right - 2,
     // Reference width for scaling calculation (must match tempContainer.style.width)
     windowWidth: 750,
-    autoPaging: "slice",
-    height: CONTENT_MAX_HEIGHT,
+    autoPaging: "text",
+    margin: htmlMargins,
     callback: function (doc) {
       const totalPages = doc.internal.getNumberOfPages();
 
@@ -177,12 +181,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
         doc.setPage(i);
 
         // Footer Line
-        doc.line(
-          margin.left,
-          pageHeight - 25,
-          pageWidth - margin.right,
-          pageHeight - 25
-        );
+        
         doc.setDrawColor(0);
         doc.line(
           margin.left,

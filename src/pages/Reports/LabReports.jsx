@@ -18,6 +18,7 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import api from "../../api/axios";
 import { generateLabReportPDF } from "./reportGenerator";
 import { ChevronDown, ChevronUp, Check } from "lucide-react"; // Add these icons
+import { updatePatient } from "../../api/patientApi";
 
 const LabReports = () => {
   const { id } = useParams(); // Get patient ID from URL
@@ -76,36 +77,39 @@ const LabReports = () => {
         const data = res.data.data;
 
         const processedTests = data.tests.map((test) => {
-          const template = test.testId?.defaultResult;
+          // Access the template from the populated testId object
+          const masterTemplate = test.testId?.defaultResult || "";
 
           return {
             ...test,
-
-            // ✅ ALWAYS preserve these
+            price: test.price,
             notes: test.notes || "",
             remarks: test.remarks || "",
             advice: test.advice || "",
 
-            // flatten testId
+            // Keep a reference to the original template to check in handleSave
+            originalMasterTemplate: masterTemplate,
+
             testId:
               typeof test.testId === "object" ? test.testId._id : test.testId,
 
-            reportType: test.reportType || (template ? "text" : "range"),
+            reportType: test.reportType || (masterTemplate ? "text" : "range"),
 
+            // 2 - AUTOPOPULATE: If patient's richTextContent is empty, use masterTemplate
             richTextContent:
               test.richTextContent && test.richTextContent.trim() !== ""
                 ? test.richTextContent
-                : template || "",
+                : masterTemplate,
           };
         });
 
         setPatient({ ...data, tests: processedTests });
+
         const initialSelect = {};
         const initialExpand = {};
-        data.tests.forEach((t, index) => {
-          const tId = typeof t.testId === "object" ? t.testId._id : t.testId;
-          initialSelect[tId] = true; // Default all selected
-          initialExpand[tId] = index === 0; // Expand only first test by default
+        processedTests.forEach((t, index) => {
+          initialSelect[t.testId] = true;
+          initialExpand[t.testId] = index === 0;
         });
         setSelectedTests(initialSelect);
         setExpandedTests(initialExpand);
@@ -135,7 +139,7 @@ const LabReports = () => {
     setActiveComment(null);
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     // Filter only selected tests for the PDF generator
     const testsToPrint = patient.tests.filter((t) => selectedTests[t.testId]);
 
@@ -146,13 +150,29 @@ const LabReports = () => {
 
     const patientDataToPrint = { ...patient, tests: testsToPrint };
     generateLabReportPDF(patientDataToPrint, isSignedOff);
-
-    // Mark as printed to change color
     const newlyPrinted = { ...printedTests };
     testsToPrint.forEach((t) => {
       newlyPrinted[t.testId] = true;
     });
+    console.log(newlyPrinted, "newlyPrinted");
     setPrintedTests(newlyPrinted);
+    try {
+      const updatedTests = patient.tests.map((t) => ({
+        ...t,
+        // If this test was just printed OR was already printed, set to true
+        isPrinted: newlyPrinted ? true : t.isPrinted,
+      }));
+      console.log(updatedTests.isPrinted, "pppppppppppppp");
+      // Update the patient record in DB
+      await updatePatient(id, { tests: updatedTests });
+
+      // Update local state so UI reflects change immediately
+      setPatient((prev) => ({ ...prev, tests: updatedTests }));
+
+      alert("Report generated and status updated! ✅");
+    } catch (err) {
+      console.error("Failed to update printed status:", err);
+    }
   };
 
   const handleValueChange = (testId, newValue) => {
@@ -162,53 +182,59 @@ const LabReports = () => {
     setPatient({ ...patient, tests: updatedTests });
   };
 
-  // Update this function in your LabReports.jsx
+  // Import your function if it's in a different file, e.g.:
+  // import { updatePatient } from "../../api/patientService";
+
   const handleSaveResults = async () => {
     if (!patient || !patient.tests) return;
 
     setSaving(true);
     try {
       const normalizedTests = patient.tests.map((t) => ({
-        testId: typeof t.testId === "object" ? t.testId._id : t.testId,
+        ...t,
+        testId: t.testId,
         name: t.name,
+        price: t.price,
         reportType: t.reportType,
         resultValue: t.resultValue || "",
         richTextContent: t.richTextContent || "",
-        defaultResult: t.defaultResult,
         unit: t.unit || "",
         referenceRange: t.referenceRange || "",
-        status: t.status || "Pending",
-
+        defaultResult: t.defaultResult,
+        status: t.status || "Completed", // Usually set to completed on save
         notes: t.notes || "",
         remarks: t.remarks || "",
         advice: t.advice || "",
+        // We keep this local for the check below
+        originalMasterTemplate: t.originalMasterTemplate,
       }));
 
-      // 1. Save the patient's specific lab results
-      const res = await api.put(`/patients/${id}/results`, {
+      // 1. Use your updatePatient function for the main update
+      // We send the entire tests array inside the payload
+      const res = await updatePatient(id, {
         tests: normalizedTests,
+        isSignedOff,
       });
 
+      // 2. Conditional Update for Global Test Schema
       const updateTemplatePromises = normalizedTests.map(async (test) => {
-        // Check if:
-        // - It's a text report
-        // - richTextContent has data
-        // - The ORIGINAL defaultResult was missing/empty (based on what we fetched)
+        // Logic: ONLY update global schema if report is text AND no global template existed
+        const hasNoGlobalTemplate =
+          !test.originalMasterTemplate ||
+          test.originalMasterTemplate.trim() === "";
+
         if (
           test.reportType === "text" &&
-          test.richTextContent &&
-          test.richTextContent.trim() !== "" &&
-          (!test.defaultResult || test.defaultResult.trim() === "")
+          test.richTextContent?.trim() !== "" &&
+          hasNoGlobalTemplate
         ) {
           try {
-            // Update the global test definition so next time it's pre-filled
-            // NOTE: Ensure your backend has this route: PUT /tests/:id
+            // This updates the master definition for future use
             await api.put(`lab/tests/${test.testId}`, {
               defaultResult: test.richTextContent,
             });
-            console.log(`Template updated for test: ${test.name}`);
           } catch (templateErr) {
-            console.error("Failed to update master template:", templateErr);
+            console.error("Master template update failed:", templateErr);
           }
         }
       });
@@ -216,32 +242,22 @@ const LabReports = () => {
       await Promise.all(updateTemplatePromises);
 
       if (res.data.success) {
-        alert("Results saved and templates updated! ✅");
+        alert("Patient records updated successfully! ✅");
 
-        // 1️⃣ Apply local test updates (defaultResult, resultValue, notes, etc.)
-        const updatedTests = normalizedTests.map((t) => ({
-          ...t,
-          defaultResult:
-            t.reportType === "text" && t.richTextContent
-              ? t.richTextContent
-              : t.defaultResult,
-        }));
-
-        // 2️⃣ Merge backend patient + updated tests (SAFE)
+        // Update local state with the returned data from the server
         setPatient((prev) => ({
-          ...prev, // keep existing patient info (name, age, reg no)
-          ...res.data.data, // merge backend response safely
-          tests: updatedTests, // updated tests are authoritative
+          ...prev,
+          ...res.data.data,
+          tests: normalizedTests, // Ensure UI reflects current inputs
         }));
       }
     } catch (err) {
-      console.error("Save Error Details:", err.response?.data);
-      alert(err.response?.data?.message || "Failed to save results");
+      console.error("Save Error:", err.response?.data);
+      alert(err.response?.data?.message || "Failed to update patient data");
     } finally {
       setSaving(false);
     }
   };
-
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center bg-white">
@@ -385,7 +401,7 @@ const LabReports = () => {
               {patient.tests.map((test) => {
                 const isExpanded = expandedTests[test.testId];
                 const isSelected = selectedTests[test.testId];
-                const isPrinted = printedTests[test.testId];
+                const isPrinted = test.isPrinted || false;
 
                 return (
                   <div
