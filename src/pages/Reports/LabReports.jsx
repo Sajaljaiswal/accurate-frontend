@@ -140,40 +140,37 @@ const LabReports = () => {
   };
 
   const handlePrint = async () => {
-    // Filter only selected tests for the PDF generator
-    const testsToPrint = patient.tests.filter((t) => selectedTests[t.testId]);
+  const testsToPrint = patient.tests.filter((t) => selectedTests[t.testId]);
 
-    if (testsToPrint.length === 0) {
-      alert("Please select at least one test to print.");
-      return;
-    }
+  if (testsToPrint.length === 0) {
+    alert("Please select at least one test to print.");
+    return;
+  }
 
-    const patientDataToPrint = { ...patient, tests: testsToPrint };
-    generateLabReportPDF(patientDataToPrint, isSignedOff);
-    const newlyPrinted = { ...printedTests };
-    testsToPrint.forEach((t) => {
-      newlyPrinted[t.testId] = true;
-    });
-    console.log(newlyPrinted, "newlyPrinted");
-    setPrintedTests(newlyPrinted);
-    try {
-      const updatedTests = patient.tests.map((t) => ({
-        ...t,
-        // If this test was just printed OR was already printed, set to true
-        isPrinted: newlyPrinted ? true : t.isPrinted,
-      }));
-      console.log(updatedTests.isPrinted, "pppppppppppppp");
-      // Update the patient record in DB
-      await updatePatient(id, { tests: updatedTests });
+  // 1. Generate PDF
+  generateLabReportPDF({ ...patient, tests: testsToPrint }, isSignedOff);
 
-      // Update local state so UI reflects change immediately
-      setPatient((prev) => ({ ...prev, tests: updatedTests }));
+  // 2. Map tests to include updated isPrinted status
+  const updatedTests = patient.tests.map((t) => ({
+    ...t,
+    // Only set true if the test was actually in the 'testsToPrint' selection
+    isPrinted: selectedTests[t.testId] ? true : (t.isPrinted || false),
+  }));
+  try {
+    // 3. Save to DB immediately so it persists on refresh
+    await updatePatient(id, { tests: updatedTests });
 
-      alert("Report generated and status updated! ✅");
-    } catch (err) {
-      console.error("Failed to update printed status:", err);
-    }
-  };
+    // 4. Update local state
+    setPatient((prev) => ({ ...prev, tests: updatedTests }));
+    // Update local printedTests state for UI colors
+    const newlyPrintedMap = { ...printedTests };
+    testsToPrint.forEach((t) => { newlyPrintedMap[t.testId] = true; });
+    setPrintedTests(newlyPrintedMap);
+
+  } catch (err) {
+    console.error("Failed to update printed status:", err);
+  }
+};
 
   const handleValueChange = (testId, newValue) => {
     const updatedTests = patient.tests.map((t) =>
@@ -186,78 +183,63 @@ const LabReports = () => {
   // import { updatePatient } from "../../api/patientService";
 
   const handleSaveResults = async () => {
-    if (!patient || !patient.tests) return;
+  if (!patient || !patient.tests) return;
 
-    setSaving(true);
-    try {
-      const normalizedTests = patient.tests.map((t) => ({
-        ...t,
-        testId: t.testId,
-        name: t.name,
-        price: t.price,
-        reportType: t.reportType,
-        resultValue: t.resultValue || "",
-        richTextContent: t.richTextContent || "",
-        unit: t.unit || "",
-        referenceRange: t.referenceRange || "",
+  setSaving(true);
+  try {
+    // We map the tests ensuring all custom fields are included
+    const normalizedTests = patient.tests.map((t) => ({
+      // Preserve all existing properties (like isPrinted, price, etc)
+      ...t, 
+      testId: t.testId,
+      name: t.name,
+      reportType: t.reportType,
+      resultValue: t.resultValue || "",
+      richTextContent: t.richTextContent || "",
+      unit: t.unit || "",
+      referenceRange: t.referenceRange || "",
         defaultResult: t.defaultResult,
-        status: t.status || "Completed", // Usually set to completed on save
-        notes: t.notes || "",
-        remarks: t.remarks || "",
-        advice: t.advice || "",
-        // We keep this local for the check below
-        originalMasterTemplate: t.originalMasterTemplate,
-      }));
+      
+      // ENSURE THESE ARE MAPPED CORRECTLY
+      notes: t.notes || "",
+      remarks: t.remarks || "",
+      advice: t.advice || "",
+      status: t.status || "Completed",
+    }));
 
-      // 1. Use your updatePatient function for the main update
-      // We send the entire tests array inside the payload
-      const res = await updatePatient(id, {
-        tests: normalizedTests,
-        isSignedOff,
-      });
+    // 1. Update Patient DB
+    const res = await updatePatient(id, {
+      tests: normalizedTests,
+      isSignedOff,
+    });
 
-      // 2. Conditional Update for Global Test Schema
-      const updateTemplatePromises = normalizedTests.map(async (test) => {
-        // Logic: ONLY update global schema if report is text AND no global template existed
-        const hasNoGlobalTemplate =
-          !test.originalMasterTemplate ||
-          test.originalMasterTemplate.trim() === "";
-
-        if (
-          test.reportType === "text" &&
-          test.richTextContent?.trim() !== "" &&
-          hasNoGlobalTemplate
-        ) {
-          try {
-            // This updates the master definition for future use
-            await api.put(`lab/tests/${test.testId}`, {
-              defaultResult: test.richTextContent,
-            });
-          } catch (templateErr) {
-            console.error("Master template update failed:", templateErr);
-          }
-        }
-      });
-
-      await Promise.all(updateTemplatePromises);
-
-      if (res.data.success) {
-        alert("Patient records updated successfully! ✅");
-
-        // Update local state with the returned data from the server
-        setPatient((prev) => ({
-          ...prev,
-          ...res.data.data,
-          tests: normalizedTests, // Ensure UI reflects current inputs
-        }));
+    // 2. Global Template Logic (Only for empty templates)
+    const updateTemplatePromises = normalizedTests.map(async (test) => {
+      const hasNoGlobalTemplate = !test.originalMasterTemplate || test.originalMasterTemplate.trim() === "";
+      if (test.reportType === "text" && test.richTextContent?.trim() !== "" && hasNoGlobalTemplate) {
+        try {
+          await api.put(`lab/tests/${test.testId}`, { defaultResult: test.richTextContent });
+        } catch (e) { console.error("Template Save Error", e); }
       }
-    } catch (err) {
-      console.error("Save Error:", err.response?.data);
-      alert(err.response?.data?.message || "Failed to update patient data");
-    } finally {
-      setSaving(false);
+    });
+
+    await Promise.all(updateTemplatePromises);
+
+    if (res.data.success) {
+      alert("Results, Notes, and Remarks saved successfully! ✅");
+      setPatient((prev) => ({
+        ...prev,
+        ...res.data.data,
+        tests: normalizedTests,
+      }));
     }
-  };
+  } catch (err) {
+    console.error("Save Error:", err.response?.data);
+    alert(err.response?.data?.message || "Failed to save");
+  } finally {
+    setSaving(false);
+  }
+};
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center bg-white">

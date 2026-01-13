@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 
-const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading }) => {
+const LazySelect = ({
+  tests,
+  totalItems,
+  onLoadMore,
+  onSelect,
+  onSearch,
+  loading,
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -9,7 +16,7 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (isOpen) {
-        onSearch(searchTerm); 
+        onSearch(searchTerm);
       }
     }, 400); // 400ms delay
 
@@ -27,8 +34,10 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading
 
   return (
     <div className="flex flex-col gap-1 relative w-full">
-      <label className="text-xs font-bold text-gray-500 uppercase">Search & Add Test</label>
-      
+      <label className="text-xs font-bold text-gray-500 uppercase">
+        Search & Add Test
+      </label>
+
       <div className="relative">
         <input
           type="text"
@@ -42,7 +51,7 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading
       </div>
 
       {isOpen && (
-        <div 
+        <div
           className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded mt-1 shadow-xl z-50 max-h-60 overflow-y-auto"
           onScroll={handleScroll}
         >
@@ -58,7 +67,9 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading
             >
               <div className="flex flex-col">
                 <span className="font-semibold text-slate-800">{t.name}</span>
-                <span className="text-[10px] text-gray-400 uppercase">{t.category?.name}</span>
+                <span className="text-[10px] text-gray-400 uppercase">
+                  {t.category?.name}
+                </span>
               </div>
               <span className="text-teal-600 font-bold">₹{t.defaultPrice}</span>
             </div>
@@ -75,11 +86,15 @@ const LazySelect = ({ tests, totalItems, onLoadMore, onSelect, onSearch, loading
               End of list
             </div>
           )}
+         
         </div>
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setIsOpen(false)} />
+        <div
+          className="fixed inset-0 z-40 bg-transparent"
+          onClick={() => setIsOpen(false)}
+        />
       )}
     </div>
   );

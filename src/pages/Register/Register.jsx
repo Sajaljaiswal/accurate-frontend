@@ -162,8 +162,8 @@ const Register = () => {
   const handleSave = async () => {
     try {
       // 🔴 VALIDATIONS
-      if (!form.age || Number(form.age) <= 0) {
-        alert("Age is required and must be greater than 0");
+      if (!form.age || Number(form.age) <= 0 || Number(form.age) > 120) {
+        alert("Age is required and must be greater than 0 and less than 120");
         return;
       }
 
