@@ -17,6 +17,7 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import api from "../../api/axios";
 import { generateLabReportPDF } from "./reportGenerator";
+import { ChevronDown, ChevronUp, Check } from "lucide-react"; // Add these icons
 
 const LabReports = () => {
   const { id } = useParams(); // Get patient ID from URL
@@ -25,15 +26,9 @@ const LabReports = () => {
   const [saving, setSaving] = useState(false);
   const [activeComment, setActiveComment] = useState(null); // { testId, type, value }
   const [isSignedOff, setIsSignedOff] = useState(false);
-
-  // const toggleReportType = (testId) => {
-  //   const updatedTests = patient.tests.map((t) =>
-  //     t.testId === testId
-  //       ? { ...t, reportType: t.reportType === "text" ? "range" : "text" }
-  //       : t
-  //   );
-  //   setPatient({ ...patient, tests: updatedTests });
-  // };
+  const [expandedTests, setExpandedTests] = useState({}); // Track accordion open/close
+  const [selectedTests, setSelectedTests] = useState({}); // Track checkboxes
+  const [printedTests, setPrintedTests] = useState({}); // Track color change after print
 
   const handleReportTypeChange = (testId, type) => {
     const updatedTests = patient.tests.map((t) =>
@@ -49,6 +44,23 @@ const LabReports = () => {
     setPatient({ ...patient, tests: updatedTests });
   };
 
+  const toggleAccordion = (testId) => {
+    setExpandedTests((prev) => ({ ...prev, [testId]: !prev[testId] }));
+  };
+
+  // Toggle Selection Checkbox
+  const toggleSelection = (testId) => {
+    setSelectedTests((prev) => ({ ...prev, [testId]: !prev[testId] }));
+  };
+
+  const toggleSelectAll = () => {
+    const allSelected = patient.tests.every((t) => selectedTests[t.testId]);
+    const newState = {};
+    patient.tests.forEach((t) => {
+      newState[t.testId] = !allSelected;
+    });
+    setSelectedTests(newState);
+  };
   const openCommentModal = (testId, type, currentValue) => {
     setActiveComment({
       testId,
@@ -88,6 +100,15 @@ const LabReports = () => {
         });
 
         setPatient({ ...data, tests: processedTests });
+        const initialSelect = {};
+        const initialExpand = {};
+        data.tests.forEach((t, index) => {
+          const tId = typeof t.testId === "object" ? t.testId._id : t.testId;
+          initialSelect[tId] = true; // Default all selected
+          initialExpand[tId] = index === 0; // Expand only first test by default
+        });
+        setSelectedTests(initialSelect);
+        setExpandedTests(initialExpand);
         if (data.isSignedOff) setIsSignedOff(true);
       } catch (err) {
         console.error("Error fetching patient:", err);
@@ -115,7 +136,23 @@ const LabReports = () => {
   };
 
   const handlePrint = () => {
-    generateLabReportPDF(patient, isSignedOff);
+    // Filter only selected tests for the PDF generator
+    const testsToPrint = patient.tests.filter((t) => selectedTests[t.testId]);
+
+    if (testsToPrint.length === 0) {
+      alert("Please select at least one test to print.");
+      return;
+    }
+
+    const patientDataToPrint = { ...patient, tests: testsToPrint };
+    generateLabReportPDF(patientDataToPrint, isSignedOff);
+
+    // Mark as printed to change color
+    const newlyPrinted = { ...printedTests };
+    testsToPrint.forEach((t) => {
+      newlyPrinted[t.testId] = true;
+    });
+    setPrintedTests(newlyPrinted);
   };
 
   const handleValueChange = (testId, newValue) => {
@@ -137,12 +174,11 @@ const LabReports = () => {
         reportType: t.reportType,
         resultValue: t.resultValue || "",
         richTextContent: t.richTextContent || "",
-        defaultResult: t.defaultResult || "",
+        defaultResult: t.defaultResult,
         unit: t.unit || "",
         referenceRange: t.referenceRange || "",
         status: t.status || "Pending",
 
-        // ✅ THESE WERE MISSING / INCONSISTENT
         notes: t.notes || "",
         remarks: t.remarks || "",
         advice: t.advice || "",
@@ -153,8 +189,6 @@ const LabReports = () => {
         tests: normalizedTests,
       });
 
-      // 2. Logic to update the Master Template (defaultResult)
-      // We loop through the tests currently in the state
       const updateTemplatePromises = normalizedTests.map(async (test) => {
         // Check if:
         // - It's a text report
@@ -320,6 +354,24 @@ const LabReports = () => {
                 </div>
               </div>
             </div>
+            {/* NEW: Select All Bar */}
+            <div className="flex justify-between items-center mb-4 bg-white p-3 rounded border border-slate-200">
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded"
+                  onChange={toggleSelectAll}
+                  checked={patient?.tests?.every(
+                    (t) => selectedTests[t.testId]
+                  )}
+                />
+                Select All Tests
+              </label>
+              <span className="text-xs text-slate-400">
+                {Object.values(selectedTests).filter(Boolean).length} of{" "}
+                {patient?.tests?.length} selected
+              </span>
+            </div>
 
             {/* Dynamic Test Results Table */}
             <div className="mb-6">
@@ -330,138 +382,180 @@ const LabReports = () => {
                 <div className="col-span-2">REFERENCE</div>
               </div>
 
-              {patient.tests.map((test) => (
-                <div
-                  key={test.testId}
-                  className="mb-10 p-4 bg-white border rounded-lg shadow-sm"
-                >
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-2">
-                      <Edit size={14} className="text-slate-400" />
-                      <span className="font-bold text-blue-900">
-                        {test.name}
-                      </span>
+              {patient.tests.map((test) => {
+                const isExpanded = expandedTests[test.testId];
+                const isSelected = selectedTests[test.testId];
+                const isPrinted = printedTests[test.testId];
+
+                return (
+                  <div
+                    key={test.testId}
+                    className={`mb-4 overflow-hidden bg-white border rounded-lg shadow-sm transition-all duration-300 ${
+                      isPrinted
+                        ? "border-emerald-200 bg-emerald-50/30"
+                        : "border-slate-200"
+                    }`}
+                  >
+                    {/* --- ACCORDION HEADER --- */}
+                    <div
+                      className={`flex items-center justify-between p-4 cursor-pointer select-none ${
+                        isExpanded ? "bg-slate-50/50" : ""
+                      }`}
+                      onClick={() => toggleAccordion(test.testId)}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <input
+                          type="checkbox"
+                          className="w-5 h-5 accent-blue-600 cursor-pointer"
+                          checked={!!isSelected}
+                          onChange={() => toggleSelection(test.testId)}
+                          onClick={(e) => e.stopPropagation()} // Stop accordion toggle when checking box
+                        />
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`font-bold text-base transition-colors ${
+                              isPrinted ? "text-emerald-700" : "text-slate-800"
+                            }`}
+                          >
+                            {test.name}
+                          </span>
+                          {isPrinted && (
+                            <span className="flex items-center gap-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                              <CheckCircle size={10} /> PRINTED
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          {test.reportType === "text"
+                            ? "Doc Mode"
+                            : "Range Mode"}
+                        </span>
+                        {isExpanded ? (
+                          <ChevronUp size={20} className="text-slate-400" />
+                        ) : (
+                          <ChevronDown size={20} className="text-slate-400" />
+                        )}
+                      </div>
                     </div>
 
-                    {/* REPORT TYPE TOGGLE */}
-                    {/* REPORT TYPE TOGGLE */}
-                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-                      <label
-                        className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-all ${
-                          test.reportType === "range"
-                            ? "bg-white shadow-sm text-blue-600 font-bold"
-                            : "text-slate-500"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          className="hidden"
-                          name={`type-${test.testId}`}
-                          checked={test.reportType === "range"}
-                          onChange={() =>
-                            handleReportTypeChange(test.testId, "range")
-                          }
-                        />
-                        <span className="text-[11px] uppercase tracking-wider">
-                          Range Based
-                        </span>
-                      </label>
+                    {/* --- ACCORDION CONTENT --- */}
+                    {isExpanded && (
+                      <div className="p-5 border-t border-slate-100 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="flex justify-start mb-4">
+                          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 w-fit">
+                            <button
+                              onClick={() =>
+                                handleReportTypeChange(test.testId, "range")
+                              }
+                              className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${
+                                test.reportType === "range"
+                                  ? "bg-white shadow-sm text-blue-600"
+                                  : "text-slate-500 hover:text-slate-700"
+                              }`}
+                            >
+                              Range Based
+                            </button>
 
-                      <label
-                        className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-all ${
-                          test.reportType === "text"
-                            ? "bg-white shadow-sm text-blue-600 font-bold"
-                            : "text-slate-500"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          className="hidden"
-                          name={`type-${test.testId}`}
-                          checked={test.reportType === "text"}
-                          onChange={() =>
-                            handleReportTypeChange(test.testId, "text")
-                          }
-                        />
-                        <span className="text-[11px] uppercase tracking-wider">
-                          Document (Text)
-                        </span>
-                      </label>
-                    </div>
+                            <button
+                              onClick={() =>
+                                handleReportTypeChange(test.testId, "text")
+                              }
+                              className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${
+                                test.reportType === "text"
+                                  ? "bg-white shadow-sm text-blue-600"
+                                  : "text-slate-500 hover:text-slate-700"
+                              }`}
+                            >
+                              Document (Text)
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50/50 p-4 rounded-lg border border-slate-100">
+                          {test.reportType === "text" ? (
+                            <div className="border border-slate-200 rounded-md overflow-hidden bg-white">
+                              <CKEditor
+                                editor={ClassicEditor}
+                                data={
+                                  test.richTextContent ||
+                                  test.defaultResult ||
+                                  ""
+                                }
+                                onChange={(event, editor) => {
+                                  handleEditorChange(
+                                    test.testId,
+                                    editor.getData()
+                                  );
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-12 items-center text-sm gap-6">
+                              <div className="col-span-4">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">
+                                  Result Value
+                                </label>
+                                <input
+                                  type="text"
+                                  className="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-bold text-blue-900"
+                                  value={test.resultValue || ""}
+                                  onChange={(e) =>
+                                    handleValueChange(
+                                      test.testId,
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div className="col-span-4">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">
+                                  Unit
+                                </label>
+                                <div className="p-2 bg-white border border-slate-200 rounded-md text-slate-600 font-medium">
+                                  {test.unit || "N/A"}
+                                </div>
+                              </div>
+                              <div className="col-span-4">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">
+                                  Ref. Range
+                                </label>
+                                <div className="p-2 bg-white border border-slate-200 rounded-md text-slate-700 font-bold italic">
+                                  {test.referenceRange || "N/A"}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex gap-3 mt-4">
+                          {["Notes", "Remarks", "Advice"].map((item) => {
+                            const key = item.toLowerCase();
+                            const hasValue = !!test[key];
+                            return (
+                              <button
+                                key={item}
+                                onClick={() =>
+                                  openCommentModal(test.testId, item, test[key])
+                                }
+                                className={`text-[10px] font-bold uppercase flex items-center gap-1 border rounded-full px-3 py-1 transition-all ${
+                                  hasValue
+                                    ? "bg-blue-600 border-blue-600 text-white"
+                                    : "text-slate-500 border-slate-200 hover:border-slate-400"
+                                }`}
+                              >
+                                <Plus size={12} /> {item} {hasValue && "✓"}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-
-                  {test.reportType === "text" ? (
-                    /* TEXT MODE: CKEDITOR */
-                    <div className="border border-slate-200 rounded-md overflow-hidden">
-                      <CKEditor
-                        editor={ClassicEditor}
-                        data={test.richTextContent || test.defaultResult || ""}
-                        onChange={(event, editor) => {
-                          const data = editor.getData();
-                          handleEditorChange(test.testId, data);
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    /* RANGE MODE: Standard Value/Unit/Ref */
-                    <div className="grid grid-cols-12 items-center text-sm gap-4">
-                      <div className="col-span-4">
-                        <label className="text-[10px] text-gray-400 block">
-                          Result Value
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full border border-slate-300 rounded p-1.5 focus:ring-1 focus:ring-blue-400 outline-none"
-                          value={test.resultValue || ""}
-                          onChange={(e) =>
-                            handleValueChange(test.testId, e.target.value)
-                          }
-                        />
-                      </div>
-                      <div className="col-span-4">
-                        <label className="text-[10px] text-gray-400 block">
-                          Unit
-                        </label>
-                        <span className="font-medium text-slate-600">
-                          {test.unit || "N/A"}
-                        </span>
-                      </div>
-                      <div className="col-span-4">
-                        <label className="text-[10px] text-gray-400 block">
-                          Reference Range
-                        </label>
-                        <span className="font-bold text-slate-700">
-                          {test.referenceRange || "N/A"}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Actions per test */}
-                  <div className="flex gap-4 ml-6 mt-4">
-                    {["Notes", "Remarks", "Advice"].map((item) => {
-                      const key = item.toLowerCase();
-                      const hasValue = !!test[key]; // Check if this test already has this field
-
-                      return (
-                        <button
-                          key={item}
-                          onClick={() =>
-                            openCommentModal(test.testId, item, test[key])
-                          }
-                          className={`text-[11px] flex items-center gap-1 border rounded-full px-2 py-0.5 transition-all ${
-                            hasValue
-                              ? "bg-blue-50 border-blue-300 text-blue-700 font-bold"
-                              : "text-slate-500 border-slate-200"
-                          }`}
-                        >
-                          <Plus size={12} /> {item} {hasValue && "✓"}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

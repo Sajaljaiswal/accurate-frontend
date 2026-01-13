@@ -2,22 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Printer, Edit, Loader2 } from "lucide-react";
 import { getAllPatients } from "../../api/patientApi";
 import { useNavigate } from "react-router-dom";
-const XRAY_CATEGORIES = [
-  "X-RAY DIGITAL",
-  "SPECIAL INVESTIGATION X-RAY",
-  "OPG & CEPHALO",
-];
-
-const CT_CATEGORIES = ["CT SCAN", "MRI", "MAMMOGRAPHY"];
-
-const USG_CATEGORIES = [
-  "ULTRASOUND",
-  "USG OBS",
-  "USG NT/NB SCAN",
-  "TIFFA SCAN",
-];
-
-const normalize = (val = "") => val.toLowerCase().trim();
 
 const CommonPatientReports = ({ title, testType }) => {
   const navigate = useNavigate();
@@ -27,34 +11,6 @@ const CommonPatientReports = ({ title, testType }) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const isTestMatchingType = (test, testType) => {
-    const category = normalize(test.category);
-
-    if (testType === "xray") {
-      console.log(testType,">>>>>>>>>>>>>")
-      return XRAY_CATEGORIES.some((c) => normalize(c) === category);
-    }
-
-    if (testType === "ct") {
-      return CT_CATEGORIES.some((c) => normalize(c) === category);
-    }
-
-    if (testType === "usg") {
-      return USG_CATEGORIES.some((c) => normalize(c) === category);
-    }
-
-    // LAB = everything NOT in xray, ct, usg
-    if (testType === "lab") {
-      return (
-        !XRAY_CATEGORIES.some((c) => normalize(c) === category) &&
-        !CT_CATEGORIES.some((c) => normalize(c) === category) &&
-        !USG_CATEGORIES.some((c) => normalize(c) === category)
-      );
-    }
-
-    return false;
-  };
-
   /* Fetch + Filter */
   useEffect(() => {
     const fetchData = async () => {
@@ -62,14 +18,11 @@ const CommonPatientReports = ({ title, testType }) => {
       try {
         const res = await getAllPatients(page);
         const allPatients = res.data.data || [];
-
-        /* 🔥 FILTER BY TEST TYPE */
-        const filtered = allPatients.filter((p) =>
-          p.tests?.some((t) => isTestMatchingType(t, testType))
+        console.log(
+          allPatients,
+          "allPatientsallPatientsallPatientsallPatientsallPatientsallPatients"
         );
-console.log(filtered,"filtered")
-        setPatients(filtered);
-
+        setPatients(allPatients);
         setTotalPages(res.data.totalPages || 1);
       } catch (err) {
         console.error("Error fetching reports:", err);
@@ -161,11 +114,11 @@ console.log(filtered,"filtered")
 
                     <td className="p-4">
                       {p.tests
-                        ?.filter((t) => isTestMatchingType(t, testType))
-                        .map((t) => t.name)
-                        .join(", ")}
+                        ?.filter((t) => t.name) 
+                        .map((t) => t.name) 
+                        .join(", ") || 
+                        "No tests"}
                     </td>
-
                     <td className="p-4">
                       <span
                         className={getStatusBadge(p.billing?.paymentStatus)}
