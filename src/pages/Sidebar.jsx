@@ -81,29 +81,11 @@ const Sidebar = () => {
           icon={<Bug size={20} />}
           subItems={[
             {
-              label: "Lab Reports ",
+              label: "Reports ",
               path: "/pathalogyReports",
               icon: <FileTextIcon size={18} />,
               active: isActive("/pathalogyReports"),
             },
-            // {
-            //   label: "USG Reports",
-            //   path: "/usgReports",
-            //   icon: <BarChart3Icon size={18} />,
-            //   active: isActive("/usgReports")
-            // },
-            // {
-            //   label: "Xray Reports",
-            //   path: "/xrayReports",
-            //   icon: <BarChart3Icon size={18} />,
-            //   active: isActive("/xrayReports")
-            // },
-            // {
-            //   label: "CT Scan Reports",
-            //   path: "/ctScanReports",
-            //   icon: <BarChart3Icon size={18} />,
-            //   active: isActive("/ctScanReports")
-            // },
           ]}
           onNavigate={navigate}
         />
@@ -137,16 +119,22 @@ const Sidebar = () => {
         <div className="pt-4 mt-4 border-t border-gray-50">
           <SidebarItem
             icon={<UsersIcon size={20} />}
+            label="Profile"
+            active={isActive("/profile")}
+            onClick={() => navigate("/profile")}
+          />
+          <SidebarItem
+            icon={<UsersIcon size={20} />}
             label="Business"
             active={isActive("/dailyBusiness")}
             onClick={() => navigate("/dailyBusiness")}
           />
-          <SidebarItem
+          {/* <SidebarItem
             icon={<ClipboardPlus size={20} />}
             label="New Requests"
             active={isActive("/newRequests")}
             onClick={() => navigate("/newRequests")}
-          />
+          /> */}
           <SidebarItem
             icon={<SettingsIcon size={20} />}
             label="Settings"

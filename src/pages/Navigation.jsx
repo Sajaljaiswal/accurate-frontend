@@ -34,14 +34,6 @@ const Navigation = () => {
           </button>
           <button
             className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono"
-            onClick={() => {
-              navigate("/profile");
-            }}
-          >
-            {user?.username || "Admin"}
-          </button>
-          <button
-            className="bg-white text-gray-800 px-3 py-1 rounded text-sm font-mono"
             onClick={() => setShowLogoutModal(true)}
           >
             {"Logout"}

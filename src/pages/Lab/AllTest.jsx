@@ -11,13 +11,16 @@ import { updateTest } from "../../api/testApi";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 const AllTest = () => {
-
+  const location = useLocation(); // 2. Initialize location
   const [tests, setTests] = useState([]);
   const [loadingTests, setLoadingTests] = useState(true);
   const [dbCategories, setDbCategories] = useState([]);
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState(
+    location.state?.categoryId || ""
+  );
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [showFilters, setShowFilters] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -73,6 +76,13 @@ const AllTest = () => {
   useEffect(() => {
     fetchTests();
   }, [currentPage, itemsPerPage, statusFilter, searchQuery, categoryFilter]);
+
+  useEffect(() => {
+    if (location.state?.categoryId) {
+      setCategoryFilter(location.state.categoryId);
+      setCurrentPage(1);
+    }
+  }, [location.state?.categoryId]);
 
   const handleSearch = (e) => {
     e.preventDefault();
