@@ -90,7 +90,6 @@ const DailyBusiness = () => {
       try {
         const res = await getDailyBusinessStats({ startDate, endDate });
         setStats(res.data);
-        console.log("Fetched business data:", res.data);
       } catch (err) {
         console.error("Error fetching business data:", err);
       } finally {
@@ -107,7 +106,7 @@ const DailyBusiness = () => {
       const res = await getAllPatients({ 
         fromDate: startDate, 
         toDate : endDate, 
-        limit: 10000 // Ensure you get all records for the report
+        limit: 1000000 // Ensure you get all records for the report
       });
 
       const reportData = {
@@ -115,7 +114,6 @@ const DailyBusiness = () => {
         fullPatientList: res.data.data 
       };
 
-      console.log(res.data.data, "resssssseeeeeseseseseessesesesesese")
       if (!reportData.fullPatientList || reportData.fullPatientList.length === 0) {
         alert("No patient records found for this date range.");
         return;

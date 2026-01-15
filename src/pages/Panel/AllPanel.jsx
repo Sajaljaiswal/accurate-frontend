@@ -51,9 +51,6 @@ const AllPanel = () => {
                   <th className="p-3">Type</th>
                   <th className="p-3">Mobile</th>
                   <th className="p-3">Email</th>
-                  <th className="p-3">Website</th>
-                  <th className="p-3">Credit Limit</th>
-                  <th className="p-3">Payment Cycle</th>
                   <th className="p-3">Status</th>
                 </tr>
               </thead>
@@ -88,15 +85,7 @@ const AllPanel = () => {
                       <td className="p-3 text-center">
                         {panel.contact?.email || "-"}
                       </td>
-                      <td className="p-3 text-center">
-                        {panel.contact?.website || "-"}
-                      </td>
-                      <td className="p-3 text-center font-bold">
-                        ₹{panel.billing?.creditLimit || 0}
-                      </td>
-                      <td className="p-3 text-center">
-                        {panel.billing?.paymentCycle}
-                      </td>
+                     
                       <td className="p-3 text-center">
                         {panel.isActive ? (
                           <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-1">

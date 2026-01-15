@@ -185,7 +185,7 @@ const Register = () => {
         alert("You cannot receive more Cash than Net Amount!");
         return;
       }
-      if (discountValue > calculations.netAmount) {
+      if (discountValue > calculations.grossTotal) {
         alert("You cannot give more Discount than Net Amount!");
         return;
       }

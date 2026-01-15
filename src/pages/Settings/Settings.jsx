@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Save, Building, CreditCard, Lock } from "lucide-react";
 import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";
+import api from "../../api/axios"; // Adjust path to your axios instance
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -44,11 +45,11 @@ const Settings = () => {
                 {activeTab === "billing" && <BillingSettings />}
                 {activeTab === "security" && <SecuritySettings />}
                 
-                <div className="mt-8 pt-6 border-t flex justify-end">
+                {/* <div className="mt-8 pt-6 border-t flex justify-end">
                   <button className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-bold transition-all shadow-md">
                     <Save size={18} /> Save Changes
                   </button>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -109,19 +110,112 @@ const BillingSettings = () => (
   </div>
 );
 
-const SecuritySettings = () => (
-  <div className="space-y-4">
-    <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Account Security</h3>
-    <div>
-      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Current Password</label>
-      <input type="password" placeholder="••••••••" className="w-full border rounded-lg px-3 py-2 text-sm outline-none" />
+
+const SecuritySettings = () => {
+  const [formData, setFormData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    setStatus({ type: "", message: "" });
+
+    // Validation
+    if (formData.newPassword !== formData.confirmPassword) {
+      return setStatus({ type: "error", message: "New passwords do not match" });
+    }
+    if (formData.newPassword.length < 4) {
+      return setStatus({ type: "error", message: "Password must be more than 4 character" });
+    }
+
+    setLoading(true);
+    try {
+      await api.put("/auth/change-password", {
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+      });
+      setStatus({ type: "success", message: "Password updated successfully!" });
+      setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      setStatus({ 
+        type: "error", 
+        message: err.response?.data?.message || "Failed to update password" 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-bold text-slate-800 border-b pb-2">Account Security</h3>
+      
+      <form onSubmit={handlePasswordChange} className="space-y-4">
+        {status.message && (
+          <div className={`p-3 rounded-lg text-xs font-bold ${
+            status.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+          }`}>
+            {status.message}
+          </div>
+        )}
+
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Current Password</label>
+          <input 
+            type="password" 
+            name="currentPassword"
+            value={formData.currentPassword}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" 
+          />
+        </div>
+        
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">New Password</label>
+          <input 
+            type="password" 
+            name="newPassword"
+            value={formData.newPassword}
+            onChange={handleChange}
+            placeholder="Min 8 characters" 
+            required
+            className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" 
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Confirm New Password</label>
+          <input 
+            type="password" 
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Repeat new password" 
+            required
+            className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" 
+          />
+        </div>
+
+        <button 
+          type="submit"
+          disabled={loading}
+          className="w-full bg-slate-800 text-white py-2 rounded-lg font-bold text-sm hover:bg-slate-900 transition-all disabled:opacity-50"
+        >
+          {loading ? "Updating..." : "Update Password"}
+        </button>
+      </form>
     </div>
-    <div>
-      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">New Password</label>
-      <input type="password" placeholder="Min 8 characters" className="w-full border rounded-lg px-3 py-2 text-sm outline-none" />
-    </div>
-  </div>
-);
+  );
+};
 
 const TabButton = ({ label, icon, active, onClick }) => (
   <button

@@ -35,8 +35,8 @@ const AllPatient = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalRecords, setTotalRecords] = useState(0);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-  
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const [filters, setFilters] = useState({
     labNo: "",
     mobile: "",
@@ -311,29 +311,29 @@ const AllPatient = () => {
 
             {/* Pagination Controls */}
             <div className="flex justify-between items-center p-4 bg-white border-t mt-4 max-w-[1600px] mx-auto rounded-xl">
-              <span className="text-sm text-gray-500">
-                Showing {patients.length} of <strong>{totalRecords}</strong>
+              <span className="text-sm text-gray-500">Showing
+                 {patients.length} of <strong>{totalRecords}</strong>
               </span>
 
               <div className="flex items-center gap-2">
-              <label className="text-xs font-bold text-gray-400 uppercase">
-                Rows:
-              </label>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value)); // ✅ FIX
-                  setPage(1);
-                }}
-                className="border rounded px-2 py-1 text-xs font-bold bg-white"
-              >
-                {[10, 20, 50, 100].map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Rows:
+                </label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value)); // ✅ FIX
+                    setPage(1);
+                  }}
+                  className="border rounded px-2 py-1 text-xs font-bold bg-white"
+                >
+                  {[10, 20, 50, 100].map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex gap-2">
                 <button
                   disabled={page === 1 || loading}
