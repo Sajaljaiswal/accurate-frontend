@@ -12,9 +12,10 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
   const pageHeight = doc.internal.pageSize.getHeight();
 
   const margin = { top: 20, bottom: FOOTER_SPACE + 10, left: 15, right: 15 };
-  const CONTENT_START_Y = infoStartY + 42;
-  const htmlMargins = [0, 0, FOOTER_SPACE, 0];
-const HEADER_HEIGHT = 80;
+  // const CONTENT_START_Y = infoStartY + 42;
+  const CONTENT_LEFT = 10;
+  // const htmlMargins = [0, 0, FOOTER_SPACE, 0];
+  const HEADER_HEIGHT = 80;
   /* ================= HEADER FUNCTION ================= */
   const drawHeader = (doc) => {
     doc.setFontSize(9);
@@ -96,7 +97,6 @@ const HEADER_HEIGHT = 80;
         word-break: break-word;
       }
 
-      /* ✅ BULLET FIX */
       ul {
         padding-left: 0;
         margin: 8px 0;
@@ -190,7 +190,7 @@ const HEADER_HEIGHT = 80;
     HEADER_HEIGHT,        // top (push content below header on every page)
     margin.right,
     FOOTER_SPACE,
-    margin.left,
+    CONTENT_LEFT,
   ],
     callback: function (doc) {
       const totalPages = doc.internal.getNumberOfPages();

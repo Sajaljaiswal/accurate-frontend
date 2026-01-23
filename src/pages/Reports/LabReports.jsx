@@ -34,14 +34,14 @@ const LabReports = () => {
 
   const handleReportTypeChange = (testId, type) => {
     const updatedTests = patient.tests.map((t) =>
-      t.testId === testId ? { ...t, reportType: type } : t
+      t.testId === testId ? { ...t, reportType: type } : t,
     );
     setPatient({ ...patient, tests: updatedTests });
   };
 
   const handleEditorChange = (testId, data) => {
     const updatedTests = patient.tests.map((t) =>
-      t.testId === testId ? { ...t, richTextContent: data } : t
+      t.testId === testId ? { ...t, richTextContent: data } : t,
     );
     setPatient({ ...patient, tests: updatedTests });
   };
@@ -133,7 +133,7 @@ const LabReports = () => {
     setPatient((prev) => ({
       ...prev,
       tests: prev.tests.map((t) =>
-        t.testId === testId ? { ...t, [key]: value.trim() } : t
+        t.testId === testId ? { ...t, [key]: value.trim() } : t,
       ),
     }));
 
@@ -176,7 +176,7 @@ const LabReports = () => {
 
   const handleValueChange = (testId, newValue) => {
     const updatedTests = patient.tests.map((t) =>
-      t.testId === testId ? { ...t, resultValue: newValue } : t
+      t.testId === testId ? { ...t, resultValue: newValue } : t,
     );
     setPatient({ ...patient, tests: updatedTests });
   };
@@ -220,10 +220,12 @@ const LabReports = () => {
         const hasNoGlobalTemplate =
           !test.originalMasterTemplate ||
           test.originalMasterTemplate.trim() === "";
+
+     
+
         if (
           test.reportType === "text" &&
-          test.richTextContent?.trim() !== "" &&
-          hasNoGlobalTemplate
+          test.defaultResult?.trim() == ""
         ) {
           try {
             await api.put(`lab/tests/${test.testId}`, {
@@ -341,7 +343,7 @@ const LabReports = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500">Collected on:</span>
                     <div className="flex gap-1 border rounded px-1 text-xs items-center">
-                     {new Date(patient.createdAt).toLocaleString("en-GB", {
+                      {new Date(patient.createdAt).toLocaleString("en-GB", {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric",
@@ -353,7 +355,7 @@ const LabReports = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500">Received on:</span>
                     <div className="flex gap-1 border rounded px-1 text-xs items-center">
-                     {new Date(patient.createdAt).toLocaleString("en-GB", {
+                      {new Date(patient.createdAt).toLocaleString("en-GB", {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric",
@@ -387,7 +389,7 @@ const LabReports = () => {
                   className="w-4 h-4 rounded"
                   onChange={toggleSelectAll}
                   checked={patient?.tests?.every(
-                    (t) => selectedTests[t.testId]
+                    (t) => selectedTests[t.testId],
                   )}
                 />
                 Select All Tests
@@ -512,7 +514,7 @@ const LabReports = () => {
                                 onChange={(event, editor) => {
                                   handleEditorChange(
                                     test.testId,
-                                    editor.getData()
+                                    editor.getData(),
                                   );
                                 }}
                               />
@@ -530,7 +532,7 @@ const LabReports = () => {
                                   onChange={(e) =>
                                     handleValueChange(
                                       test.testId,
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                 />
