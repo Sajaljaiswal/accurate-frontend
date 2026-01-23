@@ -13,7 +13,6 @@ console.log(panels, "..............")
   const dropdownRef = useRef(null);
   const limit = 20;
 
-  console.log(value, "vvvvvvvvvvvvv")
   const fetchPanels = useCallback(async (pageToLoad = 1) => {
     if (loading && pageToLoad > 1) return;
 

@@ -139,7 +139,6 @@ const AllDoctor = () => {
                 <h2 className="text-xl font-bold">Assigned Diagnostic Tests</h2>
                 <p className="text-xs text-blue-200 mt-1">
                   Doctor: {selectedDoctor?.title} {selectedDoctor?.fullName} |{" "}
-                  {selectedDoctor?.clinicName}
                 </p>
               </div>
               <button

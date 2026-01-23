@@ -34,7 +34,6 @@ const NewPanel = () => {
       creditLimit: 0,
       paymentCycle: "Prepaid",
     },
-    portalUsername: "",
     isActive: true,
   });
 
@@ -319,37 +318,7 @@ const NewPanel = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">
-                        Portal Username
-                      </label>
-                      <input
-                        type="text"
-                        value={form.portalUsername}
-                        onChange={(e) =>
-                          handleChange("portalUsername", e.target.value)
-                        }
-                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-                      <span className="text-sm font-medium text-blue-900">
-                        Active Status
-                      </span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={form.isActive}
-                          onChange={(e) =>
-                            handleChange("isActive", e.target.checked)
-                          }
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                      </label>
-                    </div>
-                  </div>
+                
 
                   <div className="p-4 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center">
                     <FileText className="text-slate-300 mb-2" size={32} />

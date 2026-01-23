@@ -91,14 +91,13 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
           ul, ol {
     padding-left: 18px;
     margin: 6px 0;
-    list-style-position: inside;   /* ⬅️ IMPORTANT */
+    list-style-position: inside;   
   }
 
   li {
     font-size: 11px;
     margin-bottom: 4px;
   }
-      /* Standardize paragraph spacing to prevent overlapping lines */
       p { margin: 8px 0; } 
     </style>
   `;

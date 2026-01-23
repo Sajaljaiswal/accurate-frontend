@@ -165,7 +165,7 @@ const Register = () => {
     selectedTests,
     discountValue,
     discountType,
-    cashReceived
+    cashReceived,
   );
 
   const handleSave = async () => {
@@ -228,7 +228,8 @@ const Register = () => {
       const res = await registerPatient(payload);
       setShowSavedModal(true);
       setIsDirty(false);
-      // window.location.reload();
+      printReceipt(form, selectedTests, calculations);
+      window.location.reload();
     } catch (err) {
       console.error("Save Error:", err.response?.data);
       alert(err.response?.data?.message || "Validation failed. Check console.");
@@ -237,10 +238,6 @@ const Register = () => {
     }
   };
 
-  const handlePrint = () => {
-    printReceipt(form, selectedTests, calculations);
-    window.location.reload();
-  };
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
       <Navigation />
@@ -276,7 +273,7 @@ const Register = () => {
                     // This will trigger your handleChange logic to update the form state
                     handleChange(
                       "referredBy",
-                      doc ? `Dr. ${doc.fullName}` : ""
+                      doc ? `Dr. ${doc.fullName}` : "",
                     );
                   }}
                 />
@@ -630,13 +627,6 @@ const Register = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={handlePrint}
-                  className="flex items-center gap-2 bg-teal-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-700 transition active:scale-95"
-                >
-                  <Printer size={18} /> PRINT RECEIPT
-                </button>
-                <button
-                  type="button"
                   onClick={handleSave}
                   disabled={isSubmitting || !isDirty} // Disable logic
                   className={`flex items-center gap-2 px-10 py-2 rounded-lg font-bold shadow-lg transition active:scale-95 ${
@@ -651,7 +641,7 @@ const Register = () => {
                     </>
                   ) : (
                     <>
-                      <Save size={18} /> SAVE
+                      <Save size={18} /> SAVE & PRINT
                     </>
                   )}
                 </button>
