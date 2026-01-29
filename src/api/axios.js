@@ -19,4 +19,12 @@ export const fetchAllUsers = async () => {
 export const createUser = async (userData) => {
   return await api.post("/auth/register", userData); // Ensure this matches your backend route
 };
+
+export const updateUser = async (id, updatedData) => {
+  return await api.put(`/auth/users/${id}`, updatedData);
+};
+
+export const deleteUser = async (id) => {
+  return await api.delete(`/auth/users/${id}`);
+};
 export default api;
