@@ -17,7 +17,7 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import api from "../../api/axios";
 import { generateLabReportPDF } from "./reportGenerator";
-import { ChevronDown, ChevronUp, Check } from "lucide-react"; // Add these icons
+import { ChevronDown, ChevronUp } from "lucide-react"; // Add these icons
 import { updatePatient } from "../../api/patientApi";
 
 const LabReports = () => {
@@ -32,12 +32,7 @@ const LabReports = () => {
   const [selectedTests, setSelectedTests] = useState({}); // Track checkboxes
   const [printedTests, setPrintedTests] = useState({}); // Track color change after print
 
-  const handleReportTypeChange = (testId, type) => {
-    const updatedTests = patient.tests.map((t) =>
-      t.testId === testId ? { ...t, reportType: type } : t,
-    );
-    setPatient({ ...patient, tests: updatedTests });
-  };
+ 
 
   const handleEditorChange = (testId, data) => {
     const updatedTests = patient.tests.map((t) =>
@@ -217,15 +212,9 @@ const LabReports = () => {
 
       // 2. Global Template Logic (Only for empty templates)
       const updateTemplatePromises = normalizedTests.map(async (test) => {
-        const hasNoGlobalTemplate =
-          !test.originalMasterTemplate ||
-          test.originalMasterTemplate.trim() === "";
-
-     
-
-        if (
+             if (
           test.reportType === "text" &&
-          test.defaultResult?.trim() == ""
+          test.defaultResult?.trim() === ""
         ) {
           try {
             await api.put(`lab/tests/${test.testId}`, {
@@ -471,7 +460,7 @@ const LabReports = () => {
                     {/* --- ACCORDION CONTENT --- */}
                     {isExpanded && (
                       <div className="p-5 border-t border-slate-100 animate-in fade-in slide-in-from-top-1 duration-200">
-                        <div className="flex justify-start mb-4">
+                        {/* <div className="flex justify-start mb-4">
                           <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 w-fit">
                             <button
                               onClick={() =>
@@ -499,7 +488,7 @@ const LabReports = () => {
                               Document (Text)
                             </button>
                           </div>
-                        </div>
+                        </div> */}
 
                         <div className="bg-slate-50/50 p-4 rounded-lg border border-slate-100">
                           {test.reportType === "text" ? (

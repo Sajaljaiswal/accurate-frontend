@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import sig from "../../img/sig.png";
+import sign from "../../img/sign.png";
 
 export const generateLabReportPDF = async (patient, isSignedOff) => {
   if (!patient) return;
@@ -216,7 +216,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
         doc.text("Authorised Signatory", pageWidth - 60, pageHeight - 15);
 
         if (isSignedOff) {
-          doc.addImage(sig, "PNG", pageWidth - 55, pageHeight - 40, 35, 12);
+          doc.addImage(sign, "PNG", pageWidth - 55, pageHeight - 40, 35, 12);
         }
 
         /* Page Number */

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navigation from "../Navigation";
 import Sidebar from "../Sidebar";
 import { getAllTests } from "../../api/testApi";
-import { Search, Filter, RotateCcw } from "lucide-react";
+import { Search, Filter, RotateCcw, Plus } from "lucide-react";
 import { getAllCategories } from "../../api/categoryApi";
 import { Edit, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +29,7 @@ const AllTest = () => {
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState(""); // active or inactive
+  const navigate = useNavigate();
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
@@ -256,36 +257,50 @@ const removeRangeRow = (index) => {
           </div>
 
           {/* Table Header Row */}
-          <div className="flex justify-between items-end mb-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Diagnostic Test List
-              </h2>
+     <div className="flex justify-between items-end mb-6">
+  {/* Left Side: Titles */}
+  <div>
+    <h2 className="text-xl font-bold text-gray-800">
+      Diagnostic Test List
+    </h2>
+    <p className="text-sm text-gray-500">
+      Total <span className="font-semibold text-blue-600">{totalItems}</span> tests found
+    </p>
+  </div>
 
-              <p className="text-sm text-gray-500">
-                Total {totalItems} tests found
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-bold text-gray-400 uppercase">
-                Rows:
-              </label>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value)); // ✅ FIX
-                  setCurrentPage(1);
-                }}
-                className="border rounded px-2 py-1 text-xs font-bold bg-white"
-              >
-                {[10, 20, 50, 100].map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+  {/* Right Side: Action Group */}
+  <div className="flex items-center gap-4">
+    {/* Rows Selector */}
+    <div className="flex items-center gap-2">
+      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+        Rows:
+      </label>
+      <select
+        value={itemsPerPage}
+        onChange={(e) => {
+          setItemsPerPage(Number(e.target.value));
+          setCurrentPage(1);
+        }}
+        className="border border-slate-200 rounded-md px-2 py-1.5 text-xs font-bold bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        {[10, 20, 50, 100].map((v) => (
+          <option key={v} value={v}>
+            {v}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* Add Test Button */}
+    <button
+      type="button"
+      onClick={() => navigate("/addTest")}
+      className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 text-sm font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95"
+    >
+      <Plus size={16} /> Add Test
+    </button>
+  </div>
+</div>
 
           {/* Table */}
           <div className="bg-white rounded-lg shadow border overflow-hidden">
