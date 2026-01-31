@@ -13,7 +13,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
 
   const margin = { top: 20, bottom: FOOTER_SPACE + 10, left: 15, right: 15 };
   // const CONTENT_START_Y = infoStartY + 42;
-  const CONTENT_LEFT = 10;
+  const CONTENT_LEFT = 0;
   // const htmlMargins = [0, 0, FOOTER_SPACE, 0];
   const HEADER_HEIGHT = 80;
   /* ================= HEADER FUNCTION ================= */
@@ -47,7 +47,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
     doc.text(
       `Reg Date : ${new Date(patient.createdAt).toLocaleString("en-GB")}`,
       rightX,
-      y
+      y,
     );
     y += 6;
     doc.text(`Report Date : ${new Date().toLocaleString("en-GB")}`, rightX, y);
@@ -133,9 +133,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
 
   patient.tests.forEach((test) => {
     if (test.reportType === "text") {
-      const plainText = test.richTextContent
-        ?.replace(/<[^>]*>?/gm, "")
-        .trim();
+      const plainText = test.richTextContent?.replace(/<[^>]*>?/gm, "").trim();
 
       const displayHtml =
         plainText && plainText.length > 0
@@ -186,12 +184,12 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
     width: pageWidth - margin.left - margin.right,
     windowWidth: 750,
     autoPaging: "text",
-   margin: [
-    HEADER_HEIGHT,        // top (push content below header on every page)
-    margin.right,
-    FOOTER_SPACE,
-    CONTENT_LEFT,
-  ],
+    margin: [
+      HEADER_HEIGHT, // top (push content below header on every page)
+      margin.right,
+      FOOTER_SPACE,
+      CONTENT_LEFT,
+    ],
     callback: function (doc) {
       const totalPages = doc.internal.getNumberOfPages();
 
@@ -207,7 +205,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
           margin.left,
           pageHeight - FOOTER_SPACE,
           pageWidth - margin.right,
-          pageHeight - FOOTER_SPACE
+          pageHeight - FOOTER_SPACE,
         );
 
         /* Signatory */
@@ -221,12 +219,9 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
 
         /* Page Number */
         doc.setFontSize(8);
-        doc.text(
-          `Page ${i} of ${totalPages}`,
-          pageWidth / 2,
-          pageHeight - 10,
-          { align: "center" }
-        );
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, {
+          align: "center",
+        });
       }
 
       document.body.removeChild(tempContainer);

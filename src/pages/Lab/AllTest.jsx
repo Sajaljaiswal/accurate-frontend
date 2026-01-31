@@ -8,8 +8,7 @@ import { Edit, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { deleteTest } from "../../api/testApi";
 import { updateTest } from "../../api/testApi";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { Editor } from "@tinymce/tinymce-react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
@@ -19,7 +18,7 @@ const AllTest = () => {
   const [loadingTests, setLoadingTests] = useState(true);
   const [dbCategories, setDbCategories] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState(
-    location.state?.categoryId || ""
+    location.state?.categoryId || "",
   );
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [showFilters, setShowFilters] = useState(true);
@@ -46,7 +45,7 @@ const AllTest = () => {
         itemsPerPage,
         searchQuery,
         statusFilter,
-        categoryFilter
+        categoryFilter,
       );
       setTests(res.data.data);
       setTotalPages(res.data.pagination.pages);
@@ -99,7 +98,7 @@ const AllTest = () => {
 
   const handleDelete = async (testId) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this test?"
+      "Are you sure you want to delete this test?",
     );
 
     if (!confirmDelete) return;
@@ -114,43 +113,40 @@ const AllTest = () => {
   };
 
   const handleRangeChange = (index, e) => {
-  const { name, value } = e.target;
-  const updated = [...editingTest.referenceRanges];
-  updated[index][name] = value;
+    const { name, value } = e.target;
+    const updated = [...editingTest.referenceRanges];
+    updated[index][name] = value;
 
-  setEditingTest({
-    ...editingTest,
-    referenceRanges: updated,
-  });
-};
+    setEditingTest({
+      ...editingTest,
+      referenceRanges: updated,
+    });
+  };
 
-const addRangeRow = () => {
-  setEditingTest({
-    ...editingTest,
-    referenceRanges: [
-      ...editingTest.referenceRanges,
-      {
-        gender: "BOTH",
-        ageMin: 0,
-        ageMax: 100,
-        lowRange: "",
-        highRange: "",
-      },
-    ],
-  });
-};
+  const addRangeRow = () => {
+    setEditingTest({
+      ...editingTest,
+      referenceRanges: [
+        ...editingTest.referenceRanges,
+        {
+          gender: "BOTH",
+          ageMin: 0,
+          ageMax: 100,
+          lowRange: "",
+          highRange: "",
+        },
+      ],
+    });
+  };
 
-const removeRangeRow = (index) => {
-  const updated = editingTest.referenceRanges.filter(
-    (_, i) => i !== index
-  );
+  const removeRangeRow = (index) => {
+    const updated = editingTest.referenceRanges.filter((_, i) => i !== index);
 
-  setEditingTest({
-    ...editingTest,
-    referenceRanges: updated.length ? updated : editingTest.referenceRanges,
-  });
-};
-
+    setEditingTest({
+      ...editingTest,
+      referenceRanges: updated.length ? updated : editingTest.referenceRanges,
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
@@ -257,50 +253,54 @@ const removeRangeRow = (index) => {
           </div>
 
           {/* Table Header Row */}
-     <div className="flex justify-between items-end mb-6">
-  {/* Left Side: Titles */}
-  <div>
-    <h2 className="text-xl font-bold text-gray-800">
-      Diagnostic Test List
-    </h2>
-    <p className="text-sm text-gray-500">
-      Total <span className="font-semibold text-blue-600">{totalItems}</span> tests found
-    </p>
-  </div>
+          <div className="flex justify-between items-end mb-6">
+            {/* Left Side: Titles */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Diagnostic Test List
+              </h2>
+              <p className="text-sm text-gray-500">
+                Total{" "}
+                <span className="font-semibold text-blue-600">
+                  {totalItems}
+                </span>{" "}
+                tests found
+              </p>
+            </div>
 
-  {/* Right Side: Action Group */}
-  <div className="flex items-center gap-4">
-    {/* Rows Selector */}
-    <div className="flex items-center gap-2">
-      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-        Rows:
-      </label>
-      <select
-        value={itemsPerPage}
-        onChange={(e) => {
-          setItemsPerPage(Number(e.target.value));
-          setCurrentPage(1);
-        }}
-        className="border border-slate-200 rounded-md px-2 py-1.5 text-xs font-bold bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        {[10, 20, 50, 100].map((v) => (
-          <option key={v} value={v}>
-            {v}
-          </option>
-        ))}
-      </select>
-    </div>
+            {/* Right Side: Action Group */}
+            <div className="flex items-center gap-4">
+              {/* Rows Selector */}
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Rows:
+                </label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="border border-slate-200 rounded-md px-2 py-1.5 text-xs font-bold bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {[10, 20, 50, 100].map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-    {/* Add Test Button */}
-    <button
-      type="button"
-      onClick={() => navigate("/addTest")}
-      className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 text-sm font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95"
-    >
-      <Plus size={16} /> Add Test
-    </button>
-  </div>
-</div>
+              {/* Add Test Button */}
+              <button
+                type="button"
+                onClick={() => navigate("/addTest")}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 text-sm font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95"
+              >
+                <Plus size={16} /> Add Test
+              </button>
+            </div>
+          </div>
 
           {/* Table */}
           <div className="bg-white rounded-lg shadow border overflow-hidden">
@@ -480,128 +480,163 @@ const removeRangeRow = (index) => {
                       </label>
                     </div>
                   </div>
-{/* ✅ REFERENCE RANGE TABLE (ONLY FOR NUMERIC) */}
-{editingTest.inputType === "Numeric" && (
-  <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
-    <div className="flex justify-between items-center">
-      <h4 className="font-bold text-sm text-gray-700">
-        Reference Ranges
-      </h4>
-      <button
-        onClick={addRangeRow}
-        className="px-3 py-1 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700"
-      >
-        + Add Range
-      </button>
-    </div>
+                  {/* ✅ REFERENCE RANGE TABLE (ONLY FOR NUMERIC) */}
+                  {editingTest.inputType === "Numeric" && (
+                    <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-bold text-sm text-gray-700">
+                          Reference Ranges
+                        </h4>
+                        <button
+                          onClick={addRangeRow}
+                          className="px-3 py-1 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          + Add Range
+                        </button>
+                      </div>
 
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2">Gender</th>
-            <th className="p-2">Age Min</th>
-            <th className="p-2">Age Max</th>
-            <th className="p-2">Low</th>
-            <th className="p-2">High</th>
-            <th className="p-2"></th>
-          </tr>
-        </thead>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm border">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="p-2">Gender</th>
+                              <th className="p-2">Age Min</th>
+                              <th className="p-2">Age Max</th>
+                              <th className="p-2">Low</th>
+                              <th className="p-2">High</th>
+                              <th className="p-2"></th>
+                            </tr>
+                          </thead>
 
-        <tbody className="divide-y">
-          {editingTest.referenceRanges.map((range, index) => (
-            <tr key={index}>
-              <td className="p-2">
-                <select
-                  name="gender"
-                  value={range.gender}
-                  onChange={(e) => handleRangeChange(index, e)}
-                  className="border rounded p-1.5 w-full"
-                >
-                  <option value="BOTH">BOTH</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </td>
+                          <tbody className="divide-y">
+                            {editingTest.referenceRanges.map((range, index) => (
+                              <tr key={index}>
+                                <td className="p-2">
+                                  <select
+                                    name="gender"
+                                    value={range.gender}
+                                    onChange={(e) =>
+                                      handleRangeChange(index, e)
+                                    }
+                                    className="border rounded p-1.5 w-full"
+                                  >
+                                    <option value="BOTH">BOTH</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                  </select>
+                                </td>
 
-              <td className="p-2">
-                <input
-                  type="number"
-                  name="ageMin"
-                  value={range.ageMin}
-                  onChange={(e) => handleRangeChange(index, e)}
-                  className="border rounded p-1.5 w-16"
-                />
-              </td>
+                                <td className="p-2">
+                                  <input
+                                    type="number"
+                                    name="ageMin"
+                                    value={range.ageMin}
+                                    onChange={(e) =>
+                                      handleRangeChange(index, e)
+                                    }
+                                    className="border rounded p-1.5 w-16"
+                                  />
+                                </td>
 
-              <td className="p-2">
-                <input
-                  type="number"
-                  name="ageMax"
-                  value={range.ageMax}
-                  onChange={(e) => handleRangeChange(index, e)}
-                  className="border rounded p-1.5 w-16"
-                />
-              </td>
+                                <td className="p-2">
+                                  <input
+                                    type="number"
+                                    name="ageMax"
+                                    value={range.ageMax}
+                                    onChange={(e) =>
+                                      handleRangeChange(index, e)
+                                    }
+                                    className="border rounded p-1.5 w-16"
+                                  />
+                                </td>
 
-              <td className="p-2">
-                <input
-                  type="text"
-                  name="lowRange"
-                  value={range.lowRange}
-                  onChange={(e) => handleRangeChange(index, e)}
-                  className="border rounded p-1.5 w-20"
-                  placeholder="0"
-                />
-              </td>
+                                <td className="p-2">
+                                  <input
+                                    type="text"
+                                    name="lowRange"
+                                    value={range.lowRange}
+                                    onChange={(e) =>
+                                      handleRangeChange(index, e)
+                                    }
+                                    className="border rounded p-1.5 w-20"
+                                    placeholder="0"
+                                  />
+                                </td>
 
-              <td className="p-2">
-                <input
-                  type="text"
-                  name="highRange"
-                  value={range.highRange}
-                  onChange={(e) => handleRangeChange(index, e)}
-                  className="border rounded p-1.5 w-20"
-                  placeholder="100"
-                />
-              </td>
+                                <td className="p-2">
+                                  <input
+                                    type="text"
+                                    name="highRange"
+                                    value={range.highRange}
+                                    onChange={(e) =>
+                                      handleRangeChange(index, e)
+                                    }
+                                    className="border rounded p-1.5 w-20"
+                                    placeholder="100"
+                                  />
+                                </td>
 
-              <td className="p-2 text-center">
-                <button
-                  onClick={() => removeRangeRow(index)}
-                  className="text-red-500 hover:bg-red-50 p-1.5 rounded-full"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)}
+                                <td className="p-2 text-center">
+                                  <button
+                                    onClick={() => removeRangeRow(index)}
+                                    className="text-red-500 hover:bg-red-50 p-1.5 rounded-full"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
 
-                  {/* ✅ DYNAMIC CKEDITOR: Only shows if RichText is selected */}
                   {editingTest.inputType === "RichText" && (
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-500 uppercase">
                         Default Report Template (Document)
                       </label>
                       <div className="border rounded-md overflow-hidden min-h-[250px]">
-                        <CKEditor
-                          editor={ClassicEditor}
-                          data={editingTest.defaultResult || ""}
-                          onChange={(event, editor) => {
-                            const data = editor.getData();
-                            setEditingTest({
-                              ...editingTest,
-                              defaultResult: data,
-                            });
+                        <Editor
+                          value={editingTest.defaultResult || ""}
+                          apiKey="hml3sge863d0muab0z1r2uw4zrvx02egn0usxwoif1h49otp"
+                          onEditorChange={(content) => {
+                            setEditingTest((prev) => ({
+                              ...prev,
+                              defaultResult: content,
+                            }));
                           }}
-                          config={{
+                          init={{
+                            height: 350,
+                            menubar: true,
                             placeholder:
                               "Design the default structure for MRI/USG reports here...",
+                            plugins: [
+                              "advlist",
+                              "autolink",
+                              "lists",
+                              "link",
+                              "image",
+                              "charmap",
+                              "preview",
+                              "anchor",
+                              "searchreplace",
+                              "visualblocks",
+                              "code",
+                              "fullscreen",
+                              "insertdatetime",
+                              "media",
+                              "table",
+                              "help",
+                              "wordcount",
+                            ],
+                            toolbar:
+                              "undo redo | formatselect | bold italic underline | \
+      alignleft aligncenter alignright alignjustify | \
+      bullist numlist outdent indent | link image table | code fullscreen",
+                            content_style:
+                              "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                           }}
                         />
                       </div>
@@ -670,7 +705,7 @@ const removeRangeRow = (index) => {
                           inputType: editingTest.inputType,
                           unit: editingTest.unit,
                           defaultResult: editingTest.defaultResult, // ✅ Save CKEditor data to DB
-                           referenceRanges: editingTest.referenceRanges,
+                          referenceRanges: editingTest.referenceRanges,
                         });
                         setIsEditOpen(false);
                         fetchTests();

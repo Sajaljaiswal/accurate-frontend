@@ -13,17 +13,15 @@ import {
 } from "lucide-react";
 import Sidebar from "../Sidebar";
 import Navigation from "../Navigation";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import api from "../../api/axios";
 import { generateLabReportPDF } from "./reportGenerator";
 import { ChevronDown, ChevronUp } from "lucide-react"; // Add these icons
 import { updatePatient } from "../../api/patientApi";
+import { Editor } from "@tinymce/tinymce-react";
 
 const LabReports = () => {
   const { id } = useParams(); // Get patient ID from URL
   const [patient, setPatient] = useState(null);
-  console.log(patient, "pppppppppppppp");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeComment, setActiveComment] = useState(null); // { testId, type, value }
@@ -31,8 +29,6 @@ const LabReports = () => {
   const [expandedTests, setExpandedTests] = useState({}); // Track accordion open/close
   const [selectedTests, setSelectedTests] = useState({}); // Track checkboxes
   const [printedTests, setPrintedTests] = useState({}); // Track color change after print
-
- 
 
   const handleEditorChange = (testId, data) => {
     const updatedTests = patient.tests.map((t) =>
@@ -212,10 +208,7 @@ const LabReports = () => {
 
       // 2. Global Template Logic (Only for empty templates)
       const updateTemplatePromises = normalizedTests.map(async (test) => {
-             if (
-          test.reportType === "text" &&
-          test.defaultResult?.trim() === ""
-        ) {
+        if (test.reportType === "text" && test.defaultResult?.trim() === "") {
           try {
             await api.put(`lab/tests/${test.testId}`, {
               defaultResult: test.richTextContent,
@@ -493,18 +486,44 @@ const LabReports = () => {
                         <div className="bg-slate-50/50 p-4 rounded-lg border border-slate-100">
                           {test.reportType === "text" ? (
                             <div className="border border-slate-200 rounded-md overflow-hidden bg-white">
-                              <CKEditor
-                                editor={ClassicEditor}
-                                data={
+                              <Editor
+                                apiKey="hml3sge863d0muab0z1r2uw4zrvx02egn0usxwoif1h49otp"
+                                value={
                                   test.richTextContent ||
                                   test.defaultResult ||
                                   ""
                                 }
-                                onChange={(event, editor) => {
-                                  handleEditorChange(
-                                    test.testId,
-                                    editor.getData(),
-                                  );
+                                onEditorChange={(content) => {
+                                  handleEditorChange(test.testId, content);
+                                }}
+                                init={{
+                                  height: 300,
+                                  menubar: true,
+                                  plugins: [
+                                    "advlist",
+                                    "autolink",
+                                    "lists",
+                                    "link",
+                                    "image",
+                                    "charmap",
+                                    "preview",
+                                    "anchor",
+                                    "searchreplace",
+                                    "visualblocks",
+                                    "code",
+                                    "fullscreen",
+                                    "insertdatetime",
+                                    "media",
+                                    "table",
+                                    "help",
+                                    "wordcount",
+                                  ],
+                                  toolbar:
+                                    "undo redo | formatselect | bold italic underline | \
+      alignleft aligncenter alignright alignjustify | \
+      bullist numlist outdent indent | link image table | code fullscreen",
+                                  content_style:
+                                    "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                                 }}
                               />
                             </div>

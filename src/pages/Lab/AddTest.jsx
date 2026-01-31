@@ -5,8 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { addTest } from "../../api/testApi";
 import { getAllCategories } from "../../api/categoryApi";
 import { Plus, Trash2 } from "lucide-react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { Editor } from "@tinymce/tinymce-react";
 
 const AddTest = () => {
   const navigate = useNavigate();
@@ -57,10 +56,13 @@ const AddTest = () => {
     }));
   };
   // 2. Handle CKEditor content changes
-  const handleEditorChange = (event, editor) => {
-    const data = editor.getData();
-    setForm((prev) => ({ ...prev, defaultResult: data }));
-  };
+ const handleEditorChange = (content) => {
+  setForm((prev) => ({
+    ...prev,
+    defaultResult: content,
+  }));
+};
+
 
   const handleRangeChange = (index, e) => {
     const { name, value } = e.target;
@@ -254,13 +256,41 @@ const AddTest = () => {
                     </h3>
                   </div>
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
-                    <CKEditor
-                      editor={ClassicEditor}
-                      data={form.defaultResult}
-                      onChange={handleEditorChange}
-                      config={{
+                    <Editor
+                      apiKey="hml3sge863d0muab0z1r2uw4zrvx02egn0usxwoif1h49otp"
+                      value={form.defaultResult}
+                       onEditorChange={handleEditorChange}
+                      init={{
+                        height: 350,
+                        menubar: true,
                         placeholder:
                           "Design your report template here (e.g., Obstetric USG structure)...",
+                       plugins: [
+                                    "advlist",
+                                    "autolink",
+                                    "lists",
+                                    "link",
+                                    "image",
+                                    "charmap",
+                                    "preview",
+                                    "anchor",
+                                    "searchreplace",
+                                    "visualblocks",
+                                    "code",
+                                    "fullscreen",
+                                    "insertdatetime",
+                                    "media",
+                                    "table",
+                                    "help",
+                                    "wordcount",
+                                  ],
+                                  toolbar:
+                                    "undo redo | formatselect | bold italic underline | \
+      alignleft aligncenter alignright alignjustify | \
+      bullist numlist outdent indent | link image table | code fullscreen",
+                                  content_style:
+                                    "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                                
                       }}
                     />
                   </div>
