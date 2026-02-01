@@ -9,7 +9,6 @@ const LazyPanelSelect = ({ value, onSelect, label = "Select Panel" }) => {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-console.log(panels, "..............")
   const dropdownRef = useRef(null);
   const limit = 20;
 

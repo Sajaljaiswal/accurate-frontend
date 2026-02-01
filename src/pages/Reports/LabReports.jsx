@@ -269,17 +269,7 @@ const LabReports = () => {
               {/* Status Badges */}
               <div className="flex gap-2 mb-4">
                 <div className="flex gap-2 mb-4">
-                  <button
-                    onClick={() => setIsSignedOff(!isSignedOff)}
-                    className={`text-[11px] px-3 py-1.5 rounded font-bold flex items-center gap-2 transition-all ${
-                      isSignedOff
-                        ? "bg-emerald-600 text-white shadow-lg"
-                        : "bg-slate-200 text-slate-500 hover:bg-slate-300"
-                    }`}
-                  >
-                    <CheckCircle size={14} />
-                    {isSignedOff ? "Report Signed Off" : "Click to Sign Off"}
-                  </button>
+                 
                 </div>
               </div>
             </div>
@@ -497,7 +487,7 @@ const LabReports = () => {
                                   handleEditorChange(test.testId, content);
                                 }}
                                 init={{
-                                  height: 300,
+                                  height: 600,
                                   menubar: true,
                                   plugins: [
                                     "advlist",
@@ -597,6 +587,17 @@ const LabReports = () => {
           {/* Bottom Sticky Footer */}
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-end items-center shadow-lg">
             <div className="flex gap-3">
+               <button
+                    onClick={() => setIsSignedOff(!isSignedOff)}
+                    className={`text-[11px] px-3 py-1.5 rounded font-bold flex items-center gap-2 transition-all ${
+                      isSignedOff
+                        ? "bg-emerald-600 text-white shadow-lg"
+                        : "bg-slate-200 text-slate-500 hover:bg-slate-300"
+                    }`}
+                  >
+                    <CheckCircle size={14} />
+                    {isSignedOff ? "Report Signed Off" : "Click to Sign Off"}
+                  </button>
               <button
                 onClick={handlePrint}
                 className="bg-slate-800 text-white px-6 py-2 text-sm font-bold rounded flex items-center gap-2 disabled:opacity-50"

@@ -53,10 +53,8 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
     doc.text(`Report Date : ${new Date().toLocaleString("en-GB")}`, rightX, y);
   };
 
-  /* ================= INITIAL HEADER ================= */
   drawHeader(doc);
 
-  /* ================= HTML CONTENT ================= */
   const tempContainer = document.createElement("div");
   tempContainer.style.width = "700px";
   tempContainer.style.padding = "10px";
@@ -91,22 +89,22 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
       }
 
       th, td {
-        border: 1px solid black;
-        padding: 6px;
-        font-size: 11px;
+        border: 1px dotted #9c9e9e;
+        padding: 3px;
+        font-size: 15px;
         word-break: break-word;
       }
 
       ul {
         padding-left: 0;
-        margin: 8px 0;
+        margin: 2px 0;
+        font-size: 13px;
       }
 
       ul li {
         list-style: none;
         position: relative;
         padding-left: 14px;
-        font-size: 11px;
         margin-bottom: 4px;
       }
 
