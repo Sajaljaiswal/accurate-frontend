@@ -24,6 +24,11 @@ export const getAllPatients = (params) => {
       search: params.search,
       fromDate: params.fromDate,
       toDate: params.toDate,
+      labNo: params.labNo,
+        mobile: params.mobile,
+        orderId: params.orderId,
+        panelName: params.panelName,   // ✅ Added
+        doctorName: params.doctorName,
     },
   });
 };

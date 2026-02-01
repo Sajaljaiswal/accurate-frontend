@@ -6,7 +6,6 @@ import {
   UserPlus,
   Trash2,
   RotateCcw,
-  Printer,
   Loader2,
 } from "lucide-react";
 import { registerPatient } from "../../api/patientApi";

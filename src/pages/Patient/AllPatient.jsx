@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Filter, Search, ChevronDown, ChevronRight } from "lucide-react";
 import Navigation from "../Navigation";
 import { getAllPatients } from "../../api/patientApi";
 import EditPatientModal from "./EditPatientModal";
@@ -42,6 +41,8 @@ const AllPatient = () => {
     mobile: "",
     patientName: "",
     orderId: "",
+    panelName: "",
+    doctorName: "",
     fromDate: getTodayLocal(),
     toDate: getTodayLocal(),
   });
@@ -58,7 +59,14 @@ const AllPatient = () => {
         search: filters.patientName,
         fromDate: filters.fromDate,
         toDate: filters.toDate,
+        labNo: filters.labNo,
+        mobile: filters.mobile,
+        orderId: filters.orderId,
+        panelName: filters.panelName,   // ✅ Added
+        doctorName: filters.doctorName,
       });
+
+      console.log("Fetched patients:", res.data);
 
       setPatients(res.data.data);
       setTotalPages(res.data.pagination.pages);
@@ -75,8 +83,11 @@ const AllPatient = () => {
   }, [page, filters, itemsPerPage]);
 
   const handleSearch = () => {
-    setPage(1);
-    // fetchPatients();
+    if(page !== 1) {
+      setPage(1); // This will trigger the useEffect
+    } else {
+      fetchPatients(1); // Manually trigger if already on page 1
+    }
   };
 
   const closeModal = () => {
@@ -247,7 +258,7 @@ const AllPatient = () => {
                           <td className="p-3 italic text-[11px]">
                             {p.panel || "-"}
                           </td>
-                          <td className="p-3 italic text-[11px]">-</td>
+                          <td className="p-3 italic text-[11px]">{p.createdBy || "-"}</td>
                           <td className="p-3 font-bold">
                             ₹{p.billing?.grossTotal || 0}
                           </td>

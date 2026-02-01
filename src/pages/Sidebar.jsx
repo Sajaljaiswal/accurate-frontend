@@ -1,19 +1,24 @@
 import React, { useState } from "react";
 import {
-  LayoutDashboardIcon,
-  BarChart3Icon,
-  WalletIcon,
-  UsersIcon,
-  FileTextIcon,
-  SettingsIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-  FlaskConicalIcon, // Example icon for Laboratory
-  ClipboardPlus,
-  MessageCircleQuestionMark,
-  Bug,
   BriefcaseMedical,
   LogOut,
+  LayoutDashboard, 
+  Users, 
+  FlaskConical, 
+  FileSearch, 
+  UserCircle, 
+  TrendingUp, 
+  Settings, 
+  HelpCircle,
+  Stethoscope,
+  Microscope,
+  Database,
+  ClipboardList,
+  ShieldPlus,
+  Building2,
+
 } from "lucide-react";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -32,128 +37,126 @@ const Sidebar = () => {
   };
   return (
     <aside className="w-64 bg-white h-screen border-r border-gray-100 flex flex-col pb-6 sticky top-0">
-      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-        <SidebarItem
-          icon={<LayoutDashboardIcon size={20} />}
-          label="Dashboard"
-          active={isActive("/dashboard")}
-          onClick={() => navigate("/dashboard")}
-        />
+     
+<nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+  <SidebarItem
+    icon={<LayoutDashboard size={20} />}
+    label="Dashboard"
+    active={isActive("/dashboard")}
+    onClick={() => navigate("/dashboard")}
+  />
 
-        {/* --- Dropdown: Cases --- */}
-        <SidebarDropdown
-          label="Cases"
-          icon={<BarChart3Icon size={20} />}
-          subItems={[
-            {
-              label: "Patients",
-              path: "/allPatient",
-              icon: <WalletIcon size={18} />,
-              active: isActive("/allPatient"),
-            },
-          ]}
-          onNavigate={navigate}
-        />
+  {/* --- Dropdown: Cases --- */}
+  <SidebarDropdown
+    label="Cases"
+    icon={<ClipboardList size={20} />} // Represents patient files/records
+    subItems={[
+      {
+        label: "Patients",
+        path: "/allPatient",
+        icon: <Users size={18} />,
+        active: isActive("/allPatient"),
+      },
+    ]}
+    onNavigate={navigate}
+  />
 
-        {/* --- Dropdown: Inventory (Example of second dropdown) --- */}
-        <SidebarDropdown
-          label="Laboratory"
-          icon={<FlaskConicalIcon size={20} />}
-          subItems={[
-            {
-              label: "Categories",
-              path: "/TestCategories",
-              icon: <FileTextIcon size={18} />,
-              active: isActive("/TestCategories"),
-            },
-            {
-              label: "Tests",
-              path: "/lab",
-              icon: <BarChart3Icon size={18} />,
-              active: isActive("/lab"),
-            },
-          ]}
-          onNavigate={navigate}
-        />
+  {/* --- Dropdown: Laboratory --- */}
+  <SidebarDropdown
+    label="Laboratory"
+    icon={<FlaskConical size={20} />}
+    subItems={[
+      {
+        label: "Categories",
+        path: "/TestCategories",
+        icon: <Database size={18} />, // Represents the organized collection of categories
+        active: isActive("/TestCategories"),
+      },
+      {
+        label: "Tests",
+        path: "/lab",
+        icon: <Microscope size={18} />, // Specific to lab testing
+        active: isActive("/lab"),
+      },
+    ]}
+    onNavigate={navigate}
+  />
 
-        <SidebarDropdown
-          label="Reports"
-          icon={<Bug size={20} />}
-          subItems={[
-            {
-              label: "Reports ",
-              path: "/pathalogyReports",
-              icon: <FileTextIcon size={18} />,
-              active: isActive("/pathalogyReports"),
-            },
-          ]}
-          onNavigate={navigate}
-        />
-        <SidebarDropdown
-          label="Panels & Doctors"
-          icon={<BriefcaseMedical size={20} />}
-          subItems={[
-            {
-              label: "Panels",
-              path: "/allPanel",
-              icon: <FileTextIcon size={18} />,
-              active: isActive("/allPanel"),
-            },
-            {
-              label: "Doctors",
-              path: "/allDoctor",
-              icon: <BarChart3Icon size={18} />,
-              active: isActive("/allDoctor"),
-            },
-            {
-              label: "Assign",
-              path: "/doctorTestAssign",
-              icon: <BarChart3Icon size={18} />,
-              active: isActive("/doctorTestAssign"),
-            },
-          ]}
-          onNavigate={navigate}
-        />
+  {/* --- Dropdown: Reports --- */}
+  <SidebarDropdown
+    label="Reports"
+    icon={<FileSearch size={20} />} // Searching/Viewing reports
+    subItems={[
+      {
+        label: "Reports",
+        path: "/pathalogyReports",
+        icon: <ClipboardList size={18} />,
+        active: isActive("/pathalogyReports"),
+      },
+    ]}
+    onNavigate={navigate}
+  />
 
-        {/* Footer Links */}
-        <div className="pt-4 mt-4 border-t border-gray-50">
-          <SidebarItem
-            icon={<UsersIcon size={20} />}
-            label="Profile"
-            active={isActive("/profile")}
-            onClick={() => navigate("/profile")}
-          />
-          <SidebarItem
-            icon={<UsersIcon size={20} />}
-            label="Business"
-            active={isActive("/dailyBusiness")}
-            onClick={() => navigate("/dailyBusiness")}
-          />
-          {/* <SidebarItem
-            icon={<ClipboardPlus size={20} />}
-            label="New Requests"
-            active={isActive("/newRequests")}
-            onClick={() => navigate("/newRequests")}
-          /> */}
-          <SidebarItem
-            icon={<SettingsIcon size={20} />}
-            label="Settings"
-            active={isActive("/settings")}
-            onClick={() => navigate("/settings")}
-          />
-          <SidebarItem
-            icon={<LogOut size={20} />}
-            label="Logout"
-            onClick={() => setShowLogoutModal(true)}
-          />
-          <SidebarItem
-            icon={<MessageCircleQuestionMark size={20} />}
-            label="Help"
-            active={isActive("/help")}
-            onClick={() => navigate("/help")}
-          />
-        </div>
-      </nav>
+  {/* --- Dropdown: Panels & Doctors --- */}
+  <SidebarDropdown
+    label="Panels & Doctors"
+    icon={<BriefcaseMedical size={20} />}
+    subItems={[
+      {
+        label: "Panels",
+        path: "/allPanel",
+        icon: <Building2 size={18} />, // Represents Hospitals/Clinics
+        active: isActive("/allPanel"),
+      },
+      {
+        label: "Doctors",
+        path: "/allDoctor",
+        icon: <Stethoscope size={18} />, // Universal symbol for doctors
+        active: isActive("/allDoctor"),
+      },
+      {
+        label: "Assign",
+        path: "/doctorTestAssign",
+        icon: <ShieldPlus size={18} />, // Represents the link/assignment action
+        active: isActive("/doctorTestAssign"),
+      },
+    ]}
+    onNavigate={navigate}
+  />
+
+  {/* Footer Links */}
+  <div className="pt-4 mt-4 border-t border-gray-100">
+    <SidebarItem
+      icon={<UserCircle size={20} />}
+      label="Profile"
+      active={isActive("/profile")}
+      onClick={() => navigate("/profile")}
+    />
+    <SidebarItem
+      icon={<TrendingUp size={20} />} // Financial growth/Business tracking
+      label="Business"
+      active={isActive("/dailyBusiness")}
+      onClick={() => navigate("/dailyBusiness")}
+    />
+    <SidebarItem
+      icon={<Settings size={20} />}
+      label="Settings"
+      active={isActive("/settings")}
+      onClick={() => navigate("/settings")}
+    />
+    <SidebarItem
+      icon={<LogOut size={20} className="text-rose-500" />} // Slight red tint for logout
+      label="Logout"
+      onClick={() => setShowLogoutModal(true)}
+    />
+    <SidebarItem
+      icon={<HelpCircle size={20} />}
+      label="Help"
+      active={isActive("/help")}
+      onClick={() => navigate("/help")}
+    />
+  </div>
+</nav>
       <ConfirmModal
         open={showLogoutModal}
         title="Confirm Logout"
