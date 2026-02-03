@@ -89,7 +89,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
       }
 
       th, td {
-        border: 1px dotted #9c9e9e;
+        border: 1px solid #656565;
         padding: 3px;
         font-size: 15px;
         word-break: break-word;
@@ -198,21 +198,23 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
         drawHeader(doc);
 
         /* Footer Line */
-        doc.setDrawColor(0);
-        doc.line(
-          margin.left,
-          pageHeight - FOOTER_SPACE,
-          pageWidth - margin.right,
-          pageHeight - FOOTER_SPACE,
-        );
+        // doc.setDrawColor(0);
+        // doc.line(
+        //   margin.left,
+        //   pageHeight - FOOTER_SPACE,
+        //   pageWidth - margin.right,
+        //   pageHeight - FOOTER_SPACE,
+        // );
 
         /* Signatory */
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
-        doc.text("Authorised Signatory", pageWidth - 60, pageHeight - 15);
+        doc.text("Dr. Manvendra Singh", pageWidth - 60, pageHeight - 18);
+        doc.text("MD Radio-Diagnosis", pageWidth - 60, pageHeight - 15);
+
 
         if (isSignedOff) {
-          doc.addImage(sign, "PNG", pageWidth - 55, pageHeight - 40, 35, 12);
+          doc.addImage(sign, "PNG", pageWidth - 65, pageHeight - 34 , 45, 16);
         }
 
         /* Page Number */
