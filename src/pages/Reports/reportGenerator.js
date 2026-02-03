@@ -59,7 +59,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
   tempContainer.style.width = "700px";
   tempContainer.style.padding = "10px";
   tempContainer.style.fontFamily = "Arial, sans-serif";
-  tempContainer.style.lineHeight = "1.5";
+  tempContainer.style.lineHeight = "1.4";
 
   let fullHtmlContent = `
     <style>
@@ -89,7 +89,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
       }
 
       th, td {
-        border: 1px solid #656565;
+        border: 1px dotted #656565;
         padding: 3px;
         font-size: 15px;
         word-break: break-word;
