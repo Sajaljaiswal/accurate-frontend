@@ -89,7 +89,7 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
       }
 
       th, td {
-        border: 1px dotted #656565;
+        border: 1px solid #656565;
         padding: 3px;
         font-size: 15px;
         word-break: break-word;

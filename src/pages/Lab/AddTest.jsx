@@ -206,7 +206,36 @@ const config = useMemo(() => ({
                 </div>
               </div>
 
-              {/* 4. Replacement Jodit Editor Section */}
+              {/* Price & Unit Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-100">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-blue-900 uppercase">
+                    Test Price (₹)
+                  </label>
+                  <input
+                    type="number"
+                    name="defaultPrice"
+                    value={form.defaultPrice}
+                    onChange={handleChange}
+                    placeholder="500"
+                    className="w-full border border-slate-300 bg-slate-50 rounded-lg p-3 text-sm font-bold focus:bg-white outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-600">
+                    Unit
+                  </label>
+                  <input
+                    name="unit"
+                    value={form.unit}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none"
+                    placeholder="mg/dl"
+                  />
+                </div>
+              </div>
+
+              {/* 3. Conditional CKEditor for RichText Template */}
               {form.inputType === "RichText" && (
                 <div className="space-y-3 pt-4 border-t border-slate-100">
                   <div className="flex justify-between items-center">
@@ -239,7 +268,84 @@ const config = useMemo(() => ({
                       <Plus size={14} /> ADD RANGE
                     </button>
                   </div>
-                  {/* Table code stays exactly the same as your snippet */}
+                  <div className="overflow-x-auto border rounded-xl">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 border-b">
+                        <tr className="text-slate-500 text-xs uppercase">
+                          <th className="p-3 text-left">Gender</th>
+                          <th className="p-3 text-left">Age Min</th>
+                          <th className="p-3 text-left">Age Max</th>
+                          <th className="p-3 text-left">Low</th>
+                          <th className="p-3 text-left">High</th>
+                          <th className="p-3 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {form.referenceRanges.map((range, index) => (
+                          <tr key={index}>
+                            <td className="p-2">
+                              <select
+                                name="gender"
+                                value={range.gender}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-full"
+                              >
+                                <option value="BOTH">BOTH</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                              </select>
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                name="ageMin"
+                                value={range.ageMin}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-16"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                name="ageMax"
+                                value={range.ageMax}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-16"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                name="lowRange"
+                                value={range.lowRange}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-20"
+                                placeholder="0"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                name="highRange"
+                                value={range.highRange}
+                                onChange={(e) => handleRangeChange(index, e)}
+                                className="border rounded p-1.5 w-20"
+                                placeholder="100"
+                              />
+                            </td>
+                            <td className="p-2 text-center">
+                              <button
+                                onClick={() => removeRangeRow(index)}
+                                className="text-red-500 hover:bg-red-50 p-1.5 rounded-full"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
 

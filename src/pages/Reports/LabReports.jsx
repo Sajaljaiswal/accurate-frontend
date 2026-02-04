@@ -69,7 +69,7 @@ const LabReports = () => {
   const config = useMemo(() => ({
     readonly: false,
     placeholder: "Design your report template here...",
-    height: 700,
+    height: 500,
     toolbarButtonSize: "middle",
   
     askBeforePasteHTML: false,
@@ -266,7 +266,7 @@ const LabReports = () => {
       <Navigation />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-8">
             <div className="flex justify-between items-center border-b pb-2 mb-4">
                 
