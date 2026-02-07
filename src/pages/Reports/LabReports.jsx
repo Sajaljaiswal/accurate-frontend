@@ -75,7 +75,12 @@ const LabReports = () => {
     askBeforePasteHTML: false,
     askBeforePasteFromWord: false,
     defaultActionOnPaste: "insert_as_html",
-  
+    usePopup: false, // Prevents popups from showing
+    popup: {
+      table: [], // Explicitly clear table popups
+      img: [],   // Explicitly clear image popups
+      selection: [] // Clear text selection popups
+    },
     // 🔥 IMPORTANT: disable cleaner
     cleanHTML: false,
   

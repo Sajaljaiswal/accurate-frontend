@@ -63,69 +63,33 @@ export const generateLabReportPDF = async (patient, isSignedOff) => {
 
   let fullHtmlContent = `
     <style>
-      .test-section {
-        margin-bottom: 30px;
-        page-break-inside: avoid;
+    .test-section { margin-bottom: 20px; }
+    .test-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+    
+    /* This ensures tables and images inside the rich text don't overflow */
+    .rich-text-body { width: 100%; }
+    // .rich-text-body table { width: 100% !important; border-collapse: collapse; }
+    .rich-text-body table { 
+        width: 100% !important; 
+        border-collapse: collapse; 
+        margin: 10px 0;
+      }
+      
+      .rich-text-body table, 
+      .rich-text-body th, 
+      .rich-text-body td { 
+        border: 1px solid #000 !important; /* Forces the black borders */
+        padding: 6px 8px !important;      /* Provides clean spacing inside cells */
+        text-align: left;
       }
 
-      .test-title {
+      .rich-text-body th {
+        background-color: #f2f2f2; /* Light grey for headers if applicable */
         font-weight: bold;
-        font-size: 14px;
-        margin-bottom: 12px;
-        border-bottom: 2px solid #333;
-        padding-bottom: 4px;
       }
-
-      .rich-text-body {
-        font-size: 11px;
-        color: #000;
-        text-align: justify;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-      }
-
-      th, td {
-        border: 1px solid #656565;
-        padding: 3px;
-        font-size: 15px;
-        word-break: break-word;
-      }
-
-      ul {
-        padding-left: 0;
-        margin: 2px 0;
-        font-size: 13px;
-      }
-
-      ul li {
-        list-style: none;
-        position: relative;
-        padding-left: 14px;
-        margin-bottom: 4px;
-      }
-
-      ul li::before {
-        content: "•";
-        position: absolute;
-        left: 0;
-        top: 0;
-      }
-
-      ol {
-        padding-left: 18px;
-        margin: 8px 0;
-      }
-
-      ol li {
-        font-size: 11px;
-        margin-bottom: 4px;
-      }
-
-      p { margin: 8px 0; }
+    
+    /* Preserve the exact styling from your editor */
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
     </style>
   `;
 

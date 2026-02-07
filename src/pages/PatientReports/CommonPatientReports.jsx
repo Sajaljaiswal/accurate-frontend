@@ -180,8 +180,8 @@ const CommonPatientReports = ({ title, testType }) => {
                           .join(", ") || "No tests"}
                       </td>
 
-                      <td className="p-4">
-                        <span className={printStatus.style}>
+                      <td className="p-4 cursor-pointer" onClick={() => navigate(`/lab-report/${p._id}`)}>
+                        <span className={printStatus.style} >
                           {printStatus.label}
                         </span>
                       </td>
